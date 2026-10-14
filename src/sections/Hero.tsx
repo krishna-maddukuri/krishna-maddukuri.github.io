@@ -30,37 +30,26 @@ export function Hero() {
       className="relative isolate flex flex-col overflow-hidden lg:block"
       style={{ minHeight: 'min(100svh, 1000px)', ['--wm-bottom' as string]: wm.bottom, ['--wm-gap' as string]: wm.gap }}
     >
-      {/* the faded full name behind the figure */}
+      {/* the faded full name behind the figure: on load each letter draws in as an outline, then fills
+          (the CSS in index.css, .wm-play); every letter is its own tspan so it can take its turn */}
       <m.div
         style={touch ? undefined : { y: wmY, opacity: wmFade }}
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-[92px] -z-10 mx-auto select-none px-3 sm:top-[100px] sm:px-5 lg:top-[10%] lg:px-[2.2vw] min-[2000px]:max-w-[1900px]"
       >
-        <m.div
-          className="watermark"
-          initial={touch ? { opacity: 0, y: 24 } : { opacity: 0, y: 24, filter: 'blur(14px)' }}
-          animate={touch ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 1.6, ease: EASE, delay: 0.15 }}
-        >
-          <svg viewBox={`0 0 1000 ${wm.height}`} className="block h-auto w-full overflow-visible font-display font-extrabold" style={{ fontOpticalSizing: 'auto' }}>
-            {wm.lines.map((line, i) => (
-              <m.text
-                key={line.text}
-                x="0"
-                y={line.y}
-                fontSize={line.size}
-                textLength="1000"
-                lengthAdjust="spacing"
-                fill="currentColor"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.4, ease: EASE, delay: 0.2 + i * 0.25 }}
-              >
-                {line.text}
-              </m.text>
+        <div className="watermark-hero wm-play">
+          <svg viewBox={`0 0 1000 ${wm.height}`} className="block h-auto w-full overflow-visible">
+            {wm.lines.map((line, l) => (
+              <text key={line.text} x="0" y={line.y} fontSize={line.size} textLength="1000" lengthAdjust="spacing">
+                {[...line.text].map((ch, i) => (
+                  <tspan key={i} className="wm-ch" style={{ ['--l' as string]: l, ['--i' as string]: i }}>
+                    {ch}
+                  </tspan>
+                ))}
+              </text>
             ))}
           </svg>
-        </m.div>
+        </div>
       </m.div>
 
       {/* figure: his cut-out photo, with the chat bubble. Phones and tablets: the first screen is him,
