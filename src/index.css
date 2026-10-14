@@ -417,13 +417,14 @@ html.lenis, html.lenis body { height: auto; }
     mask-composite: intersect;
   }
   /* the name behind the hero figure: a spotlight, brightest right behind him (he stands at the centre
-     on phones, at 60% on wide screens) and fading outward; the letters are 20% ink */
+     on phones, at 60% on wide screens) and softer towards the corners, which still read (he found the
+     first cut, 12% at the edges, too faded); the letters are 20% ink */
   .watermark-hero {
     --spot-x: 50%;
     --wm-fill: 0.2;
     color: var(--ink);
-    -webkit-mask-image: radial-gradient(60% 120% at var(--spot-x) 70%, #000 0%, rgba(0, 0, 0, 0.75) 35%, rgba(0, 0, 0, 0.12) 100%);
-    mask-image: radial-gradient(60% 120% at var(--spot-x) 70%, #000 0%, rgba(0, 0, 0, 0.75) 35%, rgba(0, 0, 0, 0.12) 100%);
+    -webkit-mask-image: radial-gradient(60% 120% at var(--spot-x) 70%, #000 0%, rgba(0, 0, 0, 0.86) 35%, rgba(0, 0, 0, 0.42) 100%);
+    mask-image: radial-gradient(60% 120% at var(--spot-x) 70%, #000 0%, rgba(0, 0, 0, 0.86) 35%, rgba(0, 0, 0, 0.42) 100%);
   }
   @media (min-width: 1024px) {
     .watermark-hero { --spot-x: 60%; }
