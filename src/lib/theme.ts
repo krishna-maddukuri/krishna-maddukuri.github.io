@@ -8,7 +8,7 @@ const KEY = 'kkm-theme'
  */
 const ATTR = 'data-mode'
 
-/** The theme picked with the switch, kept for this visit only (a new visit opens in light mode again). */
+/** The theme picked with the switch, kept for this visit only (a new visit opens in dark mode again). */
 function readStoredTheme(): Theme | null {
   try {
     const v = sessionStorage.getItem(KEY)
@@ -42,12 +42,12 @@ function nudgeStatusBar() {
 }
 
 /**
- * The site opens in light mode; dark mode is a choice made with the switch, kept while you browse
- * (across the site's pages and a reload) and forgotten when you come back another time.
- * Applied before React renders, so there is no flash.
+ * The site opens in dark mode (index.html starts that way too, so the first paint is black); light
+ * mode is a choice made with the switch, kept while you browse (across the site's pages and a
+ * reload) and forgotten when you come back another time. Applied before React renders.
  */
 export function applyStoredTheme() {
-  const t = readStoredTheme() ?? 'light'
+  const t = readStoredTheme() ?? 'dark'
   document.documentElement.setAttribute(ATTR, t)
   syncThemeColor(t)
 }

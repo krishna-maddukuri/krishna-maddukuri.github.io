@@ -9,8 +9,8 @@ test.describe('accessibility and motion', () => {
       // with "reduce motion" the page is complete at once (no fades to wait for, and the paper figure
       // is its still picture), which is also the version assistive-tech users most often get
       await page.emulateMedia({ reducedMotion: 'reduce' })
-      // the site opens in light mode; dark is the switch's choice for the visit
-      if (scheme === 'dark') await page.addInitScript(() => sessionStorage.setItem('kkm-theme', 'dark'))
+      // the site opens in dark mode; light is the switch's choice for the visit
+      if (scheme === 'light') await page.addInitScript(() => sessionStorage.setItem('kkm-theme', 'light'))
       await openHome(page)
       await expect(page.locator('html')).toHaveAttribute('data-mode', scheme)
       await revealAll(page)

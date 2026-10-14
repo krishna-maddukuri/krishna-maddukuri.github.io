@@ -34,8 +34,7 @@ const REACH_WIDE = 1.3
 const GLIDE = 1.7 // one shard's journey into place
 const STAGGER = 0.35 // the last shard starts this much after the first
 const BUILD_DELAY = 0.4 // after the figure is ready, so it lands with the rest of the hero
-const SCATTER_HOLD = 3 // a click scatters him for this long, then he comes back
-const SCATTER_HOLD_TOUCH = 8 // on phones the button reads "Keep together" meanwhile, so he waits longer
+const SCATTER_HOLD = 3 // a click (or the phone button) scatters him for this long, then he comes back by himself
 /** Below this width (the lg breakpoint) the coarse mesh is used. */
 const LITE_BELOW = 1024
 
@@ -294,18 +293,29 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       let last = performance.now()
       let built = false
       let frames = 0
-      const coarse = window.matchMedia('(pointer: coarse)').matches
       const scatter = { v: 0, target: 0, until: 0 }
+      let holdTimer: ReturnType<typeof setTimeout> | undefined
+      const gather = () => {
+        clearTimeout(holdTimer)
+        scatter.target = 0
+        setState(built ? 'ready' : 'building')
+        schedule()
+      }
       setState('building')
       toggleRef.current = () => {
         const now = performance.now()
         if (scatter.target === 0) {
           scatter.target = 1
-          scatter.until = now + (coarse ? SCATTER_HOLD_TOUCH : SCATTER_HOLD) * 1000
+          scatter.until = now + SCATTER_HOLD * 1000
           setState('scattered')
+          // the frames bring him back once the hold is over; this timer does the same should a phone
+          // pause the frames meanwhile (a scroll, a switch of tabs), so he never stays in pieces
+          clearTimeout(holdTimer)
+          holdTimer = setTimeout(() => {
+            if (!disposed && scatter.target === 1) gather()
+          }, SCATTER_HOLD * 1000 + 100)
         } else {
-          scatter.target = 0
-          setState(built ? 'ready' : 'building')
+          gather()
         }
         lastPointer = now
         schedule()
@@ -339,10 +349,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
           label.style.transform = `translate(${lbl.x + 18}px, ${lbl.y + 22}px)`
           label.dataset.on = lbl.on && built ? '1' : '0'
         }
-        if (scatter.target === 1 && now > scatter.until) {
-          scatter.target = 0
-          setState(built ? 'ready' : 'building')
-        }
+        if (scatter.target === 1 && now > scatter.until) gather()
         // scattering is quick, coming back is unhurried
         const ks = 1 - Math.pow(scatter.target === 1 ? 0.004 : 0.03, dt)
         scatter.v += (scatter.target - scatter.v) * ks
@@ -376,6 +383,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       schedule()
 
       cleanup = () => {
+        clearTimeout(holdTimer)
         ro.disconnect()
         io.disconnect()
         window.removeEventListener('pointermove', onMove)
@@ -441,7 +449,8 @@ export function PaperFigure({ className = '' }: { className?: string }) {
             <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-paper/60' : 'bg-live'}`} />
             {state === 'scattered' ? 'Put him back' : 'Scatter him'}
           </div>
-          {/* … and, below the lg breakpoint, a button under his feet that stays (tapping him works too) */}
+          {/* … and, below the lg breakpoint, a button under his feet that stays (tapping him works too);
+              "Keep together" brings him back sooner than the hold would */}
           <button
             type="button"
             onClick={() => toggleRef.current()}
