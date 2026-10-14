@@ -11,7 +11,6 @@ const familyLabel = Object.fromEntries(families.map((f) => [f.id, f.label])) as 
 const COLS = 8
 /** The lightest family is drawn as outlined tiles rather than filled ones. */
 const OUTLINE: FamilyId = families[families.length - 1].id
-const count = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
 
 export function Skills() {
   const [family, setFamily] = useState<FamilyId | null>(null)
@@ -43,14 +42,14 @@ export function Skills() {
   }
 
   return (
-    <section id="skills" className="relative py-[clamp(72px,8vw,112px)]">
+    <section id="skills" className="relative py-[clamp(56px,8vw,112px)]">
       <Container>
         <SectionHeading
           index="02"
           label="Skills"
           lead="The periodic table"
           accent="of my stack."
-          sub={`${elements.length} elements in ${count[families.length] ?? families.length} families. ${hover ? 'Hover' : 'Tap'} a tile to see what it is, or pick a family to light it up.`}
+          sub={`${hover ? 'Hover' : 'Tap'} a tile to see what it is, or pick a family to light it up.`}
         />
 
         <div className="mt-9 flex flex-wrap gap-2.5" role="group" aria-label="Light up a family">

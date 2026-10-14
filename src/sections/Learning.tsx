@@ -6,7 +6,7 @@ import { Accent, Container, EASE, Eyebrow, Reveal } from '../components/ui'
 /** The "Always learning." list: his degrees and certifications. */
 export function Learning() {
   return (
-    <section id="learning" className="relative py-[clamp(72px,8vw,112px)]">
+    <section id="learning" className="relative py-[clamp(56px,8vw,112px)]">
       <Container>
         <div className="grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
           <div className="min-w-0 lg:sticky lg:top-32 lg:self-start">

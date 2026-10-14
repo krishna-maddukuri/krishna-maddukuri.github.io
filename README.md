@@ -13,7 +13,9 @@ sections, a case-study page for each project, and a web version of his résumé.
    "Open to…" badge, and Explore work / Let's talk / Resume buttons. The figure arrives in pieces: about
    450 paper shards (big ones on the body, smaller ones on the face) glide in from all around and lock
    together. Once he's together he breathes, the shards under the cursor lift out of its way, and a click
-   (or tap) scatters him (farther on wide screens, where there is room); he drifts back together by himself.
+   scatters him (farther on wide screens, where there is room); he drifts back together by himself. On
+   phones and tablets the first screen is just him, cut into ~90 big pieces, with a "Scatter him" /
+   "Keep together" button under his feet; the words follow below.
 2. **About** — a lanyard ID card you can drag around and tap to flip (on phones, press and hold it to pick it
    up; a normal swipe over it scrolls the page), a short bio and quick facts.
 3. **Skills** — "The periodic table of my stack": 48 skills in eight groups. Point at (or tap) a tile to see
@@ -36,7 +38,8 @@ versions.
 
 **The paper figure.** `public/avatar/krishna-origami.webp` is the cut-out and
 `public/avatar/krishna-origami.json` the shard mesh (points, depth and triangles) that was cut along the
-paper's own creases. `src/components/PaperFigure.tsx` draws the shards with WebGL in one draw call;
+paper's own creases; `krishna-origami-lite.json` is the coarse cut used below 1024px (a few dozen even
+triangles inside the silhouette). `src/components/PaperFigure.tsx` draws the shards with WebGL in one draw call;
 every shard's glide, scatter, lift and the figure's turn happen in the vertex shader, so a phone handles
 it easily. Browsers without WebGL and visitors with "reduce motion" on get the still cut-out instead.
 
@@ -46,13 +49,14 @@ with metric-matched fallbacks, so nothing jumps while they load.
 
 **Colour.** Black ink on paper, white on true black in dark mode, and one accent on the emphasised parts (the
 italic tail of every heading, the key words in the intro and the About lead, the achievement numbers, the
-eyebrow index, the timeline, the dot after the headline and text selection): terracotta in light mode, neon
-chartreuse (#7FFF00) in dark mode. The tokens are at the top of `src/index.css` (`--accent` for dots and lines,
+eyebrow index, the timeline, the dot after the headline and text selection): teal in both modes, a deeper
+one (#0F8B8D) on the paper and a brighter one (#2ED3D5) on black. The tokens are at the top of `src/index.css` (`--accent` for dots and lines,
 `--accent-display` for big text, `--accent-text` for body-size words; `--accent-mark` can draw a highlighter
 stroke behind accent text for a colour that can't be read on its paper). Brand colour comes from the logos:
 every skill has one (`public/logos/skills`, listed with its brand colour in `src/data/logos.ts`), the LinkedIn
 mark sits beside every LinkedIn link, and companies, schools and certifications show their logo or badge next
-to their name (`public/logos/orgs` and `public/logos/badges`).
+to their name in the timeline, the Learning rows, the Proud Moments cards and the résumé page (`public/logos/orgs`
+and `public/logos/badges`).
 
 Phones and tablets use their own native scrolling (smooth scrolling is added only for mouse and
 trackpad), and the moving parts (the card's sway, the pulsing dots, the spinning badge, the project

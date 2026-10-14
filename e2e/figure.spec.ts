@@ -76,6 +76,37 @@ test.describe('paper figure', () => {
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready')
   })
 
+  test('phones: the button under his feet scatters him, "Keep together" brings him back, and he is cut coarser', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) >= 1024, 'phones and tablets only')
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    const pill = page.getByRole('button', { name: 'Scatter him' })
+    await expect(pill).toBeVisible()
+    await pill.tap()
+    await expect(figure).toHaveAttribute('data-paper-figure', 'scattered')
+    const back = page.getByRole('button', { name: 'Keep together' })
+    await expect(back).toHaveAttribute('aria-pressed', 'true')
+    await back.tap()
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready')
+    await expect(pill).toBeVisible()
+    // the coarse mesh (a few dozen big pieces) was loaded, not the fine one
+    const meshes = await page.evaluate(() => performance.getEntriesByType('resource').map((r) => r.name).filter((n) => n.includes('krishna-origami') && n.endsWith('.json')))
+    expect(meshes.some((n) => n.endsWith('krishna-origami-lite.json'))).toBe(true)
+    expect(meshes.some((n) => n.endsWith('/krishna-origami.json'))).toBe(false)
+  })
+
+  test('wide screens: no button under his feet, and the fine cut', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'wide screens only')
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    await expect(page.getByRole('button', { name: 'Scatter him' })).toBeHidden()
+    const meshes = await page.evaluate(() => performance.getEntriesByType('resource').map((r) => r.name).filter((n) => n.includes('krishna-origami') && n.endsWith('.json')))
+    expect(meshes.some((n) => n.endsWith('/krishna-origami.json'))).toBe(true)
+    expect(meshes.some((n) => n.endsWith('krishna-origami-lite.json'))).toBe(false)
+  })
+
   test('does not turn or move with a pointer that is not over him', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) < 1024, 'needs a mouse')
     await openHome(page)

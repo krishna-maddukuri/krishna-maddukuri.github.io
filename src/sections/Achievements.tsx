@@ -85,7 +85,7 @@ function PinnedTrack() {
 /** Phones (and reduced motion): a native swipeable row. */
 function SwipeTrack() {
   return (
-    <section id="achievements" className="relative py-[clamp(72px,8vw,112px)]">
+    <section id="achievements" className="relative py-[clamp(56px,8vw,112px)]">
       <Container>{heading}</Container>
       <div
         className="no-scrollbar mt-10 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-6 pt-2 sm:scroll-px-6 sm:px-6"

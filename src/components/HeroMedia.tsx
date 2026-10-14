@@ -13,8 +13,10 @@ export function HeroMedia() {
           // beside his neck, with the square corner pointing at him, clear of the faded name behind him.
           // Wide screens: in the space between the name's two lines (--wm-gap, measured from the hero's top;
           // the figure starts 14svh, at most 40px short of 100%, below that). Phones and tablets: just under
-          // the name's last line (--wm-bottom from the hero's top; the figure starts 20px (sm: 28px) below the name).
-          className="absolute left-[calc(70%+10px)] top-[calc(var(--wm-bottom)-12px)] origin-bottom-left min-[360px]:left-[calc(78%+18px)] sm:left-[calc(78%+26px)] sm:top-[calc(var(--wm-bottom)-20px)] lg:left-[calc(76%+34px)] lg:top-[calc(var(--wm-gap)-20px-min(4svh,40px))]"
+          // the name's last line (--wm-bottom from the hero's top), and pinned 16px (sm: 24px) from the
+          // screen's right edge, however wide he is (the figure's box is centred: the margin beside it is
+          // half of what the screen has left over).
+          className="absolute right-[calc(16px_-_(100vw_-_100%)_/_2)] top-[calc(var(--wm-bottom)-12px)] origin-bottom-left sm:right-[calc(24px_-_(100vw_-_100%)_/_2)] sm:top-[calc(var(--wm-bottom)-20px)] lg:left-[calc(76%+34px)] lg:right-auto lg:top-[calc(var(--wm-gap)-20px-min(4svh,40px))]"
           initial={{ scale: 0.4, opacity: 0, rotate: -8 }}
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 1.5 }}

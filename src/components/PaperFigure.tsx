@@ -4,10 +4,11 @@ import { site } from '../data/site'
 
 /**
  * His paper-craft figure, in pieces. The picture is cut into ~450 shards that follow the
- * paper's own facets (big ones on the body, small ones on the face). On load they glide in
- * from all around and lock together; afterwards the figure breathes, the shards under the
- * cursor lift out of its way, and a click blows the whole figure apart, far and wide, before
- * it settles back together.
+ * paper's own facets (big ones on the body, small ones on the face); phones and tablets get a
+ * coarser cut of ~90 big, even pieces instead. On load they glide in from all around and lock
+ * together; afterwards the figure breathes, the shards under the cursor lift out of its way,
+ * and a click (or, on phones, the "Scatter him" button) blows the whole figure apart, far and
+ * wide, before it settles back together.
  *
  * Rendered with WebGL2 in one draw call; everything per-shard happens in the vertex shader.
  * Without WebGL, or with "reduce motion" on, the plain cut-out is shown instead.
@@ -34,6 +35,9 @@ const GLIDE = 1.7 // one shard's journey into place
 const STAGGER = 0.35 // the last shard starts this much after the first
 const BUILD_DELAY = 0.4 // after the figure is ready, so it lands with the rest of the hero
 const SCATTER_HOLD = 3 // a click scatters him for this long, then he comes back
+const SCATTER_HOLD_TOUCH = 8 // on phones the button reads "Keep together" meanwhile, so he waits longer
+/** Below this width (the lg breakpoint) the coarse mesh is used. */
+const LITE_BELOW = 1024
 
 type MeshData = { w: number; h: number; p: number[]; z: number[]; t: number[] }
 type State = 'loading' | 'building' | 'ready' | 'scattered' | 'fallback'
@@ -116,7 +120,6 @@ export function PaperFigure({ className = '' }: { className?: string }) {
   const boxRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<State>('loading')
-  const [hint, setHint] = useState(false) // phones: a one-time "tap to scatter" after he is together
   const toggleRef = useRef<() => void>(() => {})
   const labelRef = useRef<HTMLDivElement>(null)
   const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0, on: false })
@@ -158,7 +161,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       img.onerror = () => bad(new Error('texture'))
     })
     img.src = image
-    const meshReady = fetch('avatar/krishna-origami.json').then((r) => {
+    const meshReady = fetch(window.innerWidth < LITE_BELOW ? 'avatar/krishna-origami-lite.json' : 'avatar/krishna-origami.json').then((r) => {
       if (!r.ok) throw new Error('mesh')
       return r.json() as Promise<MeshData>
     })
@@ -298,7 +301,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
         const now = performance.now()
         if (scatter.target === 0) {
           scatter.target = 1
-          scatter.until = now + SCATTER_HOLD * 1000
+          scatter.until = now + (coarse ? SCATTER_HOLD_TOUCH : SCATTER_HOLD) * 1000
           setState('scattered')
         } else {
           scatter.target = 0
@@ -325,7 +328,6 @@ export function PaperFigure({ className = '' }: { className?: string }) {
         if (!built && time > STAGGER + GLIDE + 0.1) {
           built = true
           if (scatter.target === 0) setState('ready')
-          if (coarse) setHint(true)
         }
         // the label beside the pointer follows it with a little lag
         const lbl = cursor.current
@@ -439,17 +441,18 @@ export function PaperFigure({ className = '' }: { className?: string }) {
             <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-paper/60' : 'bg-live'}`} />
             {state === 'scattered' ? 'Put him back' : 'Scatter him'}
           </div>
-          {/* … or, on phones, once under his feet after he is together */}
-          {hint && (
-            <div
-              aria-hidden
-              onAnimationEnd={() => setHint(false)}
-              className="hint-pill pointer-events-none absolute -bottom-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-ink px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-paper shadow-lg"
-            >
-              <span className="size-1.5 rounded-full bg-live" />
-              Tap to scatter
-            </div>
-          )}
+          {/* … and, below the lg breakpoint, a button under his feet that stays (tapping him works too) */}
+          <button
+            type="button"
+            onClick={() => toggleRef.current()}
+            aria-pressed={state === 'scattered'}
+            disabled={state === 'loading' || state === 'building'}
+            data-figure-toggle
+            className={`figure-pill absolute -bottom-[62px] left-1/2 z-30 flex h-10 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-ink px-4 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-paper shadow-lg transition-opacity duration-700 lg:hidden ${state === 'loading' || state === 'building' ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+          >
+            <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-paper/60' : 'bg-live'}`} />
+            {state === 'scattered' ? 'Keep together' : 'Scatter him'}
+          </button>
         </>
       )}
     </div>

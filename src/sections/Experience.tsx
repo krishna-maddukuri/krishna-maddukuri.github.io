@@ -12,7 +12,7 @@ export function Experience() {
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 })
 
   return (
-    <section id="experience" className="relative py-[clamp(72px,8vw,112px)]">
+    <section id="experience" className="relative py-[clamp(56px,8vw,112px)]">
       <Container>
         <SectionHeading
           index="05"

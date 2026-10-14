@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { Link } from '../lib/router'
 import { site } from '../data/site'
 import { useScrollTo } from '../lib/scroll'
+import { FitWord } from '../components/FitWord'
 import { LinkedInMark } from '../components/Logo'
 import { ResumeLink } from '../components/ResumeLink'
 import { copyText, toast } from '../components/Toast'
@@ -30,7 +31,7 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="relative py-[clamp(72px,8vw,112px)]">
+    <section id="contact" className="relative py-[clamp(56px,8vw,112px)]">
       <Container>
         <SectionHeading
           index="07"
@@ -128,15 +129,17 @@ export function Footer() {
           </span>
         </div>
       </Container>
+      {/* the surname, edge to edge: as wide as the page, whatever the screen */}
       <m.div
         aria-hidden
-        className="watermark pointer-events-none mt-8 select-none whitespace-nowrap text-center font-display text-[15.2vw] font-extrabold leading-[0.78] tracking-[-0.05em]"
+        className="watermark pointer-events-none mt-8 select-none font-display font-extrabold"
+        style={{ fontOpticalSizing: 'auto' }}
         initial={{ y: '30%' }}
         whileInView={{ y: '0%' }}
         viewport={{ once: true }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        {site.shortName.split(' ')[1] ?? site.first}
+        <FitWord text={site.shortName.split(' ')[1] ?? site.first} />
       </m.div>
     </footer>
   )

@@ -9,7 +9,7 @@ test.describe('learning, experience and achievements', () => {
     await expect(learning.getByRole('heading', { level: 2 })).toContainText('Always')
     await expect(learning.getByRole('listitem')).toHaveCount(5)
     await expect(learning.getByText('DBA, Technology Management')).toBeVisible()
-    await expect(learning.getByText('AWS Certified Developer – Associate')).toBeVisible()
+    await expect(learning.getByText('AWS Certified Developer')).toBeVisible()
     await expect(learning.getByText('AWS Certified Cloud Practitioner')).toBeVisible()
   })
 

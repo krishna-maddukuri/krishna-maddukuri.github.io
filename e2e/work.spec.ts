@@ -7,7 +7,7 @@ test.describe('work', () => {
     await jumpTo(page, 'work')
     const work = page.locator('#work')
     await expect(work.getByRole('heading', { level: 2 })).toContainText("Things I've")
-    await expect(work.getByText('Seven projects across Capital One, NGA Group and Infosys.')).toBeVisible()
+    await expect(work.getByText(isPhone(page) ? 'Tap a project to open it.' : 'Hover a panel to open it.')).toBeVisible()
   })
 
   test('desktop: the first panel is open, clicking a closed panel opens it, and the case study link works', async ({ page }) => {

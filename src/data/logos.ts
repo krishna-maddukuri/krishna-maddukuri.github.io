@@ -6,7 +6,8 @@
    rings the active tile. `fit` lets a wide wordmark take more of the plate.
    ========================================================================== */
 
-export type Logo = { file: string; color: string; fit?: number }
+/** `plate` fills the plate with that colour instead of the light brand tint (for marks drawn for a dark ground). */
+export type Logo = { file: string; color: string; fit?: number; plate?: string }
 
 export const skillLogos: Record<string, Logo> = {
   Jv: { file: 'logos/skills/java.svg', color: '#e76f00' },
@@ -75,7 +76,7 @@ export type Org = { key: string; name: string; short: string; color: string; mat
 
 /** `logo` is the full logo; `mark` (optional) a squarer cut of it for the smallest plates. */
 export const orgs: Org[] = [
-  { key: 'capital-one', name: 'Capital One', short: 'C1', color: '#d03027', match: ['Capital One'], logo: { file: 'logos/orgs/capital-one.svg', color: '#d03027', fit: 0.84 } },
+  { key: 'capital-one', name: 'Capital One', short: 'C1', color: '#013d5b', match: ['Capital One'], logo: { file: 'logos/orgs/capital-one-dark.svg', color: '#013d5b', fit: 0.84, plate: '#013d5b' } },
   {
     key: 'nga-group', name: 'NGA Group', short: 'NGA', color: '#3b5ba5', match: ['NGA Group'],
     logo: { file: 'logos/orgs/nga-group.svg', color: '#3b5ba5', fit: 0.86 },
@@ -105,7 +106,7 @@ export function orgFor(label: string): Org | undefined {
 export type Badge = { key: string; name: string; short: string; match: string[]; file?: string }
 
 export const badges: Badge[] = [
-  { key: 'aws-developer-associate', name: 'AWS Certified Developer – Associate', short: 'DVA', match: ['Developer'], file: 'logos/badges/aws-certified-developer-associate.png' },
+  { key: 'aws-developer-associate', name: 'AWS Certified Developer', short: 'DVA', match: ['Developer'], file: 'logos/badges/aws-certified-developer-associate.png' },
   { key: 'aws-cloud-practitioner', name: 'AWS Certified Cloud Practitioner', short: 'CLF', match: ['Cloud Practitioner'], file: 'logos/badges/aws-certified-cloud-practitioner.png' },
 ]
 

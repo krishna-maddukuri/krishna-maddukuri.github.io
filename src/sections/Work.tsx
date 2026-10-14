@@ -20,7 +20,7 @@ export function Work() {
   const hoverCancel = () => clearTimeout(hoverTimer.current)
 
   return (
-    <section id="work" className="relative py-[clamp(72px,8vw,112px)]">
+    <section id="work" className="relative py-[clamp(56px,8vw,112px)]">
       <Container>
         <SectionHeading
           index="03"
@@ -29,7 +29,7 @@ export function Work() {
           accent="built."
           aside={
             <p className="text-base text-ink-soft">
-              Seven projects across Capital One, NGA Group and Infosys. {wide ? 'Hover a panel to open it.' : 'Tap a project to open it.'}
+              {wide ? 'Hover a panel to open it.' : 'Tap a project to open it.'}
             </p>
           }
         />

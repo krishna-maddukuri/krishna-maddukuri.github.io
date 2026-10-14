@@ -57,7 +57,7 @@ export const about = {
     { k: 'Role', v: 'Senior Software Engineer · Capital One' },
     { k: 'Experience', v: '5+ years · financial services' },
     { k: 'Studied', v: 'M.S. Computer Science, George Mason' },
-    { k: 'Certified', v: 'AWS Developer – Associate' },
+    { k: 'Certified', v: 'AWS Developer' },
     { k: 'Focus', v: 'Java · Kafka · AWS' },
   ],
   quote: 'From the first commit to production.',
@@ -411,7 +411,7 @@ export const learning = {
   sub: 'A doctorate in progress, two AWS certifications and two computer science degrees.',
   items: [
     { title: 'DBA, Technology Management', from: 'Westcliff University · Jul 2026 – Aug 2029 (expected)' },
-    { title: 'AWS Certified Developer – Associate', from: 'Amazon Web Services · Certification' },
+    { title: 'AWS Certified Developer', from: 'Amazon Web Services · Certification' },
     { title: 'AWS Certified Cloud Practitioner', from: 'Amazon Web Services · Certification' },
     { title: 'M.S., Computer Science', from: 'George Mason University · Fairfax, VA · 2023' },
     { title: 'B.Tech, Computer Science', from: 'Amrita Vishwa Vidyapeetham · Coimbatore, India · 2020' },
@@ -524,7 +524,7 @@ export const resume = {
     { label: 'Observability', items: 'Splunk, New Relic APM, Prometheus, ELK Stack, Spring Actuator, Log4J' },
     { label: 'Frontend', items: 'React.js, Redux, Angular, HTML5, CSS3, Bootstrap, jQuery' },
   ],
-  certifications: ['AWS Certified Developer – Associate', 'AWS Certified Cloud Practitioner'],
+  certifications: ['AWS Certified Developer', 'AWS Certified Cloud Practitioner'],
 }
 
 export const experience: Role[] = [

@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { about, site } from '../data/site'
 import { IdCard } from '../components/IdCard'
-import { BadgeMark, LinkedInMark, OrgMark } from '../components/Logo'
+import { LinkedInMark } from '../components/Logo'
 import { ResumeLink } from '../components/ResumeLink'
 import { Accent, ArrowDown, ArrowUpRight, Container, Eyebrow, Reveal, Rich } from '../components/ui'
 
@@ -10,7 +10,7 @@ export function About() {
   const sectionRef = useRef<HTMLElement>(null)
 
   return (
-    <section id="about" ref={sectionRef} className="relative py-[clamp(72px,8vw,112px)]">
+    <section id="about" ref={sectionRef} className="relative py-[clamp(56px,8vw,112px)]">
       <Container>
         <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.84fr)_minmax(0,0.98fr)] lg:gap-10 xl:gap-14">
           {/* hello (first on phones; the left column on wide screens) */}
@@ -52,17 +52,14 @@ export function About() {
             <IdCard sectionRef={sectionRef} />
           </div>
 
-          {/* right: quick facts, with the mark of the company, school or certification beside the ones that have one */}
+          {/* right: quick facts */}
           <div className="relative z-10 min-w-0 lg:pt-2">
             <div className="eyebrow">Quick facts</div>
             <dl className="mt-4">
               {about.facts.map((f, i) => (
                 <Reveal key={f.k} delay={0.05 * i} y={12} className="flex items-baseline justify-between gap-6 border-b border-line py-3.5">
                   <dt className="shrink-0 text-sm text-ink-soft">{f.k}</dt>
-                  <dd className="flex items-center justify-end gap-2 text-right text-sm font-medium">
-                    {f.v}
-                    {f.k === 'Certified' ? <BadgeMark label={f.v} className="size-5 rounded-md" /> : <OrgMark label={f.v} className="size-5 rounded-md text-[9px]" />}
-                  </dd>
+                  <dd className="text-right text-sm font-medium">{f.v}</dd>
                 </Reveal>
               ))}
             </dl>

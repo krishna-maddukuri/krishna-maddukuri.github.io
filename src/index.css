@@ -93,16 +93,16 @@
   --chip: #ece7dc;
   --clip: #cdbf9f;
 
-  /* the one colour on the page besides ink: terracotta on the paper, neon chartreuse on black.
-     It colours the italic tails of headings, the key words in the intro, the numbers, the eyebrow
-     index, the dots and lines and the selection. --accent is the colour itself (dots, lines,
-     selection); --accent-display is the shade for big text (3:1 on the paper) and --accent-text the
-     shade for body-size words (4.5:1). --accent-mark is a highlighter stroke behind accent text, for
-     a colour that can't be read as text on its paper (none needed with these two); --accent-ring
-     outlines the neon dots and lines. */
-  --accent: #d97757;
-  --accent-display: #cc6440;
-  --accent-text: #b5512f;
+  /* the one colour on the page besides ink: teal, in both themes (a deeper teal on the paper, a
+     brighter one on black). It colours the italic tails of headings, the key words in the intro,
+     the numbers, the eyebrow index, the dots and lines and the selection. --accent is the colour
+     itself (dots, lines, selection, button fills); --accent-display is the shade for big text (3:1
+     on its background) and --accent-text the shade for body-size words (4.5:1). --accent-mark is a
+     highlighter stroke behind accent text, for a colour that can't be read as text on its paper
+     (not needed for teal); --accent-ring outlines the dots and lines. */
+  --accent: #0f8b8d;
+  --accent-display: #0f8b8d;
+  --accent-text: #0d7c7e;
   --accent-mark: transparent;
   --accent-ring: var(--accent);
   --accent-dot: var(--accent);
@@ -185,11 +185,11 @@
   --wash: #121214;
   --chip: #1b1b1f;
   --clip: #8f8466;
-  --accent: #7fff00;
-  --accent-display: #7fff00;
-  --accent-text: #7fff00;
+  --accent: #2ed3d5;
+  --accent-display: #3adbdd;
+  --accent-text: #5ee3e5;
   --accent-mark: transparent;
-  --accent-ring: #7fff00;
+  --accent-ring: #2ed3d5;
   --fam-lang: #f1f1f3;
   --fam-lang-fg: #0a0a0b;
   --fam-back: #d6d6dc;
@@ -207,7 +207,7 @@
   --fam-front: transparent;
   --fam-front-fg: #f1f1f3;
   --fam-front-swatch: #121214;
-  --live: #7fff00;
+  --live: #40c463;
 
   --shadow-color: 0 0 0;
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5), 0 2px 8px -2px rgb(0 0 0 / 0.5);
@@ -500,7 +500,7 @@ html.lenis, html.lenis body { height: auto; }
   :root[data-mode="dark"] .spot::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.09), transparent 70%); }
 
   /*
-    The accent text: terracotta on the paper, neon on black. (--accent-mark can put a highlighter
+    The accent text: teal, deeper on the paper and brighter on black. (--accent-mark can put a highlighter
     stroke behind it, for a colour that can't be read as text on its paper; it is transparent now.)
   */
   /* key words in running text */
@@ -541,11 +541,16 @@ html.lenis, html.lenis body { height: auto; }
     place-items: center;
     flex-shrink: 0;
     overflow: hidden;
-    background: color-mix(in oklab, var(--brand, var(--ink)) 13%, #ffffff);
+    background: var(--plate, color-mix(in oklab, var(--brand, var(--ink)) 13%, #ffffff));
     box-shadow:
       inset 0 0 0 1px color-mix(in oklab, var(--brand, var(--ink)) 24%, transparent),
       inset 0 1px 0 rgb(255 255 255 / 0.7);
     user-select: none;
+  }
+  .plate[style*="--plate"] {
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.12),
+      inset 0 1px 0 rgb(255 255 255 / 0.18);
   }
   .plate img {
     width: calc(var(--fit, 0.56) * 100%);
@@ -647,19 +652,16 @@ html.lenis, html.lenis body { height: auto; }
   .btn-solid:not(.btn-still):hover, .btn-fill:hover { color: #000000; border-color: var(--accent); }
 }
 
-/* the label that rides beside the pointer over the paper figure, and the one-time hint on phones */
+/* the label that rides beside the pointer over the paper figure (mouse), and the button under his
+   feet on phones and tablets ("Scatter him" / "Keep together"), which answers a tap with a press */
 .cursor-label {
   opacity: 0;
   scale: 0.9;
   transition: opacity 0.25s var(--ease-out), scale 0.25s var(--ease-out);
 }
 .cursor-label[data-on="1"] { opacity: 1; scale: 1; }
-.hint-pill { animation: hint-pill 3.6s var(--ease-out) both; }
-@keyframes hint-pill {
-  0% { opacity: 0; translate: -50% 8px; }
-  12%, 80% { opacity: 1; translate: -50% 0; }
-  100% { opacity: 0; translate: -50% -6px; }
-}
+.figure-pill { transition: opacity 0.7s var(--ease-out), scale 0.2s var(--ease-out); }
+.figure-pill:active { scale: 0.96; }
 
 /* section headings drift a little slower than the page while they cross the screen (depth, no cost to
    scrolling: the browser runs it on its own timeline); only on wide screens and when motion is welcome */

@@ -63,10 +63,13 @@ export function Hero() {
         </m.div>
       </m.div>
 
-      {/* figure: his cut-out photo, with the chat bubble */}
+      {/* figure: his cut-out photo, with the chat bubble. Phones and tablets: the first screen is him,
+          from under the header down to the "Scatter him" button above the fold; the words come after
+          (the button hangs below his feet into the words' top padding, so the figure sits above them;
+          the badge, later in the DOM at the same level, stays tappable where it overlaps him). */}
       <m.div
         style={touch ? undefined : { y: figY }}
-        className="relative z-0 mx-auto mt-[96px] flex h-[min(68svh,600px)] w-full justify-center sm:mt-[128px] sm:h-[min(60svh,560px)] lg:absolute lg:bottom-0 lg:left-[60%] lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
+        className="relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[60%] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
       >
         <m.div
           className="relative h-full"
@@ -81,7 +84,7 @@ export function Hero() {
       {/* bottom-left: name, title, tagline */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="relative z-20 px-4 pt-6 sm:px-6 lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:px-0 lg:pt-0"
+        className="relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:px-0 lg:pt-0"
       >
         <m.div
           className="eyebrow flex items-center gap-3"
@@ -93,7 +96,7 @@ export function Hero() {
         </m.div>
         {/* wide screens: as big as the design allows, but never so wide that the first line runs into his figure
             ("Senior Software" in Bricolage Grotesque is 6.71em wide; the figure is 0.357x as wide as it is tall) */}
-        <h1 className="mt-4 font-display text-[clamp(3.1rem,7.2vw,7.4rem)] font-bold leading-[0.9] tracking-[-0.045em] text-ink lg:text-[length:min(clamp(3.1rem,min(7.2vw,11.5vh),7.4rem),calc((60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)/6.85))]">
+        <h1 className="mt-4 font-display text-[length:min(13.2vw,3.5rem)] font-bold leading-[0.9] tracking-[-0.045em] text-ink sm:text-[clamp(3.1rem,7.2vw,7.4rem)] lg:text-[length:min(clamp(3.1rem,min(7.2vw,11.5vh),7.4rem),calc((60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)/6.85))]">
           {site.headline.map((line, i) => (
             <span key={line} className="block overflow-hidden pb-[0.07em]">
               <m.span
@@ -150,18 +153,12 @@ export function Hero() {
 /**
  * His intro line. It shows faint and soft first, then each word clears in turn,
  * as if he's saying it. (On phones the words just fade in: blurring 30 words at
- * once is heavy for a phone right when people start scrolling.)
+ * once is heavy for a phone right when people start scrolling.) Each word is its
+ * own piece, so the lines wrap as prose does on a narrow screen.
  */
 function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
   const reduce = useReducedMotion()
-  // a run of key words moves as one piece, so its highlight is one unbroken stroke
-  const words = richWords(text).reduce<ReturnType<typeof richWords>>((units, word) => {
-    const last = units[units.length - 1]
-    if (last && word[0].strong && last[last.length - 1].strong) last[last.length - 1] = { text: `${last[last.length - 1].text} ${word[0].text}`, strong: true }
-    else units.push([...word])
-    if (last && word[0].strong && units[units.length - 1] === last) last.push(...word.slice(1))
-    return units
-  }, [])
+  const words = richWords(text)
   return (
     // on wide screens it stops short of his figure (which is centred at 60% and ~0.36x as wide as tall)
     <p className="mt-5 max-w-[38rem] text-base leading-[1.6] text-ink/80 sm:text-md lg:max-w-[min(38rem,calc(60vw-min(15.3svh,157px)-max(64px,calc((100vw-1440px)/2+64px))))]">
@@ -173,7 +170,7 @@ function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
             className="inline-block"
             initial={reduce ? false : soft ? { opacity: 0.14, filter: 'blur(5px)', y: 3 } : { opacity: 0.14, y: 3 }}
             animate={soft ? { opacity: 1, filter: 'blur(0px)', y: 0 } : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: EASE, delay: 1.1 + i * 0.075 }}
+            transition={{ duration: 0.65, ease: EASE, delay: 1.1 + i * 0.065 }}
           >
             {word.map((piece, j) => (piece.strong ? <strong key={j}>{piece.text}</strong> : piece.text))}
           </m.span>{' '}
@@ -224,9 +221,9 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      // Phones/tablets: beside him, below the name. Wide screens: just under the second line of
-      // the faded name (which sits 10% down; --wm-bottom is how far down its last line ends).
-      className="absolute right-4 top-[calc(112px+32svh)] z-20 size-24 sm:right-6 sm:top-[calc(128px+30svh)] sm:size-28 lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-[calc(10%+var(--wm-bottom)+20px)] lg:size-[clamp(88px,14vh,128px)]"
+      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: just under the second
+      // line of the faded name (which sits 10% down; --wm-bottom is how far down its last line ends).
+      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[84px] sm:right-6 sm:top-[52svh] sm:size-28 lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-[calc(10%+var(--wm-bottom)+20px)] lg:size-[clamp(88px,14vh,128px)]"
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
