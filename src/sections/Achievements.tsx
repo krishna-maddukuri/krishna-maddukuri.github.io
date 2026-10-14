@@ -14,7 +14,6 @@ const heading = (
     label="Achievements"
     lead="Proud"
     accent="moments."
-    aside={<p className="text-base text-ink-soft">Results from Capital One, NGA Group and Infosys, exactly as they appear on my resume.</p>}
   />
 )
 
