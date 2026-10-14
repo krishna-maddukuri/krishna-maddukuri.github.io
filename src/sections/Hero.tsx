@@ -1,6 +1,6 @@
 import { useReducedMotion, useScroll, useTransform } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Fragment, useRef } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { useScrollTo } from '../lib/scroll'
@@ -22,6 +22,21 @@ export function Hero() {
   const touch = useMedia('(pointer: coarse)')
 
   const wm = watermarkLines(site.name)
+  // the name draws itself in once its outline face is in (or after a moment, if the font is slow),
+  // so the outline is never drawn in the fallback font and swapped mid-way
+  const [wmPlay, setWmPlay] = useState(false)
+  useEffect(() => {
+    let done = false
+    const go = () => {
+      if (!done) {
+        done = true
+        setWmPlay(true)
+      }
+    }
+    const t = setTimeout(go, 1500)
+    document.fonts?.load('800 100px "Bricolage Grotesque Outline"').then(go, go)
+    return () => clearTimeout(t)
+  }, [])
 
   return (
     <section
@@ -37,7 +52,7 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-[92px] -z-10 mx-auto select-none px-3 sm:top-[100px] sm:px-5 lg:top-[10%] lg:px-[2.2vw] min-[2000px]:max-w-[1900px]"
       >
-        <div className="watermark-hero wm-play">
+        <div className={`watermark-hero ${wmPlay ? 'wm-play' : ''}`}>
           <svg viewBox={`0 0 1000 ${wm.height}`} className="block h-auto w-full overflow-visible">
             {wm.lines.map((line, l) => (
               <text key={line.text} x="0" y={line.y} fontSize={line.size} textLength="1000" lengthAdjust="spacing">

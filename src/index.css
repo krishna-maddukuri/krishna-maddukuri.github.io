@@ -453,8 +453,9 @@ html.lenis, html.lenis body { height: auto; }
     vector-effect: non-scaling-stroke;
     paint-order: stroke;
   }
-  /* on load: the outline of every letter draws in (left to right, the second line a beat later),
-     holds a moment, then the fill rises and the outline goes */
+  /* on load: nothing until the outline face is in, then the outline of every letter draws in (left to
+     right, the second line a beat later), holds a moment, then the fill rises and the outline goes */
+  .watermark-hero:not(.wm-play) .wm-ch { opacity: 0; }
   .wm-play .wm-ch {
     animation: wm-outline 2s var(--ease-out) both;
     animation-delay: calc(0.1s + var(--l) * 0.3s + var(--i) * 0.02s);
