@@ -6,8 +6,12 @@
    rings the active tile. `fit` lets a wide wordmark take more of the plate.
    ========================================================================== */
 
-/** `plate` fills the plate with that colour instead of the light brand tint (for marks drawn for a dark ground). */
-export type Logo = { file: string; color: string; fit?: number; plate?: string }
+/**
+ * `plate` fills the plate with that colour instead of the light brand tint (for marks drawn for a dark
+ * ground); `wide` makes the plate that many times wider than it is tall (for a wordmark that is too
+ * small to read on a square).
+ */
+export type Logo = { file: string; color: string; fit?: number; plate?: string; wide?: number }
 
 export const skillLogos: Record<string, Logo> = {
   Jv: { file: 'logos/skills/java.svg', color: '#e76f00' },
@@ -76,7 +80,7 @@ export type Org = { key: string; name: string; short: string; color: string; mat
 
 /** `logo` is the full logo; `mark` (optional) a squarer cut of it for the smallest plates. */
 export const orgs: Org[] = [
-  { key: 'capital-one', name: 'Capital One', short: 'C1', color: '#013d5b', match: ['Capital One'], logo: { file: 'logos/orgs/capital-one-dark.svg', color: '#013d5b', fit: 0.84, plate: '#013d5b' } },
+  { key: 'capital-one', name: 'Capital One', short: 'C1', color: '#013d5b', match: ['Capital One'], logo: { file: 'logos/orgs/capital-one-dark.svg', color: '#013d5b', fit: 0.9, plate: '#013d5b', wide: 1.7 } },
   {
     key: 'nga-group', name: 'NGA Group', short: 'NGA', color: '#3b5ba5', match: ['NGA Group'],
     logo: { file: 'logos/orgs/nga-group.svg', color: '#3b5ba5', fit: 0.86 },
@@ -86,13 +90,13 @@ export const orgs: Org[] = [
   {
     key: 'george-mason', name: 'George Mason University', short: 'GMU', color: '#006633', match: ['George Mason'],
     logo: { file: 'logos/orgs/george-mason.png', color: '#006633', fit: 0.84 },
-    mark: { file: 'logos/orgs/george-mason-mark.png', color: '#006633', fit: 0.74 },
+    mark: { file: 'logos/orgs/george-mason-mark.webp', color: '#006633', fit: 0.74 },
   },
   { key: 'amrita', name: 'Amrita Vishwa Vidyapeetham', short: 'AV', color: '#b4232c', match: ['Amrita'], logo: { file: 'logos/orgs/amrita.svg', color: '#b4232c', fit: 0.76 } },
   {
     key: 'westcliff', name: 'Westcliff University', short: 'WU', color: '#1f3a5f', match: ['Westcliff'],
     logo: { file: 'logos/orgs/westcliff.png', color: '#1f3a5f', fit: 0.86 },
-    mark: { file: 'logos/orgs/westcliff-mark.png', color: '#1f3a5f', fit: 0.68 },
+    mark: { file: 'logos/orgs/westcliff-mark.webp', color: '#1f3a5f', fit: 0.68 },
   },
   { key: 'aws', name: 'Amazon Web Services', short: 'AWS', color: '#ff9900', match: ['Amazon Web Services'], logo: brandLogos.aws },
 ]

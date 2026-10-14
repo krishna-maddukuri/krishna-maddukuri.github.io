@@ -5,12 +5,13 @@ import { badgeFor, brandLogos, orgFor, skillLogos, toolAliases, type Badge, type
 /**
  * A logo on a plate tinted with its brand colour. The plate stays light in both themes (like a
  * sticker), so dark marks such as Kafka's and GitHub's read in dark mode too; a logo drawn for a
- * dark ground sets `plate` and gets a solid plate in that colour (Capital One's navy). Size and
+ * dark ground sets `plate` and gets a solid plate in that colour (Capital One's navy), and a wordmark
+ * too wide to read on a square sets `wide` (the plate keeps the class's height and widens). Size and
  * corner radius come from `className`; `--fit` is how much of the plate the picture may take.
  */
 export function Plate({ logo, alt = '', className = 'size-10 rounded-xl', eager = false }: { logo: Logo; alt?: string; className?: string; eager?: boolean }) {
   return (
-    <span className={`plate ${className}`} style={plateStyle(logo.color, logo.fit, logo.plate)}>
+    <span className={`plate ${className}`} style={plateStyle(logo.color, logo.fit, logo.plate, logo.wide)}>
       <img src={logo.file} alt={alt} draggable={false} loading={eager ? 'eager' : 'lazy'} decoding="async" />
     </span>
   )
@@ -25,8 +26,14 @@ export function Monogram({ text, color, className = 'size-10 rounded-xl text-[13
   )
 }
 
-function plateStyle(color: string, fit?: number, plate?: string): CSSProperties {
-  return { '--brand': color, ...(fit ? { '--fit': fit } : {}), ...(plate ? { '--plate': plate } : {}) } as CSSProperties
+function plateStyle(color: string, fit?: number, plate?: string, wide?: number): CSSProperties {
+  return {
+    '--brand': color,
+    ...(fit ? { '--fit': fit } : {}),
+    ...(plate ? { '--plate': plate } : {}),
+    // a wide plate keeps the height its class gives it and takes its width from the ratio
+    ...(wide ? { width: 'auto', aspectRatio: wide } : {}),
+  } as CSSProperties
 }
 
 /** An organisation's mark (the squarer cut of its logo where there is one, or its initials in its colour) for a label that names it. */

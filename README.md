@@ -146,9 +146,11 @@ exactly `Krishna_Koushik_Maddukuri_Resume.pdf` and click **Commit changes**. It 
 **Logos and badges.** Each skill's picture and brand colour is listed in `src/data/logos.ts`; the
 files are in `public/logos/skills`. The companies and schools are listed there too (`orgs`), each with its
 logo in `public/logos/orgs` (`logo`, and for a wide logo a squarer `mark` cut from it, used on the small
-plates); an entry without a file shows its initials instead. Certification badges are in
-`public/logos/badges` (`file` on the entry under `badges`). SVG or PNG both work; a square picture with a
-see-through background looks best. The skill pictures come from the SVG Logos (CC0), devicon (MIT), Simple Icons (CC0) and AWS
+plates; a wordmark too small to read on a square sets `wide` and gets a wider plate, as Capital One does);
+an entry without a file shows its initials instead. Certification badges are in `public/logos/badges`
+(`file` on the entry under `badges`). SVG, PNG or WebP all work; a square picture with a see-through
+background looks best, and a raster one should be at least three times the size it is shown at, so it stays
+sharp on high-density screens (the two raster marks are 2.5x upscales of their sources). The skill pictures come from the SVG Logos (CC0), devicon (MIT), Simple Icons (CC0) and AWS
 Architecture Icons sets, with a few glyphs drawn for the skills that are practices rather than products; every
 logo remains the trademark of its owner.
 
