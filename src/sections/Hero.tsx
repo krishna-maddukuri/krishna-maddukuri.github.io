@@ -66,7 +66,7 @@ export function Hero() {
       {/* figure: his cut-out photo, with the chat bubble */}
       <m.div
         style={touch ? undefined : { y: figY }}
-        className="relative z-0 mx-auto mt-[112px] flex h-[min(56svh,500px)] w-full justify-center sm:mt-[128px] lg:absolute lg:bottom-0 lg:left-[60%] lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
+        className="relative z-0 mx-auto mt-[96px] flex h-[min(68svh,600px)] w-full justify-center sm:mt-[128px] sm:h-[min(60svh,560px)] lg:absolute lg:bottom-0 lg:left-[60%] lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
       >
         <m.div
           className="relative h-full"
