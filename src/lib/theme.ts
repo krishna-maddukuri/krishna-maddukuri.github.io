@@ -25,6 +25,20 @@ function syncThemeColor(t: Theme) {
   document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
     m.content = PAPER[t]
   })
+  nudgeStatusBar()
+}
+
+/**
+ * Safari on iPhone colours its status bar from the fixed header (see .site-header in index.css), but
+ * only re-reads that colour when a fixed element comes or goes, so after a switch one briefly does.
+ */
+function nudgeStatusBar() {
+  if (!document.body) return
+  const probe = document.createElement('div')
+  probe.setAttribute('aria-hidden', 'true')
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none'
+  document.body.appendChild(probe)
+  requestAnimationFrame(() => requestAnimationFrame(() => probe.remove()))
 }
 
 /**

@@ -65,7 +65,7 @@ export function Header() {
   return (
     <>
       <header
-        className="pointer-events-none fixed inset-x-0 top-0 z-50"
+        className="site-header pointer-events-none fixed inset-x-0 top-0 z-50"
         style={{
           paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',

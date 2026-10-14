@@ -1,6 +1,6 @@
 import { useReducedMotion, useScroll, useTransform } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { useScrollTo } from '../lib/scroll'
@@ -37,17 +37,33 @@ export function Hero() {
     document.fonts?.load('800 100px "Bricolage Grotesque"').then(go, go)
     return () => clearTimeout(t)
   }, [])
-  // Each line is stretched to the full width with textLength, but with the letters in their own
-  // tspans the browser also puts the extra spacing after the last letter, so the ink stops short of
-  // the right edge (MADDUKURI, with fewer letters and more spacing, visibly so). Once the font is in,
-  // give each line a length that puts the last letter's ink exactly at the edge.
+  // Each line spans the full width: once the font is in, every letter is placed by hand, with the
+  // width left over shared out evenly between the letters. (Stretching the line with textLength
+  // instead puts a share of that spacing after the last letter in Chrome and does nothing at all in
+  // Safari once the letters are in their own tspans, so the lines ended up off-centre.)
   const wmRef = useRef<SVGSVGElement>(null)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!wmPlay) return
-    for (const text of wmRef.current?.querySelectorAll('text') ?? []) {
-      const n = (text.textContent ?? '').length
-      const natural = text.getComputedTextLength()
-      if (n > 1 && natural > 0 && natural < 1000) text.setAttribute('textLength', (natural + ((1000 - natural) * n) / (n - 1)).toFixed(2))
+    const place = () => {
+      for (const text of wmRef.current?.querySelectorAll('text') ?? []) {
+        const spans = Array.from(text.querySelectorAll('tspan'))
+        const advances = spans.map((span) => span.getComputedTextLength())
+        const natural = advances.reduce((sum, w) => sum + w, 0)
+        if (spans.length < 2 || !(natural > 0) || natural >= 1000) continue
+        const gap = (1000 - natural) / (spans.length - 1)
+        let x = 0
+        spans.forEach((span, i) => {
+          span.setAttribute('x', x.toFixed(2))
+          x += advances[i] + gap
+        })
+      }
+    }
+    place()
+    // if the font only arrived after the cut-off above, the letters are placed again with its widths
+    let live = true
+    document.fonts?.ready.then(() => live && place())
+    return () => {
+      live = false
     }
   }, [wmPlay])
 
@@ -59,16 +75,17 @@ export function Hero() {
       style={{ minHeight: 'min(100svh, 1000px)', ['--wm-bottom' as string]: wm.bottom, ['--wm-gap' as string]: wm.gap }}
     >
       {/* the faded full name behind the figure: on load each letter draws in as an outline, then fills
-          (the CSS in index.css, .wm-play); every letter is its own tspan so it can take its turn */}
+          (the CSS in index.css, .wm-play); every letter is its own tspan so it can take its turn.
+          Phones: it starts just under the header, so most of it shows above his head */}
       <m.div
         style={touch ? undefined : { y: wmY, opacity: wmFade }}
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[92px] -z-10 mx-auto select-none px-3 sm:top-[100px] sm:px-5 lg:top-[10%] lg:px-[2.2vw] min-[2000px]:max-w-[1900px]"
+        className="pointer-events-none absolute inset-x-0 top-[68px] -z-10 mx-auto select-none px-3 sm:top-[78px] sm:px-5 lg:top-[10%] lg:px-[2.2vw] min-[2000px]:max-w-[1900px]"
       >
         <div className={`watermark-hero ${wmPlay ? 'wm-play' : ''}`}>
           <svg ref={wmRef} viewBox={`0 0 1000 ${wm.height}`} className="block h-auto w-full overflow-visible">
             {wm.lines.map((line, l) => (
-              <text key={line.text} x="0" y={line.y} fontSize={line.size} textLength="1000" lengthAdjust="spacing">
+              <text key={line.text} x="0" y={line.y} fontSize={line.size}>
                 {[...line.text].map((ch, i) => (
                   <tspan key={i} className="wm-ch" style={{ ['--l' as string]: l, ['--i' as string]: i }}>
                     {ch}

@@ -31,7 +31,7 @@ sections, a case-study page for each project, and a web version of his résumé.
 8. **Contact** — email, LinkedIn and the résumé download.
 
 Also included: a web résumé page (`/#/resume`), a downloadable PDF résumé, a true-black dark mode
-(the site always opens in light mode; the switch holds for the visit, and switching spreads the new theme out from the button), and a phone layout with a clear
+(the site always opens in light mode; the switch holds for the visit, switching spreads the new theme out from the button, and the phone's browser bar follows: the `theme-color` tag and the fixed header both carry the page colour, since Safari on iPhone reads the latter), and a phone layout with a clear
 "liquid glass" header and menu: the menu button shows which section you're reading, the menu grows out of
 it, the skill details stay pinned on glass while you scroll the table, and copying the email shows a small
 confirmation. Buttons answer the pointer with a fill that rises in the accent colour, and cards light up

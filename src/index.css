@@ -264,6 +264,14 @@
   --ease-in: var(--ease-in);
 }
 
+/* Safari on iPhone paints the status bar in the colour of whatever is fixed at the top of the page,
+   and in its own grey when that has no colour of its own. The header is clear glass pills on nothing,
+   so it carries the page colour at 1%: nothing to see, but the status bar matches the page in both
+   modes. (Older Safari and Chrome use the theme-color meta tag instead, kept in step in lib/theme.ts.) */
+.site-header {
+  background-color: color-mix(in srgb, var(--paper) 1%, transparent);
+}
+
 html {
   background: var(--paper);
   -webkit-text-size-adjust: 100%;
