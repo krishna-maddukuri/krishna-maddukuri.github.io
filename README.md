@@ -9,7 +9,8 @@ sections, a case-study page for each project, and a web version of his résumé.
 ## Sections
 
 1. **Hero** — his name in large faded letters behind a full-length paper-craft figure of him (on load each
-   letter draws in as a hairline outline, then fills; the name is lit like a spotlight, brightest behind him), a
+   letter draws in as a hairline outline, construction lines and all, then fills; the name is lit like a
+   spotlight, brightest behind him), a
    "Hi, I'm Krishna." chat bubble, the headline, a short intro that fades in word by word, a spinning
    "Open to…" badge, and Explore work / Let's talk / Resume buttons. The figure arrives in pieces: about
    450 paper shards (big ones on the body, smaller ones on the face) glide in from all around and lock
@@ -46,9 +47,7 @@ it easily. Browsers without WebGL and visitors with "reduce motion" on get the s
 
 **Type.** Headlines are set in Bricolage Grotesque, text in Geist, labels in Geist Mono and the italic
 accents in Instrument Serif. All four are self-hosted (`public/fonts`, latin only, with their licences)
-with metric-matched fallbacks, so nothing jumps while they load. The outlined name uses a static ExtraBold
-instance of Bricolage with its overlapping contours merged (`bricolage-grotesque-800-latin.woff2`), because
-stroking the variable font would show the overlaps inside the letters.
+with metric-matched fallbacks, so nothing jumps while they load.
 
 **Colour.** Black ink on paper, white on true black in dark mode, and one accent on the emphasised parts (the
 italic tail of every heading, the key words in the intro and the About lead, the achievement numbers, the

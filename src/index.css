@@ -17,17 +17,6 @@
   src: url("/fonts/bricolage-grotesque-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-/* The faded name behind the hero figure draws itself as an outline first. Stroking the variable font
-   would show every overlapping contour inside the letters (the box of an H's crossbar), so the name
-   uses this static ExtraBold instance of the same font with the overlaps merged (basic latin only). */
-@font-face {
-  font-family: "Bricolage Grotesque Outline";
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url("/fonts/bricolage-grotesque-800-latin.woff2") format("woff2");
-  unicode-range: U+0020-007E, U+00A0, U+2019;
-}
 @font-face {
   font-family: "Geist";
   font-style: normal;
@@ -440,10 +429,13 @@ html.lenis, html.lenis body { height: auto; }
     .watermark-hero { --spot-x: 60%; }
   }
   .watermark-hero text {
-    font-family: "Bricolage Grotesque Outline", var(--ff-display);
+    font-family: var(--ff-display);
     font-weight: 800;
   }
-  /* each letter: the fill at rest, a hairline stroke that only shows while it draws in */
+  /* each letter: the fill at rest, a hairline stroke that only shows while it draws in. The stroke
+     follows every contour of the variable font, overlaps included, so while the letters are hollow
+     their construction lines show inside them (the crossbar of an H, the joins of a K): the look of
+     the paper figure's facets, and the look he picked. */
   .wm-ch {
     fill: currentColor;
     fill-opacity: var(--wm-fill);

@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from '../lib/router'
 import { projects, type Project } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
@@ -18,6 +18,10 @@ export function Work() {
     hoverTimer.current = setTimeout(() => setActive(i), 140)
   }
   const hoverCancel = () => clearTimeout(hoverTimer.current)
+  // The row is 610px tall unless the open panel's words need more (a long title that wraps, three
+  // rows of chips): then it grows to fit, so the "Read case study" button is never cut off.
+  const [rowHeight, setRowHeight] = useState(ROW_MIN)
+  const measure = useCallback((h: number) => setRowHeight(Math.max(ROW_MIN, Math.ceil(h))), [])
 
   return (
     <section id="work" className="relative py-[clamp(56px,8vw,112px)]">
@@ -36,7 +40,7 @@ export function Work() {
 
         <Reveal className="mt-10 lg:mt-12">
           {wide ? (
-            <div className="flex h-[610px] gap-3">
+            <div className="flex gap-3 transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ height: rowHeight }}>
               {projects.map((p, i) => (
                 <Panel
                   key={p.slug}
@@ -46,6 +50,7 @@ export function Work() {
                   onOpen={() => setActive(i)}
                   onHover={() => hoverOpen(i)}
                   onLeave={hoverCancel}
+                  onMeasure={measure}
                 />
               ))}
             </div>
@@ -63,6 +68,8 @@ export function Work() {
 }
 
 const num = (i: number) => String(i + 1).padStart(2, '0')
+/** The desktop row's height when the open panel's words fit (px). */
+const ROW_MIN = 610
 
 /* -------------------------------------------- desktop: horizontal panels -- */
 function Panel({
@@ -72,6 +79,7 @@ function Panel({
   onOpen,
   onHover,
   onLeave,
+  onMeasure,
 }: {
   project: Project
   index: number
@@ -79,6 +87,7 @@ function Panel({
   onOpen: () => void
   onHover: () => void
   onLeave: () => void
+  onMeasure: (height: number) => void
 }) {
   return (
     <div
@@ -115,7 +124,7 @@ function Panel({
             animate={{ opacity: 1, transition: { duration: 0.5, delay: 0.3 } }}
             exit={{ opacity: 0, transition: { duration: 0.15 } }}
           >
-            <PanelBody project={p} index={index} />
+            <PanelBody project={p} index={index} onMeasure={onMeasure} />
             <m.div
               className="flex min-h-0 items-center"
               initial={{ y: 24, scale: 0.97 }}
@@ -131,28 +140,58 @@ function Panel({
   )
 }
 
-function PanelBody({ project: p, index }: { project: Project; index: number }) {
+function PanelBody({ project: p, index, onMeasure }: { project: Project; index: number; onMeasure?: (height: number) => void }) {
+  const topRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  // report how tall the words want to be (the two blocks plus the panel's padding; the space the
+  // bottom block is pushed down by doesn't count) once they have settled: the panel is still widening
+  // when they mount, so the words are measured a beat after their last reflow, not on every frame
+  useEffect(() => {
+    const top = topRef.current
+    const bottom = bottomRef.current
+    if (!top || !bottom || !onMeasure) return
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const report = () => {
+      const cell = top.parentElement?.parentElement
+      const pad = cell ? parseFloat(getComputedStyle(cell).paddingTop) + parseFloat(getComputedStyle(cell).paddingBottom) : 0
+      onMeasure(top.getBoundingClientRect().height + bottom.getBoundingClientRect().height + pad)
+    }
+    const settle = () => {
+      clearTimeout(timer)
+      timer = setTimeout(report, 180)
+    }
+    settle()
+    const ro = new ResizeObserver(settle)
+    ro.observe(top)
+    ro.observe(bottom)
+    return () => {
+      clearTimeout(timer)
+      ro.disconnect()
+    }
+  }, [onMeasure])
   return (
     <div className="flex min-h-0 min-w-0 flex-col">
-      <div className="eyebrow flex items-center gap-3">
-        <span className="accent-index tabular">{num(index)}</span>
-        <span className="h-px w-6 bg-line" aria-hidden />
-        <span className="min-w-0 leading-snug">{p.eyebrow}</span>
+      <div ref={topRef}>
+        <div className="eyebrow flex items-center gap-3">
+          <span className="accent-index tabular">{num(index)}</span>
+          <span className="h-px w-6 bg-line" aria-hidden />
+          <span className="min-w-0 leading-snug">{p.eyebrow}</span>
+        </div>
+        <h3 className="mt-5 font-display text-[clamp(2rem,3vw,2.9rem)] font-bold leading-[0.98] tracking-[-0.035em]">
+          {p.title}{' '}
+          <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{p.accent}</em>
+        </h3>
+        <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-ink-soft">{p.summary}</p>
+        <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-2.5 text-sm">
+          {p.highlights.map((h) => (
+            <li key={h} className="flex gap-2">
+              <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-ink" aria-hidden />
+              <span className="min-w-0">{h}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-      <h3 className="mt-5 font-display text-[clamp(2rem,3vw,2.9rem)] font-bold leading-[0.98] tracking-[-0.035em]">
-        {p.title}{' '}
-        <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{p.accent}</em>
-      </h3>
-      <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-ink-soft">{p.summary}</p>
-      <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-2.5 text-sm">
-        {p.highlights.map((h) => (
-          <li key={h} className="flex gap-2">
-            <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-ink" aria-hidden />
-            <span className="min-w-0">{h}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-auto pt-6">
+      <div ref={bottomRef} className="mt-auto pt-6">
         <div className="flex flex-wrap gap-1.5">
           {p.tools.map((t) => (
             <ToolChip key={t} name={t} />

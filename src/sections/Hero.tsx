@@ -22,8 +22,8 @@ export function Hero() {
   const touch = useMedia('(pointer: coarse)')
 
   const wm = watermarkLines(site.name)
-  // the name draws itself in once its outline face is in (or after a moment, if the font is slow),
-  // so the outline is never drawn in the fallback font and swapped mid-way
+  // the name draws itself in once its font is in (or after a moment, if the font is slow), so the
+  // outline is never drawn in the fallback font and swapped mid-way
   const [wmPlay, setWmPlay] = useState(false)
   useEffect(() => {
     let done = false
@@ -34,7 +34,7 @@ export function Hero() {
       }
     }
     const t = setTimeout(go, 1500)
-    document.fonts?.load('800 100px "Bricolage Grotesque Outline"').then(go, go)
+    document.fonts?.load('800 100px "Bricolage Grotesque"').then(go, go)
     return () => clearTimeout(t)
   }, [])
 
