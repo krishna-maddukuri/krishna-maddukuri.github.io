@@ -71,12 +71,13 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 1.05, ease: EASE, delay: 0.12 }}
     >
-      <div className="flex items-center justify-between gap-4">
+      {/* the mark, the kind and the dates; on a narrow card the dates drop to their own line */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <span className="flex items-center gap-3">
           <OrgMark label={ms.org} className="size-11 rounded-[13px] text-[13px]" />
           <span className="rounded-md bg-chip px-2.5 py-1 font-mono text-xs uppercase tracking-[0.14em] text-ink-soft">{ms.kind}</span>
         </span>
-        <span className="tabular font-mono text-xs text-ink-soft">{ms.period}</span>
+        <span className="tabular ml-auto font-mono text-xs text-ink-soft">{ms.period}</span>
       </div>
       <h3 className="mt-5 font-display text-[clamp(1.45rem,2.2vw,1.9rem)] font-bold leading-[1.1] tracking-[-0.025em]">{ms.title}</h3>
       <p className="mt-1.5 text-sm text-ink-soft">{ms.org}</p>
