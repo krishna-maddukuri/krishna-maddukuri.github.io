@@ -1,0 +1,239 @@
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
+import { useRef, useState } from 'react'
+import { Link } from '../lib/router'
+import { projects, type Project } from '../data/site'
+import { useMedia } from '../hooks/useMedia'
+import { ProjectVisual } from '../visuals/LazyProjectVisual'
+import { ToolChip } from '../components/Logo'
+import { ArrowRight, Container, EASE, Plus, Reveal, SectionHeading } from '../components/ui'
+
+export function Work() {
+  const [active, setActive] = useState(0)
+  const wide = useMedia('(min-width: 1280px)')
+  // Desktop panels open on hover (with a short delay so passing over them doesn't flicker).
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const hoverOpen = (i: number) => {
+    clearTimeout(hoverTimer.current)
+    hoverTimer.current = setTimeout(() => setActive(i), 140)
+  }
+  const hoverCancel = () => clearTimeout(hoverTimer.current)
+
+  return (
+    <section id="work" className="relative py-[clamp(72px,8vw,112px)]">
+      <Container>
+        <SectionHeading
+          index="03"
+          label="Work"
+          lead="Things I've"
+          accent="built."
+          aside={
+            <p className="text-base text-ink-soft">
+              Seven projects across Capital One, NGA Group and Infosys. {wide ? 'Hover a panel to open it.' : 'Tap a project to open it.'}
+            </p>
+          }
+        />
+
+        <Reveal className="mt-10 lg:mt-12">
+          {wide ? (
+            <div className="flex h-[610px] gap-3">
+              {projects.map((p, i) => (
+                <Panel
+                  key={p.slug}
+                  project={p}
+                  index={i}
+                  open={active === i}
+                  onOpen={() => setActive(i)}
+                  onHover={() => hoverOpen(i)}
+                  onLeave={hoverCancel}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {projects.map((p, i) => (
+                <Row key={p.slug} project={p} index={i} open={active === i} onToggle={() => setActive(active === i ? -1 : i)} />
+              ))}
+            </div>
+          )}
+        </Reveal>
+      </Container>
+    </section>
+  )
+}
+
+const num = (i: number) => String(i + 1).padStart(2, '0')
+
+/* -------------------------------------------- desktop: horizontal panels -- */
+function Panel({
+  project: p,
+  index,
+  open,
+  onOpen,
+  onHover,
+  onLeave,
+}: {
+  project: Project
+  index: number
+  open: boolean
+  onOpen: () => void
+  onHover: () => void
+  onLeave: () => void
+}) {
+  return (
+    <div
+      onMouseEnter={open ? undefined : onHover}
+      onMouseLeave={onLeave}
+      className={`relative min-w-0 overflow-hidden rounded-[28px] border border-line transition-[flex-grow,flex-basis,background-color,box-shadow] duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] ${
+        open ? 'card-shadow grow basis-0 bg-surface' : 'shrink-0 grow-0 basis-[64px] bg-paper hover:bg-surface'
+      }`}
+    >
+      {!open && (
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-expanded={false}
+          aria-label={`Open ${p.title}`}
+          className="group flex h-full w-full flex-col items-center py-6"
+        >
+          <span className="eyebrow tabular">{num(index)}</span>
+          <span className="mt-auto whitespace-nowrap font-display text-[20px] font-bold tracking-[-0.02em] [writing-mode:vertical-rl] rotate-180">
+            {p.title}
+          </span>
+          <span className="mt-6 grid size-9 place-items-center rounded-full bg-ink text-paper transition-transform duration-300 group-hover:rotate-90">
+            <Plus />
+          </span>
+        </button>
+      )}
+
+      <AnimatePresence>
+        {open && (
+          <m.div
+            key={p.slug}
+            className="absolute inset-0 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 p-8 2xl:gap-10 2xl:p-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { duration: 0.5, delay: 0.3 } }}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+          >
+            <PanelBody project={p} index={index} />
+            <m.div
+              className="flex min-h-0 items-center"
+              initial={{ y: 24, scale: 0.97 }}
+              animate={{ y: 0, scale: 1 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 0.35 }}
+            >
+              <ProjectVisual kind={p.visual} className="aspect-[4/3] max-h-full w-full" />
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function PanelBody({ project: p, index }: { project: Project; index: number }) {
+  return (
+    <div className="flex min-h-0 min-w-0 flex-col">
+      <div className="eyebrow flex items-center gap-3">
+        <span className="accent-index tabular">{num(index)}</span>
+        <span className="h-px w-6 bg-line" aria-hidden />
+        <span className="min-w-0 leading-snug">{p.eyebrow}</span>
+      </div>
+      <h3 className="mt-5 font-display text-[clamp(2rem,3vw,2.9rem)] font-bold leading-[0.98] tracking-[-0.035em]">
+        {p.title}{' '}
+        <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{p.accent}</em>
+      </h3>
+      <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-ink-soft">{p.summary}</p>
+      <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-2.5 text-sm">
+        {p.highlights.map((h) => (
+          <li key={h} className="flex gap-2">
+            <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-ink" aria-hidden />
+            <span className="min-w-0">{h}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-auto pt-6">
+        <div className="flex flex-wrap gap-1.5">
+          {p.tools.map((t) => (
+            <ToolChip key={t} name={t} />
+          ))}
+        </div>
+        <Link
+          to={`/work/${p.slug}`}
+          className="btn-solid group mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-medium text-paper"
+        >
+          Read case study <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+/* --------------------------------------------- phones/tablets: accordion -- */
+function Row({ project: p, index, open, onToggle }: { project: Project; index: number; open: boolean; onToggle: () => void }) {
+  return (
+    <div className={`overflow-hidden rounded-[24px] border border-line transition-[background-color,box-shadow] duration-300 ${open ? 'card-shadow bg-surface' : 'bg-paper'}`}>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-4 px-5 py-5 text-left"
+      >
+        <span className="eyebrow tabular">{num(index)}</span>
+        <span className="min-w-0 flex-1 font-display text-[clamp(1.25rem,5vw,1.6rem)] font-bold leading-tight tracking-[-0.03em]">
+          {p.title}
+        </span>
+        <span
+          className={`grid size-9 shrink-0 place-items-center rounded-full bg-ink text-paper transition-transform duration-300 ${open ? 'rotate-45' : ''}`}
+          aria-hidden
+        >
+          <Plus />
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <m.div
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.5, ease: EASE }}
+          >
+            <div className="grid gap-6 px-5 pb-6 md:grid-cols-2 md:items-start md:gap-8 md:px-6 md:pb-8">
+              <ProjectVisual kind={p.visual} className="aspect-[4/3] w-full" />
+              <div className="flex min-w-0 flex-col gap-5">
+              <div className="eyebrow">{p.eyebrow}</div>
+              <h3 className="-mt-2 font-display text-[1.9rem] font-bold leading-none tracking-[-0.03em]">
+                {p.title}{' '}
+                <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{p.accent}</em>
+              </h3>
+              <p className="text-base text-ink-soft">{p.summary}</p>
+              <ul className="grid gap-2 text-sm sm:grid-cols-2">
+                {p.highlights.map((h) => (
+                  <li key={h} className="flex gap-2">
+                    <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-ink" aria-hidden />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-1.5">
+                {p.tools.map((t) => (
+                  <ToolChip key={t} name={t} />
+                ))}
+              </div>
+              <Link
+                to={`/work/${p.slug}`}
+                className="btn-solid group inline-flex h-11 w-fit items-center gap-3 rounded-full bg-ink pl-5 pr-1.5 text-sm font-medium text-paper"
+              >
+                Read case study
+                <span className="grid size-8 place-items-center rounded-full bg-paper text-ink">
+                  <ArrowRight className="size-3.5" />
+                </span>
+              </Link>
+              </div>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
