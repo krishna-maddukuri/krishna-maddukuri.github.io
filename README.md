@@ -11,7 +11,7 @@ sections, a case-study page for each project, and a web version of his résumé.
 1. **Hero** — his name in large faded letters behind a full-length paper-craft figure of him (on load each
    letter draws in as a hairline outline, construction lines and all, then fills; the name is lit like a
    spotlight, brightest behind him), a
-   "Hi, I'm Krishna." chat bubble, the headline, a short intro that fades in word by word, a spinning
+   "Hi, I'm Krishna." chat bubble in a teal gradient that floats and glows, the headline, a short intro that fades in word by word, a spinning
    "Open to…" badge, and Explore work / Let's talk / Resume buttons. The figure arrives in pieces: about
    450 paper shards (big ones on the body, smaller ones on the face) glide in from all around and lock
    together. Once he's together he breathes, the shards under the cursor lift out of its way, and a click

@@ -21,7 +21,8 @@ export function HeroMedia() {
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 1.5 }}
         >
-          <div className="whitespace-nowrap rounded-2xl rounded-bl-sm bg-ink px-3.5 py-2 text-[13px] font-medium text-paper shadow-lg sm:px-4 sm:py-2.5 sm:text-sm">
+          {/* teal gradient; it floats a few pixels and its halo breathes (bubble-hello in index.css) */}
+          <div className="bubble-hello whitespace-nowrap rounded-2xl rounded-bl-sm px-3.5 py-2 text-[13px] font-medium sm:px-4 sm:py-2.5 sm:text-sm">
             {bubble}
           </div>
         </m.div>

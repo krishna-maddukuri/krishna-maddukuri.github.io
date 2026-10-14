@@ -37,6 +37,19 @@ export function Hero() {
     document.fonts?.load('800 100px "Bricolage Grotesque"').then(go, go)
     return () => clearTimeout(t)
   }, [])
+  // Each line is stretched to the full width with textLength, but with the letters in their own
+  // tspans the browser also puts the extra spacing after the last letter, so the ink stops short of
+  // the right edge (MADDUKURI, with fewer letters and more spacing, visibly so). Once the font is in,
+  // give each line a length that puts the last letter's ink exactly at the edge.
+  const wmRef = useRef<SVGSVGElement>(null)
+  useEffect(() => {
+    if (!wmPlay) return
+    for (const text of wmRef.current?.querySelectorAll('text') ?? []) {
+      const n = (text.textContent ?? '').length
+      const natural = text.getComputedTextLength()
+      if (n > 1 && natural > 0 && natural < 1000) text.setAttribute('textLength', (natural + ((1000 - natural) * n) / (n - 1)).toFixed(2))
+    }
+  }, [wmPlay])
 
   return (
     <section
@@ -53,7 +66,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-x-0 top-[92px] -z-10 mx-auto select-none px-3 sm:top-[100px] sm:px-5 lg:top-[10%] lg:px-[2.2vw] min-[2000px]:max-w-[1900px]"
       >
         <div className={`watermark-hero ${wmPlay ? 'wm-play' : ''}`}>
-          <svg viewBox={`0 0 1000 ${wm.height}`} className="block h-auto w-full overflow-visible">
+          <svg ref={wmRef} viewBox={`0 0 1000 ${wm.height}`} className="block h-auto w-full overflow-visible">
             {wm.lines.map((line, l) => (
               <text key={line.text} x="0" y={line.y} fontSize={line.size} textLength="1000" lengthAdjust="spacing">
                 {[...line.text].map((ch, i) => (
