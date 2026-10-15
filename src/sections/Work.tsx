@@ -22,6 +22,23 @@ export function Work() {
   // rows of chips): then it grows to fit, so the "Read case study" button is never cut off.
   const [rowHeight, setRowHeight] = useState(ROW_MIN)
   const measure = useCallback((h: number) => setRowHeight(Math.max(ROW_MIN, Math.ceil(h))), [])
+  // The open panel's inside is laid out at the width it will have once the panels have finished
+  // sliding (the row minus the closed ones), not at whatever width it is passing through: the words
+  // then wrap the way they will end up, the height is right from the first frame, and the slide only
+  // uncovers them. (Measured while it is still narrow, the words wrapped onto many more lines and the
+  // row shot up, then shrank back.)
+  const rowRef = useRef<HTMLDivElement>(null)
+  const [panelWidth, setPanelWidth] = useState<number>()
+  useEffect(() => {
+    if (!wide) return
+    const row = rowRef.current
+    if (!row) return
+    const fit = () => setPanelWidth(row.clientWidth - (projects.length - 1) * (CLOSED_WIDTH + GAP))
+    fit()
+    const ro = new ResizeObserver(fit)
+    ro.observe(row)
+    return () => ro.disconnect()
+  }, [wide])
 
   return (
     <section id="work" className="relative py-[clamp(56px,8vw,112px)]">
@@ -40,13 +57,14 @@ export function Work() {
 
         <Reveal className="mt-10 lg:mt-12">
           {wide ? (
-            <div className="flex gap-3 transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ height: rowHeight }}>
+            <div ref={rowRef} className="flex gap-3 transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ height: rowHeight }}>
               {projects.map((p, i) => (
                 <Panel
                   key={p.slug}
                   project={p}
                   index={i}
                   open={active === i}
+                  width={panelWidth}
                   onOpen={() => setActive(i)}
                   onHover={() => hoverOpen(i)}
                   onLeave={hoverCancel}
@@ -70,12 +88,16 @@ export function Work() {
 const num = (i: number) => String(i + 1).padStart(2, '0')
 /** The desktop row's height when the open panel's words fit (px). */
 const ROW_MIN = 610
+/** A closed panel's width and the gap between panels (px; basis-[64px] and gap-3 below). */
+const CLOSED_WIDTH = 64
+const GAP = 12
 
 /* -------------------------------------------- desktop: horizontal panels -- */
 function Panel({
   project: p,
   index,
   open,
+  width,
   onOpen,
   onHover,
   onLeave,
@@ -84,6 +106,8 @@ function Panel({
   project: Project
   index: number
   open: boolean
+  /** The panel's width once open (px), so its inside is laid out at that from the start. */
+  width?: number
   onOpen: () => void
   onHover: () => void
   onLeave: () => void
@@ -119,7 +143,8 @@ function Panel({
         {open && (
           <m.div
             key={p.slug}
-            className="absolute inset-0 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 p-8 2xl:gap-10 2xl:p-10"
+            className="absolute inset-y-0 left-0 grid w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 p-8 2xl:gap-10 2xl:p-10"
+            style={width ? { width } : undefined}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: 0.5, delay: 0.3 } }}
             exit={{ opacity: 0, transition: { duration: 0.15 } }}
@@ -144,8 +169,8 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
   const topRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   // report how tall the words want to be (the two blocks plus the panel's padding; the space the
-  // bottom block is pushed down by doesn't count) once they have settled: the panel is still widening
-  // when they mount, so the words are measured a beat after their last reflow, not on every frame
+  // bottom block is pushed down by doesn't count), a beat after their last reflow (the font or the
+  // chips' logos arriving can reflow them once more)
   useEffect(() => {
     const top = topRef.current
     const bottom = bottomRef.current
@@ -158,7 +183,7 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
     }
     const settle = () => {
       clearTimeout(timer)
-      timer = setTimeout(report, 180)
+      timer = setTimeout(report, 40)
     }
     settle()
     const ro = new ResizeObserver(settle)
