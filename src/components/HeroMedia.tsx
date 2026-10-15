@@ -51,12 +51,10 @@ function Bubble({ text }: { text: string }) {
     >
       {/* the float is on this wrapper so the bubble itself is free to change size (bubble-float in index.css) */}
       <div className="bubble-float relative w-fit">
-        {/* an unseen copy of the words holds the finished bubble's room, so the bubble always grows from its
-            left corner (the one pointing at him) towards the right, on phones too, where it is pinned to
-            the screen's right edge */}
-        <div className="invisible whitespace-nowrap px-3.5 py-2 text-[13px] font-medium sm:px-4 sm:py-2.5 sm:text-sm" aria-hidden>
-          {text}
-        </div>
+        {/* an unseen copy of the words (drawn by CSS, so it is not a second copy of the text on the page)
+            holds the finished bubble's room, so the bubble always grows from its left corner (the one
+            pointing at him) towards the right, on phones too, where it is pinned to the screen's right edge */}
+        <div className="bubble-room whitespace-nowrap px-3.5 py-2 text-[13px] font-medium sm:px-4 sm:py-2.5 sm:text-sm" data-text={text} aria-hidden />
         {/* teal gradient with a breathing halo (bubble-hello in index.css); its width eases as the dots give way to the words */}
         <m.div
           layout

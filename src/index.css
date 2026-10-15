@@ -734,6 +734,8 @@ html.lenis, html.lenis body { height: auto; }
   transition: opacity 0.25s var(--ease-std), transform 0.3s var(--ease-std), visibility 0s 0.3s;
 }
 .bubble-float { animation: bubble-float 3.2s ease-in-out infinite; }
+.bubble-room { visibility: hidden; }
+.bubble-room::before { content: attr(data-text); }
 /* the three dots while he "types": each bounces in turn */
 .typing-dots i {
   display: block;
