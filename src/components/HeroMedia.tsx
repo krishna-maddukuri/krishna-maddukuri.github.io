@@ -15,8 +15,8 @@ export function HeroMedia() {
           // the figure starts 14svh, at most 40px short of 100%, below that). Phones and tablets: just under
           // the name's last line (--wm-bottom from the hero's top), and pinned 16px (sm: 24px) from the
           // screen's right edge, however wide he is (the figure's box is centred: the margin beside it is
-          // half of what the screen has left over).
-          className="absolute right-[calc(16px_-_(100vw_-_100%)_/_2)] top-[calc(var(--wm-bottom)-12px)] origin-bottom-left sm:right-[calc(24px_-_(100vw_-_100%)_/_2)] sm:top-[calc(var(--wm-bottom)-20px)] lg:left-[calc(76%+34px)] lg:right-auto lg:top-[calc(var(--wm-gap)-20px-min(4svh,40px))]"
+          // half of what the screen has left over). Hidden while he is scattered (.bubble-wrap in index.css).
+          className="bubble-wrap absolute right-[calc(16px_-_(100vw_-_100%)_/_2)] top-[calc(var(--wm-bottom)-12px)] origin-bottom-left sm:right-[calc(24px_-_(100vw_-_100%)_/_2)] sm:top-[calc(var(--wm-bottom)-20px)] lg:left-[calc(76%+34px)] lg:right-auto lg:top-[calc(var(--wm-gap)-20px-min(4svh,40px))]"
           initial={{ scale: 0.4, opacity: 0, rotate: -8 }}
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 1.5 }}

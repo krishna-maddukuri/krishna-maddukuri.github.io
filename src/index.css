@@ -722,6 +722,17 @@ html.lenis, html.lenis body { height: auto; }
   --bubble-a: #2ed3d5;
   --bubble-b: #1aa6a8;
 }
+/* while he is in pieces there is nobody to say hello: the bubble shrinks away, and pops back once he
+   is back together (the figure before it carries data-paper-figure) */
+.bubble-wrap {
+  transition: opacity 0.25s var(--ease-std), transform 0.3s var(--ease-std), visibility 0s;
+}
+[data-paper-figure="scattered"] ~ .bubble-wrap {
+  opacity: 0 !important;
+  transform: scale(0.6) !important;
+  visibility: hidden;
+  transition: opacity 0.25s var(--ease-std), transform 0.3s var(--ease-std), visibility 0s 0.3s;
+}
 @keyframes bubble-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
