@@ -50,12 +50,18 @@ function Bubble({ text }: { text: string }) {
       onAnimationComplete={() => setTyping(true)}
     >
       {/* the float is on this wrapper so the bubble itself is free to change size (bubble-float in index.css) */}
-      <div className="bubble-float">
+      <div className="bubble-float relative w-fit">
+        {/* an unseen copy of the words holds the finished bubble's room, so the bubble always grows from its
+            left corner (the one pointing at him) towards the right, on phones too, where it is pinned to
+            the screen's right edge */}
+        <div className="invisible whitespace-nowrap px-3.5 py-2 text-[13px] font-medium sm:px-4 sm:py-2.5 sm:text-sm" aria-hidden>
+          {text}
+        </div>
         {/* teal gradient with a breathing halo (bubble-hello in index.css); its width eases as the dots give way to the words */}
         <m.div
           layout
           transition={{ layout: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }}
-          className="bubble-hello relative overflow-hidden whitespace-nowrap rounded-2xl rounded-bl-sm px-3.5 py-2 text-[13px] font-medium sm:px-4 sm:py-2.5 sm:text-sm"
+          className="bubble-hello absolute inset-y-0 left-0 flex items-center overflow-hidden whitespace-nowrap rounded-2xl rounded-bl-sm px-3.5 text-[13px] font-medium sm:px-4 sm:text-sm"
           style={{ borderRadius: 16, borderBottomLeftRadius: 2 }}
         >
           <AnimatePresence initial={false} mode="popLayout">
@@ -64,7 +70,7 @@ function Bubble({ text }: { text: string }) {
                 {text}
               </m.span>
             ) : (
-              <m.span key="dots" className="typing-dots flex items-center gap-1 py-[0.3em]" aria-label="typing" exit={{ opacity: 0, transition: { duration: 0.15 } }}>
+              <m.span key="dots" className="typing-dots flex items-center gap-1" aria-label="typing" exit={{ opacity: 0, transition: { duration: 0.15 } }}>
                 <i /><i /><i />
               </m.span>
             )}
