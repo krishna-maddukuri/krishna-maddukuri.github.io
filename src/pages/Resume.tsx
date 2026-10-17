@@ -63,14 +63,16 @@ export function Resume() {
           <Part title="Experience">
             {experience.map((job) => (
               <Job key={`${job.role} · ${job.period}`} title={`${job.role} — ${job.org}`} org={job.org} meta={job.where} period={job.period}>
-                <ul className="flex flex-col gap-1.5 text-sm text-ink-soft">
-                  {job.points.map((p) => (
-                    <li key={p} className="flex gap-2.5">
-                      <span className="mt-[10px] h-px w-2.5 shrink-0 bg-ink-soft" aria-hidden />
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
+                {job.points.length > 0 && (
+                  <ul className="flex flex-col gap-1.5 text-sm text-ink-soft">
+                    {job.points.map((p) => (
+                      <li key={p} className="flex gap-2.5">
+                        <span className="mt-[10px] h-px w-2.5 shrink-0 bg-ink-soft" aria-hidden />
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </Job>
             ))}
           </Part>
@@ -133,7 +135,7 @@ function Job({ title, org, meta, period, children }: { title: string; org: strin
         </div>
         <span className="tabular shrink-0 font-mono text-xs text-ink-soft">{period}</span>
       </div>
-      <div className="mt-4">{children}</div>
+      {children && <div className="mt-4">{children}</div>}
     </div>
   )
 }

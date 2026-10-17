@@ -46,6 +46,7 @@ test.describe('web résumé', () => {
     for (const heading of ['Summary', 'Skills', 'Experience', 'Education', 'Certifications']) {
       await expect(page.getByText(heading, { exact: true }).first()).toBeAttached()
     }
+    await expect(page.getByText('Bank of America', { exact: false }).first()).toBeVisible()
     await expect(page.getByText('Capital One', { exact: false }).first()).toBeVisible()
     await expect(page.getByRole('link', { name: /Download Krishna's resume/ }).first()).toHaveAttribute('download', /Resume\.pdf$/)
     await page.getByRole('link', { name: 'Portfolio' }).click()

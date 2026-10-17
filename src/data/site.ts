@@ -54,7 +54,7 @@ export const about = {
   more: 'I work across microservices, event-driven pipelines, REST APIs, CI/CD and production observability.',
   facts: [
     { k: 'Based in', v: 'Richmond, VA' },
-    { k: 'Role', v: 'Senior Software Engineer · Capital One' },
+    { k: 'Role', v: 'Application Programmer III · Bank of America' },
     { k: 'Experience', v: '5+ years · financial services' },
     { k: 'Studied', v: 'M.S. Computer Science, George Mason' },
     { k: 'Certified', v: 'AWS Developer' },
@@ -188,7 +188,7 @@ export const projects: Project[] = [
     eyebrow: 'Senior Software Engineer · Capital One',
     role: 'Senior Software Engineer',
     org: 'Capital One',
-    period: 'Sep 2024 – Present',
+    period: 'Sep 2024 – Oct 2026',
     summary:
       "Capital One's Enterprise Credit Bureau Reporting Service. I build the Java/Spring Boot microservices that generate its compliant Metro2 files for four credit bureaus.",
     context:
@@ -225,7 +225,7 @@ export const projects: Project[] = [
     eyebrow: 'Senior Software Engineer · Capital One',
     role: 'Senior Software Engineer',
     org: 'Capital One',
-    period: 'Sep 2024 – Present',
+    period: 'Sep 2024 – Oct 2026',
     summary:
       'High-throughput, event-driven pipelines on Apache Kafka, Spring Kafka and PostgreSQL/RDS that process sensitive financial workflows exactly once.',
     context:
@@ -253,7 +253,7 @@ export const projects: Project[] = [
     eyebrow: 'Senior Software Engineer · Capital One',
     role: 'Senior Software Engineer',
     org: 'Capital One',
-    period: 'Sep 2024 – Present',
+    period: 'Sep 2024 – Oct 2026',
     summary:
       'Containerized services on AWS Fargate, deployed with CloudFormation and released through Jenkins with blue-green, zero-downtime deployments.',
     context:
@@ -476,9 +476,8 @@ export const timeline: Milestone[] = [
     kind: 'Experience',
     title: 'Senior Software Engineer',
     org: 'Capital One · McLean, VA',
-    period: 'Sep 2024 – Present',
-    badge: 'Current role',
-    current: true,
+    period: 'Sep 2024 – Oct 2026',
+    badge: 'Spring Boot · Kafka · Fargate',
   },
   {
     year: '2026',
@@ -487,6 +486,15 @@ export const timeline: Milestone[] = [
     org: 'Westcliff University',
     period: 'Jul 2026 – Aug 2029 (expected)',
     badge: 'In progress',
+    current: true,
+  },
+  {
+    year: '2026',
+    kind: 'Experience',
+    title: 'Application Programmer III',
+    org: 'Bank of America · Pennington, NJ',
+    period: 'Oct 2026 – Present',
+    badge: 'Current role',
     current: true,
   },
 ]
@@ -507,7 +515,7 @@ export const resume = {
   title: 'Senior Software Engineer',
   tagline: 'Java · Kafka · AWS · distributed systems',
   summary:
-    'Senior Software Engineer with 5+ years of experience designing, building, and operating large-scale distributed systems and cloud-native microservices in the financial services domain. Expert in Java, Spring Boot, Apache Kafka, and AWS, with a proven record of delivering secure, compliant, high-throughput data platforms at Capital One. Reduced batch processing time by 43%, cut deployment time by 70%, and lowered compute costs through container optimization. AWS Certified Developer with deep experience in CI/CD automation, event-driven architecture, REST API design, and production observability.',
+    'Senior Software Engineer with 5+ years of experience designing, building, and operating large-scale distributed systems and cloud-native microservices in the financial services domain. Expert in Java, Spring Boot, Apache Kafka, and AWS, with a proven record of delivering secure, compliant, high-throughput data platforms for Capital One. Reduced batch processing time by 43%, cut deployment time by 70%, and lowered compute costs through container optimization. AWS Certified Developer with deep experience in CI/CD automation, event-driven architecture, REST API design, and production observability.',
   skills: [
     { label: 'Languages', items: 'Java, Python, TypeScript, JavaScript, SQL, C++' },
     {
@@ -529,8 +537,15 @@ export const resume = {
 
 export const experience: Role[] = [
   {
-    period: 'Sep 2024 – Present',
+    period: 'Oct 2026 – Present',
     current: true,
+    role: 'Application Programmer III',
+    org: 'Bank of America',
+    where: 'Pennington, NJ',
+    points: [],
+  },
+  {
+    period: 'Sep 2024 – Oct 2026',
     role: 'Senior Software Engineer',
     org: 'Capital One',
     where: 'McLean, VA',

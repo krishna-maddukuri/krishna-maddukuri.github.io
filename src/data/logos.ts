@@ -80,6 +80,11 @@ export type Org = { key: string; name: string; short: string; color: string; mat
 
 /** `logo` is the full logo; `mark` (optional) a squarer cut of it for the smallest plates. */
 export const orgs: Org[] = [
+  {
+    key: 'bank-of-america', name: 'Bank of America', short: 'BofA', color: '#012169', match: ['Bank of America'],
+    logo: { file: 'logos/orgs/bank-of-america.svg', color: '#012169', fit: 0.9 },
+    mark: { file: 'logos/orgs/bank-of-america-mark.svg', color: '#012169', fit: 0.72 },
+  },
   { key: 'capital-one', name: 'Capital One', short: 'C1', color: '#013d5b', match: ['Capital One'], logo: { file: 'logos/orgs/capital-one-dark.svg', color: '#013d5b', fit: 0.92, plate: '#013d5b' } },
   {
     key: 'nga-group', name: 'NGA Group', short: 'NGA', color: '#3b5ba5', match: ['NGA Group'],
