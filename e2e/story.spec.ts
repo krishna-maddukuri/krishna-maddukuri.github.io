@@ -21,7 +21,7 @@ test.describe('learning, experience and achievements', () => {
     const cards = exp.locator('article')
     await expect(cards).toHaveCount(8)
     await expect(cards.first()).toContainText('Software Engineer Intern')
-    await expect(cards.last()).toContainText('Application Programmer III')
+    await expect(cards.last()).toContainText('Full Stack Software Engineer')
     await expect(cards.last()).toContainText('Bank of America')
     await expect(exp.getByText('Current role')).toBeVisible()
     await expect(exp.getByText('In progress')).toBeVisible()

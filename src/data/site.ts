@@ -54,7 +54,7 @@ export const about = {
   more: 'I work across microservices, event-driven pipelines, REST APIs, CI/CD and production observability.',
   facts: [
     { k: 'Based in', v: 'Richmond, VA' },
-    { k: 'Role', v: 'Application Programmer III · Bank of America' },
+    { k: 'Role', v: 'Full Stack Software Engineer · Bank of America' },
     { k: 'Experience', v: '6+ years · financial services' },
     { k: 'Studied', v: 'M.S. Computer Science, George Mason' },
     { k: 'Certified', v: 'AWS Developer' },
@@ -491,7 +491,7 @@ export const timeline: Milestone[] = [
   {
     year: '2026',
     kind: 'Experience',
-    title: 'Application Programmer III',
+    title: 'Full Stack Software Engineer',
     org: 'Bank of America · Pennington, NJ',
     period: 'Oct 2026 – Present',
     badge: 'Current role',
@@ -513,9 +513,9 @@ export type Role = {
 
 export const resume = {
   title: 'Senior Software Engineer',
-  tagline: 'Java · Spring Boot · Apache Kafka · AWS',
+  tagline: 'Java · Spring Boot · Apache Kafka · AWS · Angular · React',
   summary:
-    'Senior Software Engineer with 6+ years of experience designing, building, and operating large-scale distributed systems and cloud-native microservices for financial services firms including Bank of America and Capital One. Expert in Java, Spring Boot, Apache Kafka, REST API design, system design, and Amazon Web Services (AWS), with a record of delivering secure, regulatory-compliant, high-throughput data platforms. Reduced batch processing time by 43%, cut deployment time by 70%, and lowered compute costs through container optimization. AWS Certified Developer – Associate with deep experience in event-driven architecture, CI/CD automation, test-driven development (TDD), and production observability.',
+    'Senior Full Stack Software Engineer with 6+ years of experience designing, building, and operating large-scale distributed systems and cloud-native microservices for financial services firms including Bank of America and Capital One. Expert in Java, Spring Boot, Apache Kafka, REST API design, system design, Angular/React, and Amazon Web Services (AWS), with a record of delivering secure, regulatory-compliant, high-throughput data platforms. Reduced batch processing time by 43%, cut deployment time by 70%, and lowered compute costs through container optimization. AWS Certified Developer – Associate with deep experience in event-driven architecture, CI/CD automation, test-driven development (TDD), and production observability.',
   skills: [
     { label: 'Languages', items: 'Java (8/11/17), Python, SQL, TypeScript, JavaScript, C++, Bash, Groovy' },
     { label: 'Backend & Frameworks', items: 'Spring Boot, Spring MVC, Spring Batch, Spring Kafka, Spring Security, Spring Data JPA, Hibernate, Microservices, Distributed Systems, System Design, RESTful APIs, OpenAPI/Swagger, GraphQL, OAuth2, JWT, Node.js, Liquibase' },
@@ -524,7 +524,7 @@ export const resume = {
     { label: 'DevOps & CI/CD', items: 'Jenkins, Git, Bitbucket, GitHub, Maven, Gradle, SonarQube, Blue-Green Deployments, Zero-Downtime Releases, Agile/Scrum, Jira, Confluence' },
     { label: 'Testing & Quality', items: 'JUnit, Mockito, Cucumber, Selenium, WireMock, Postman, Test-Driven Development (TDD), Behavior-Driven Development (BDD), Code Review' },
     { label: 'Observability & Security', items: 'Splunk, New Relic APM, Prometheus, ELK Stack, Spring Actuator, Log4j, Performance Tuning, Secure SDLC, Regulatory Compliance' },
-    { label: 'Frontend', items: 'React.js, Redux, Angular, HTML5, CSS3, Bootstrap, jQuery' },
+    { label: 'Frontend', items: 'Angular, React.js, Redux, TypeScript, HTML5, CSS3, Bootstrap, jQuery, Jasmine' },
   ],
   certifications: ['AWS Certified Developer – Associate (Nov 2023)', 'AWS Certified Cloud Practitioner (Jun 2023)'],
 }
@@ -533,13 +533,13 @@ export const experience: Role[] = [
   {
     period: 'Oct 2026 – Present',
     current: true,
-    role: 'Application Programmer III',
+    role: 'Application Programmer III (Full Stack Software Engineer)',
     org: 'Bank of America',
     where: 'Pennington, NJ',
     points: [
-      'Develop and maintain Java/Spring Boot microservices and RESTful APIs for Bank of America\'s Wealth Management Technology platform, delivering secure, scalable features for high-availability financial applications.',
+      'Develop and maintain full-stack features for Bank of America\'s Wealth Management Technology platform: Java/Spring Boot microservices and RESTful APIs on the back end, Angular and React front ends, delivering secure, scalable, high-availability financial applications.',
       'Build event-driven integrations with Apache Kafka and relational data stores, following the bank\'s secure SDLC, code review, and regulatory compliance standards.',
-      'Contribute across the full stack with automated unit and integration tests (JUnit, Mockito) and CI/CD pipelines, collaborating in Agile/Scrum ceremonies with product, QA, and platform teams.',
+      'Write automated unit and integration tests (JUnit, Mockito, Jasmine) and ship through CI/CD pipelines, collaborating in Agile/Scrum ceremonies with product, QA, and platform teams.',
     ],
   },
   {
