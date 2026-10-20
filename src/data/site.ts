@@ -15,7 +15,7 @@ export const site = {
    * Words **marked like this** (here and in the About lead) are the key words: bold, in the accent colour.
    */
   intro:
-    "Hi, I'm Krishna, a senior software engineer. For more than five years, I've built **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**.",
+    "Hi, I'm Krishna, a senior software engineer. For more than six years, I've built **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**.",
   location: 'Richmond, VA',
   email: 'm.krishnakoushik@icloud.com',
   linkedin: 'https://www.linkedin.com/in/krishna-koushik',
@@ -50,12 +50,12 @@ export const navItems = [
 
 export const about = {
   hello: 'Krishna.',
-  lead: 'Senior Software Engineer with 5+ years designing, building and operating large-scale **distributed systems** and cloud-native microservices in financial services. I build secure, compliant, high-throughput data platforms with **Java, Spring Boot, Apache Kafka and AWS**.',
+  lead: 'Senior Software Engineer with 6+ years designing, building and operating large-scale **distributed systems** and cloud-native microservices in financial services. I build secure, compliant, high-throughput data platforms with **Java, Spring Boot, Apache Kafka and AWS**.',
   more: 'I work across microservices, event-driven pipelines, REST APIs, CI/CD and production observability.',
   facts: [
     { k: 'Based in', v: 'Richmond, VA' },
     { k: 'Role', v: 'Application Programmer III · Bank of America' },
-    { k: 'Experience', v: '5+ years · financial services' },
+    { k: 'Experience', v: '6+ years · financial services' },
     { k: 'Studied', v: 'M.S. Computer Science, George Mason' },
     { k: 'Certified', v: 'AWS Developer' },
     { k: 'Focus', v: 'Java · Kafka · AWS' },
@@ -513,26 +513,20 @@ export type Role = {
 
 export const resume = {
   title: 'Senior Software Engineer',
-  tagline: 'Java · Kafka · AWS · distributed systems',
+  tagline: 'Java · Spring Boot · Apache Kafka · AWS',
   summary:
-    'Senior Software Engineer with 5+ years of experience designing, building, and operating large-scale distributed systems and cloud-native microservices in the financial services domain. Expert in Java, Spring Boot, Apache Kafka, and AWS, with a proven record of delivering secure, compliant, high-throughput data platforms for Capital One. Reduced batch processing time by 43%, cut deployment time by 70%, and lowered compute costs through container optimization. AWS Certified Developer with deep experience in CI/CD automation, event-driven architecture, REST API design, and production observability.',
+    'Senior Software Engineer with 6+ years of experience designing, building, and operating large-scale distributed systems and cloud-native microservices for financial services firms including Bank of America and Capital One. Expert in Java, Spring Boot, Apache Kafka, REST API design, system design, and Amazon Web Services (AWS), with a record of delivering secure, regulatory-compliant, high-throughput data platforms. Reduced batch processing time by 43%, cut deployment time by 70%, and lowered compute costs through container optimization. AWS Certified Developer – Associate with deep experience in event-driven architecture, CI/CD automation, test-driven development (TDD), and production observability.',
   skills: [
-    { label: 'Languages', items: 'Java, Python, TypeScript, JavaScript, SQL, C++' },
-    {
-      label: 'Backend & Frameworks',
-      items: 'Spring Boot, Spring MVC, Spring Batch, Spring Kafka, Hibernate, JPA, Microservices, REST APIs, GraphQL, Node.js, OAuth2, Liquibase',
-    },
-    {
-      label: 'Cloud & AWS',
-      items: 'AWS (ECS, Fargate, EC2, S3, SNS, Lambda, RDS, DynamoDB, Step Functions, CloudFormation, CloudWatch, Glue, EMR), Docker, Kubernetes, Serverless Architecture',
-    },
-    { label: 'Data & Messaging', items: 'Apache Kafka, PostgreSQL, DynamoDB, Event-Driven Architecture, Real-Time Data Pipelines, ETL' },
-    { label: 'DevOps & CI/CD', items: 'Jenkins, Git, Bitbucket, Maven, SonarQube, Blue-Green Deployments, Infrastructure as Code (IaC)' },
-    { label: 'Testing & Quality', items: 'JUnit, Mockito, Cucumber, Selenium, WireMock, Postman, Test-Driven Development (TDD)' },
-    { label: 'Observability', items: 'Splunk, New Relic APM, Prometheus, ELK Stack, Spring Actuator, Log4J' },
+    { label: 'Languages', items: 'Java (8/11/17), Python, SQL, TypeScript, JavaScript, C++, Bash, Groovy' },
+    { label: 'Backend & Frameworks', items: 'Spring Boot, Spring MVC, Spring Batch, Spring Kafka, Spring Security, Spring Data JPA, Hibernate, Microservices, Distributed Systems, System Design, RESTful APIs, OpenAPI/Swagger, GraphQL, OAuth2, JWT, Node.js, Liquibase' },
+    { label: 'Cloud & Infrastructure', items: 'AWS (ECS, Fargate, EC2, Lambda, S3, SNS, SQS, RDS, DynamoDB, Step Functions, CloudFormation, CloudWatch, IAM, Glue, EMR), Microsoft Azure, Docker, Kubernetes, Serverless Architecture, Infrastructure as Code (IaC)' },
+    { label: 'Data & Messaging', items: 'Apache Kafka, PostgreSQL, MySQL, SQL Server, DynamoDB, MongoDB, Event-Driven Architecture, Real-Time Data Pipelines, ETL, Metro 2 Credit Reporting' },
+    { label: 'DevOps & CI/CD', items: 'Jenkins, Git, Bitbucket, GitHub, Maven, Gradle, SonarQube, Blue-Green Deployments, Zero-Downtime Releases, Agile/Scrum, Jira, Confluence' },
+    { label: 'Testing & Quality', items: 'JUnit, Mockito, Cucumber, Selenium, WireMock, Postman, Test-Driven Development (TDD), Behavior-Driven Development (BDD), Code Review' },
+    { label: 'Observability & Security', items: 'Splunk, New Relic APM, Prometheus, ELK Stack, Spring Actuator, Log4j, Performance Tuning, Secure SDLC, Regulatory Compliance' },
     { label: 'Frontend', items: 'React.js, Redux, Angular, HTML5, CSS3, Bootstrap, jQuery' },
   ],
-  certifications: ['AWS Certified Developer', 'AWS Certified Cloud Practitioner'],
+  certifications: ['AWS Certified Developer – Associate (Nov 2023)', 'AWS Certified Cloud Practitioner (Jun 2023)'],
 }
 
 export const experience: Role[] = [
@@ -542,7 +536,11 @@ export const experience: Role[] = [
     role: 'Application Programmer III',
     org: 'Bank of America',
     where: 'Pennington, NJ',
-    points: [],
+    points: [
+      'Develop and maintain Java/Spring Boot microservices and RESTful APIs for Bank of America\'s Wealth Management Technology platform, delivering secure, scalable features for high-availability financial applications.',
+      'Build event-driven integrations with Apache Kafka and relational data stores, following the bank\'s secure SDLC, code review, and regulatory compliance standards.',
+      'Contribute across the full stack with automated unit and integration tests (JUnit, Mockito) and CI/CD pipelines, collaborating in Agile/Scrum ceremonies with product, QA, and platform teams.',
+    ],
   },
   {
     period: 'Sep 2024 – Oct 2026',
@@ -550,13 +548,14 @@ export const experience: Role[] = [
     org: 'Capital One',
     where: 'McLean, VA',
     points: [
-      "Designed and built scalable, secure Java/Spring Boot microservices for Capital One's Enterprise Credit Bureau Reporting Service, generating compliant Metro2 files for U.S., Canada, Small Business, and Commercial segments across Equifax, Experian, TransUnion, and LexisNexis.",
+      "Designed and built scalable, secure Java/Spring Boot microservices for Capital One's Enterprise Credit Bureau Reporting Service, generating compliant Metro2 files for approximately 30 million consumer, small-business, and commercial accounts each month across Equifax, Experian, TransUnion, and LexisNexis.",
       'Engineered high-throughput, event-driven pipelines with Apache Kafka, Spring Kafka, and PostgreSQL/RDS, achieving fault-tolerant, exactly-once processing for sensitive financial workflows at enterprise scale.',
       'Improved batch performance by 43% (7 hours to 4) by replacing cursor-based readers with a paginated reader in Spring Batch for high-volume Metro2 file generation.',
       'Deployed containerized services on AWS Fargate via CloudFormation, integrating SNS, S3, RDS, and Step Functions; reduced container size by 60%, lowering compute costs and improving runtime efficiency.',
       'Implemented enterprise CI/CD pipelines with Jenkins to automate builds, enforce SonarQube quality gates, and manage blue-green deployments with zero-downtime releases.',
       'Strengthened security and compliance by designing OAuth2-protected REST APIs and building automated test suites with JUnit and Cucumber, reducing production defects.',
       'Integrated Splunk and New Relic APM with actionable dashboards and alerting, accelerating incident response and root-cause analysis across distributed microservices.',
+      'Onboarded Discover account portfolios into the credit bureau reporting pipeline following the Capital One–Discover merger, extending the platform to new product segments without disrupting monthly regulatory deadlines.',
     ],
   },
   {
@@ -607,14 +606,14 @@ export const education: Role[] = [
     points: [],
   },
   {
-    period: '2023',
+    period: '2021 – 2023',
     role: 'Master of Science in Computer Science',
     org: 'George Mason University',
     where: 'Fairfax, VA',
     points: [],
   },
   {
-    period: '2020',
+    period: '2016 – 2020',
     role: 'Bachelor of Technology in Computer Science',
     org: 'Amrita Vishwa Vidyapeetham',
     where: 'Coimbatore, India',
@@ -658,5 +657,5 @@ export const achievements: Achievement[] = [
   { value: 3, suffix: '×', title: 'Deployment frequency', source: 'Infosys', detail: 'Bitbucket CI/CD to multi-region AWS', icon: 'repeat' },
   { value: 25, suffix: '%', title: 'Lower bug rates', source: 'Infosys', detail: 'Legacy codebases modernized', icon: 'bug' },
   { value: 40, suffix: '%', title: 'More stable CI/CD', source: 'Infosys', detail: 'Jenkins logs, Bash and Groovy fixes', icon: 'shield' },
-  { value: 5, suffix: '+', title: 'Years building software', source: 'Since 2020', detail: 'Distributed systems in financial services', icon: 'trophy' },
+  { value: 6, suffix: '+', title: 'Years building software', source: 'Since 2020', detail: 'Distributed systems in financial services', icon: 'trophy' },
 ]
