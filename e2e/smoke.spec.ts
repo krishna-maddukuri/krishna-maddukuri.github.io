@@ -37,7 +37,7 @@ test.describe('page load', () => {
   test('has the SEO essentials: description, open graph and structured data', async ({ page }) => {
     await openHome(page)
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Senior Software Engineer/)
-    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /Krishna Maddukuri/)
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /Krishna Koushik Maddukuri/)
     const ld = await page.locator('script[type="application/ld+json"]').textContent()
     expect(JSON.parse(ld ?? '{}')).toMatchObject({ '@type': 'Person', name: 'Krishna Koushik Maddukuri' })
   })
