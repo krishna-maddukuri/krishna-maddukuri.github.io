@@ -1,9 +1,10 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useNavigate } from '../lib/router'
 import { navItems, site } from '../data/site'
 import { useActiveSection } from '../hooks/useActiveSection'
+import { announceHome } from '../lib/home'
 import { useLenis, useScrollTo } from '../lib/scroll'
 import { useTheme } from '../lib/theme'
 import { LinkedInMark } from './Logo'
@@ -15,12 +16,16 @@ const sectionIds = ['top', ...navItems.map((n) => n.id)]
 const sectionLabel = Object.fromEntries(navItems.map((n) => [n.id, n.label])) as Record<string, string>
 /** His first and middle names, as the bar spells them beside the tile. */
 const givenNames = site.name.split(' ').slice(0, -1).join(' ')
+/** The same name, letter by letter, so each letter can take its turn in the ripple. */
+const letters = givenNames.split(' ').map((word) => Array.from(word))
+const barType = 'font-mono text-[12px] font-semibold uppercase tracking-[0.16em]'
 
 /**
  * Wide screens: one floating glass bar in the middle of the top edge, with the red monogram tile
  * and his name, the section links and the theme switch. Phones and tablets: the monogram at the
  * left and a capsule with the theme switch and the menu button at the right. Corners are
- * square-ish everywhere (12px on the panes).
+ * square-ish everywhere (12px on the panes). Pressing the name or the monogram brings the page
+ * home: the tile turns over, the letters ripple, and the hero plays its welcome again (lib/home.ts).
  */
 export function Header() {
   const location = useLocation()
@@ -31,6 +36,9 @@ export function Header() {
   const active = useActiveSection(isHome ? sectionIds : [], location.pathname)
   const [open, setOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
+  // how many times the name has been pressed: each press remounts the tile and the letters, so
+  // their animations start again from the beginning
+  const [pressed, setPressed] = useState(0)
 
   // Phones: the menu button names the section you're reading, like an app's title bar.
   const here = active && active !== 'top' ? sectionLabel[active] : null
@@ -65,6 +73,19 @@ export function Header() {
 
   useEffect(() => setOpen(false), [location.pathname])
 
+  // Home: back to the top, and the hero's welcome once the page is there (at once if it already is).
+  // From another page it is simply the way back.
+  const goHome = () => {
+    setPressed((n) => n + 1)
+    if (!isHome) {
+      go('top')
+      return
+    }
+    setOpen(false)
+    if (window.scrollY < 2) announceHome()
+    else scrollTo('top', { onComplete: announceHome })
+  }
+
   const copyEmail = async () => {
     if (await copyText(site.email)) toast('Email copied')
     else window.location.href = `mailto:${site.email}`
@@ -84,14 +105,14 @@ export function Header() {
         <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:hidden">
           <m.button
             type="button"
-            onClick={() => go('top')}
+            onClick={goHome}
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
             className="pointer-events-auto flex items-center gap-3 rounded-xl"
             aria-label={`${site.shortName}, back to top`}
           >
-            <span className="glass header-glass glass-press grid size-12 place-items-center rounded-xl font-display text-[14px] font-bold tracking-tight text-ink">
+            <span key={pressed} className={`brand-tile brand-tile--lg glass-press ${pressed ? 'is-flipping' : ''}`} aria-hidden>
               {site.monogram}
             </span>
           </m.button>
@@ -111,7 +132,7 @@ export function Header() {
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? 'Close menu' : here ? `Menu (${here})` : 'Menu'}
-              className="flex h-10 items-center gap-2.5 rounded-[8px] pl-3 pr-4 text-sm font-medium text-ink transition-colors active:bg-[var(--glass-press)]"
+              className={`flex h-10 items-center gap-2.5 rounded-[8px] pl-3 pr-4 ${barType} text-ink transition-colors active:bg-[var(--glass-press)]`}
             >
               <span className="relative block h-2.5 w-4" aria-hidden>
                 <span className={`absolute left-0 h-px w-4 bg-ink transition-all duration-300 ${open ? 'top-1 rotate-45' : 'top-0'}`} />
@@ -133,15 +154,24 @@ export function Header() {
             {/* the brand: the red monogram tile and his first and middle names beside it */}
             <button
               type="button"
-              onClick={() => go('top')}
+              onClick={goHome}
               className="glass-press flex items-center gap-2.5 rounded-[7px] pr-1 text-[var(--bar-ink)]"
               aria-label={`${site.shortName}, back to top`}
             >
-              <span className="brand-tile" aria-hidden>
+              <span key={pressed} className={`brand-tile ${pressed ? 'is-flipping' : ''}`} aria-hidden>
                 {site.monogram}
               </span>
-              <span className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.16em]" aria-hidden>
-                {givenNames}.
+              <span key={`name-${pressed}`} className={`brand-name ${barType} ${pressed ? 'is-waving' : ''}`} aria-hidden>
+                {letters.map((word, w) => (
+                  <Fragment key={w}>
+                    {w > 0 && ' '}
+                    {word.map((ch, i) => (
+                      <span key={i} style={{ '--i': letters.slice(0, w).reduce((n, prev) => n + prev.length, 0) + i } as CSSProperties}>
+                        {ch}
+                      </span>
+                    ))}
+                  </Fragment>
+                ))}
               </span>
             </button>
 
@@ -154,13 +184,13 @@ export function Header() {
                     type="button"
                     onClick={() => go(item.id)}
                     aria-current={on ? 'true' : undefined}
-                    className={`relative rounded-[6px] px-[9px] py-[9px] text-sm font-medium transition-colors ${on ? 'text-[var(--bar-ink)]' : 'text-[var(--bar-muted)] hover:text-[var(--bar-ink)]'}`}
+                    className={`relative rounded-[6px] px-[9px] py-[10px] ${barType} transition-colors ${on ? 'text-[var(--bar-ink)]' : 'text-[var(--bar-muted)] hover:text-[var(--bar-ink)]'}`}
                   >
                     {item.label}
                     {on && (
                       <m.span
                         layoutId="nav-line"
-                        className="absolute inset-x-[9px] bottom-[3px] h-0.5 bg-accent"
+                        className="absolute inset-x-[9px] bottom-[3px] h-0.5 bg-[var(--brand-red)]"
                         transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                         aria-hidden
                       />

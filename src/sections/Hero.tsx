@@ -3,6 +3,7 @@ import * as m from 'motion/react-m'
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
+import { onHome } from '../lib/home'
 import { useScrollTo } from '../lib/scroll'
 import { ResumeLink } from '../components/ResumeLink'
 import { HeroMedia } from '../components/HeroMedia'
@@ -37,6 +38,16 @@ export function Hero() {
     document.fonts?.load('800 100px "Bricolage Grotesque"').then(go, go)
     return () => clearTimeout(t)
   }, [])
+  // and draws itself in again each time the page comes home (the name in the header)
+  useEffect(
+    () =>
+      onHome(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+        setWmPlay(false)
+        requestAnimationFrame(() => requestAnimationFrame(() => setWmPlay(true)))
+      }),
+    [],
+  )
   // Each line spans the full width: once the font is in, every letter is placed by hand, with the
   // width left over shared out evenly between the letters. (Stretching the line with textLength
   // instead puts a share of that spacing after the last letter in Chrome and does nothing at all in

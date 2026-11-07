@@ -154,6 +154,7 @@
   --glass-settled: rgb(255 255 255 / 0.78);
   --bar-ink: #0a0a0a;
   --bar-muted: #4b4b4b;
+  --brand-red: #f0412e; /* the monogram tile and the line under the current section, in both modes */
   --glass-sheen: rgb(255 255 255 / 0.42);
   --glass-rim: rgb(255 255 255 / 0.98);
   --glass-rim-soft: rgb(255 255 255 / 0.4);
@@ -322,8 +323,8 @@ p {
 }
 
 ::selection {
-  background: var(--accent);
-  color: #000000;
+  background: var(--brand-red);
+  color: #160403;
 }
 
 :focus-visible {
@@ -383,10 +384,24 @@ html.lenis, html.lenis body { height: auto; }
     width: 32px;
     height: 32px;
     border-radius: 7px;
-    background: #f0412e;
+    background: var(--brand-red);
     color: #160403;
     font: 700 0.95rem/1 "Antonio", var(--ff-display);
     letter-spacing: 0.02em;
+  }
+  /* the phone header's monogram: the same tile, as tall as the capsule beside it */
+  .brand-tile--lg {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    font-size: 1.4rem;
+  }
+  /* pressed: the tile turns over once and the letters of the name ripple from left to right */
+  .brand-tile.is-flipping { animation: brand-flip 0.75s var(--ease-out); }
+  .brand-name > span { display: inline-block; white-space: pre; }
+  .brand-name.is-waving > span {
+    animation: brand-wave 0.6s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 26ms);
   }
   .preserve-3d { transform-style: preserve-3d; }
   .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
@@ -681,6 +696,16 @@ html.lenis, html.lenis body { height: auto; }
   0%, 100% { transform: rotate(0deg); }
   33.333% { transform: rotate(1.6deg); }
   66.667% { transform: rotate(-1.6deg); }
+}
+
+@keyframes brand-flip {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+@keyframes brand-wave {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
 }
 
 /* the header's glass firms up a little once the page has scrolled (no JavaScript involved) */

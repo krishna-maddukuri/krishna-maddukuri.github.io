@@ -2,6 +2,7 @@ import { AnimatePresence, useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useEffect, useState } from 'react'
 import { site } from '../data/site'
+import { onHome } from '../lib/home'
 import { PaperFigure } from './PaperFigure'
 
 /** When the bubble appears (s after load) and how long he "types" before the message is sent. */
@@ -11,10 +12,14 @@ const TYPING = 1.5
 /** His paper figure in the hero (folding itself together), with a chat bubble that pops up beside his head. */
 export function HeroMedia() {
   const { image, bubble } = site.hero
+  const reduce = useReducedMotion()
+  // the greeting is sent again each time the page comes home (the name in the header)
+  const [round, setRound] = useState(0)
+  useEffect(() => onHome(() => setRound((n) => (reduce ? n : n + 1))), [reduce])
   return (
     <div className="relative h-full w-fit">
       {image ? <PaperFigure /> : <PlaceholderFigure />}
-      {bubble && <Bubble text={bubble} />}
+      {bubble && <Bubble key={round} text={bubble} delay={round ? 0.3 : BUBBLE_IN} />}
     </div>
   )
 }
@@ -24,7 +29,7 @@ export function HeroMedia() {
  * (he's typing), then widens into the message itself. Hidden while he is scattered (.bubble-wrap in
  * index.css). With "reduce motion" the message simply appears.
  */
-function Bubble({ text }: { text: string }) {
+function Bubble({ text, delay }: { text: string; delay: number }) {
   const reduce = useReducedMotion()
   // he types once the bubble has slid in (timed from then, so a slow start never cuts the typing short)
   const [typing, setTyping] = useState(false)
@@ -46,7 +51,7 @@ function Bubble({ text }: { text: string }) {
       className="bubble-wrap absolute right-[calc(16px_-_(100vw_-_100%)_/_2)] top-[calc(var(--wm-bottom)-12px)] origin-bottom-left sm:right-[calc(24px_-_(100vw_-_100%)_/_2)] sm:top-[calc(var(--wm-bottom)-20px)] lg:left-[calc(76%+34px)] lg:right-auto lg:top-[calc(var(--wm-gap)-20px-min(4svh,40px))]"
       initial={reduce ? false : { opacity: 0, y: 10, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: reduce ? 0 : BUBBLE_IN }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: reduce ? 0 : delay }}
       onAnimationComplete={() => setTyping(true)}
     >
       {/* the float is on this wrapper so the bubble itself is free to change size (bubble-float in index.css) */}

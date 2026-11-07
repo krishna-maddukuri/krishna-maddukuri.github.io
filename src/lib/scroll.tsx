@@ -45,7 +45,7 @@ export function useLenis() {
 export function useScrollTo() {
   const lenis = useLenis()
   return useCallback(
-    (id: string, opts: { immediate?: boolean } = {}) => {
+    (id: string, opts: { immediate?: boolean; onComplete?: () => void } = {}) => {
       const target: HTMLElement | number = id === 'top' ? 0 : document.getElementById(id) ?? 0
       if (lenis) {
         // Lenis learns the page's height from a debounced resize observer; right after a page
@@ -57,12 +57,15 @@ export function useScrollTo() {
           immediate: opts.immediate,
           force: true,
           easing: (t: number) => 1 - Math.pow(1 - t, 4),
+          onComplete: opts.onComplete,
         })
         return
       }
       const behavior: ScrollBehavior = opts.immediate || prefersReducedMotion() ? 'auto' : 'smooth'
       if (typeof target === 'number') window.scrollTo({ top: target, behavior })
       else target.scrollIntoView({ behavior, block: 'start' })
+      // the browser's own smooth scrolling has no callback; a moment covers the distances on this page
+      if (opts.onComplete) setTimeout(opts.onComplete, behavior === 'auto' ? 0 : 700)
     },
     [lenis],
   )

@@ -1,6 +1,7 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { site } from '../data/site'
+import { onHome } from '../lib/home'
 
 /**
  * His paper-craft figure, in pieces. The picture is cut into ~450 shards that follow the
@@ -35,6 +36,7 @@ const GLIDE = 1.7 // one shard's journey into place
 const STAGGER = 0.35 // the last shard starts this much after the first
 const BUILD_DELAY = 0.4 // after the figure is ready, so it lands with the rest of the hero
 const SCATTER_HOLD = 3 // a click (or the phone button) scatters him for this long, then he comes back by himself
+const WAVE = 1.1 // when the page comes home, a ripple runs down him from head to feet, this long
 /** Below this width (the lg breakpoint) the coarse mesh is used. */
 const LITE_BELOW = 1024
 
@@ -260,8 +262,10 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       // --- the pointer: which shards move aside -------------------------------------------
       const ptr = { x: 0, y: 0, k: 0, tx: 0, ty: 0, tk: 0 }
       let lastPointer = 0
+      let wave = 0 // when the ripple started; 0 while there is none
       const onMove = (e: PointerEvent) => {
         if (e.pointerType && e.pointerType !== 'mouse') return
+        if (wave) return // the ripple is a pointer nobody holds: the mouse waits its turn
         const r = box!.getBoundingClientRect()
         // model-space pointer for the shards
         cursor.current.tx = e.clientX - r.left
@@ -280,6 +284,13 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       window.addEventListener('pointermove', onMove, { passive: true })
       document.addEventListener('mouseleave', onLeave)
       window.addEventListener('blur', onLeave)
+      // home: the ripple, once he is built
+      const offHome = onHome(() => {
+        if (!built || scatter.target === 1) return
+        wave = performance.now()
+        lastPointer = wave
+        schedule()
+      })
 
       // --- run ------------------------------------------------------------------------------
       let visible = true
@@ -350,6 +361,18 @@ export function PaperFigure({ className = '' }: { className?: string }) {
           label.dataset.on = lbl.on && built ? '1' : '0'
         }
         if (scatter.target === 1 && now > scatter.until) gather()
+        // the ripple: the pointer's push, swept from above his head to below his feet
+        if (wave) {
+          const p = (now - wave) / (WAVE * 1000)
+          if (p >= 1) {
+            wave = 0
+            ptr.tk = 0
+          } else {
+            ptr.tx = 0
+            ptr.ty = TEX_H + 120 * UNIT - (TEX_H + 240 * UNIT) * p
+            ptr.tk = 1
+          }
+        }
         // scattering is quick, coming back is unhurried
         const ks = 1 - Math.pow(scatter.target === 1 ? 0.004 : 0.03, dt)
         scatter.v += (scatter.target - scatter.v) * ks
@@ -389,6 +412,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
         window.removeEventListener('pointermove', onMove)
         document.removeEventListener('mouseleave', onLeave)
         window.removeEventListener('blur', onLeave)
+        offHome()
         document.removeEventListener('visibilitychange', onVisibility)
         canvas!.removeEventListener('webglcontextlost', fail)
       }
