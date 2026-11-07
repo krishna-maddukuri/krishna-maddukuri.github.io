@@ -7,7 +7,6 @@ test.describe('hero', () => {
     const hero = page.locator('#top')
     await expect(hero.getByRole('heading', { level: 1 })).toContainText('Senior Software')
     await expect(hero.getByRole('heading', { level: 1 })).toContainText('Engineer')
-    await expect(hero.getByText('Krishna Koushik Maddukuri', { exact: true })).toBeVisible()
     // the paper figure is an image to assistive tech, whether it is the folding canvas or the still picture
     const figure = hero.getByRole('img', { name: 'Krishna Koushik Maddukuri' })
     await expect(figure).toBeVisible()

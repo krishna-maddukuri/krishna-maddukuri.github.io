@@ -56,7 +56,7 @@ export function Hero() {
       id="top"
       ref={ref}
       className="wm-frame relative isolate flex flex-col overflow-hidden lg:block"
-      style={{ minHeight: 'min(100svh, 1000px)', '--wm-word': wm.word, '--wm-bottom': wm.bottom } as CSSProperties}
+      style={{ minHeight: 'min(100svh, 1000px)', '--wm-word': wm.word } as CSSProperties}
     >
       {/* his name behind the figure, set like portfolio-2's giant word (components/GiantWord.tsx): on load
           each letter draws in as an outline, then fills, and the line spreads its letters to both edges of
@@ -87,22 +87,14 @@ export function Hero() {
         </m.div>
       </m.div>
 
-      {/* bottom-left: his name in his own hand, the title, the intro */}
+      {/* bottom-left: the title and the intro */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
         className="relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:px-0 lg:pt-0"
       >
-        <m.div
-          className="font-hand text-[clamp(1.5rem,1.1rem+1.6vw,2.4rem)] leading-[1.05] text-[var(--accent-display)]"
-          initial={{ opacity: 0, x: -12 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 0.6 }}
-        >
-          {site.name}
-        </m.div>
         {/* wide screens: as big as the design allows, but never so wide that the first line runs into his figure
             ("Senior Software" was measured in Bricolage Grotesque at 6.71em; Antonio is narrower; the figure is 0.357x as wide as it is tall) */}
-        <h1 className="mt-4 font-display text-[length:min(13.2vw,3.5rem)] font-bold leading-[0.9] text-ink sm:text-[clamp(3.1rem,7.2vw,7.4rem)] lg:text-[length:min(clamp(3.1rem,min(7.2vw,11.5vh),7.4rem),calc((60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)/6.85))]">
+        <h1 className="font-display text-[length:min(13.2vw,3.5rem)] font-bold leading-[0.9] text-ink sm:text-[clamp(3.1rem,7.2vw,7.4rem)] lg:text-[length:min(clamp(3.1rem,min(7.2vw,11.5vh),7.4rem),calc((60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)/6.85))]">
           {site.headline.map((line, i) => (
             <span key={line} className="block overflow-hidden pb-[0.07em]">
               <m.span
@@ -198,9 +190,10 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: under the giant name
-      // (which sits 10% down; --wm-bottom is how far down its foot is), a little way below it.
-      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[84px] sm:right-6 sm:top-[52svh] sm:size-28 lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-[calc(10%+var(--wm-bottom)+min(6vh,56px))] lg:size-[clamp(88px,14vh,128px)]"
+      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: right above the "Explore
+      // work" button, on the same right edge (the buttons stand clamp(36px,8vh,84px) up from the bottom and
+      // are 100px tall as a column: 48 + 12 + 40; on wide, short screens they are one 48px row).
+      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-32 lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[calc(clamp(36px,8vh,84px)+118px)] lg:size-[clamp(124px,17vh,156px)] wideshort:bottom-[calc(clamp(36px,8vh,84px)+66px)]"
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
@@ -213,7 +206,9 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
             <path id="badge-circle" d="M60 60 m-46 0 a46 46 0 1 1 92 0 a46 46 0 1 1 -92 0" />
           </defs>
           {/* the text is stretched to exactly one lap of the circle, so the loop closes with no gap */}
-          <text className="fill-ink font-mono text-[8.5px] font-medium uppercase" textLength={BADGE_LAP} lengthAdjust="spacing">
+          {/* in the portfolio's display face (Antonio): condensed enough that the whole line goes round at
+              14 units, about twice the size the mono face could take; its capitals stay inside the 120 box */}
+          <text className="fill-ink font-display text-[14px] font-semibold uppercase" textLength={BADGE_LAP} lengthAdjust="spacing">
             <textPath href="#badge-circle" textLength={BADGE_LAP} lengthAdjust="spacing">
               {text.toUpperCase()}
             </textPath>
