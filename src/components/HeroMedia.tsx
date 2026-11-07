@@ -60,7 +60,7 @@ function Bubble({ text, delay }: { text: string; delay: number }) {
             holds the finished bubble's room, so the bubble always grows from its left corner (the one
             pointing at him) towards the right, on phones too, where it is pinned to the screen's right edge */}
         <div className="bubble-room whitespace-nowrap px-3.5 py-2 text-[13px] font-medium sm:px-4 sm:py-2.5 sm:text-sm" data-text={text} aria-hidden />
-        {/* teal gradient with a breathing halo (bubble-hello in index.css); its width eases as the dots give way to the words */}
+        {/* red gradient with a breathing halo (bubble-hello in index.css); its width eases as the dots give way to the words */}
         <m.div
           layout
           transition={{ layout: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }}

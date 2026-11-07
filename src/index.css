@@ -102,16 +102,16 @@
   --chip: #ece7dc;
   --clip: #cdbf9f;
 
-  /* the one colour on the page besides ink: teal, in both themes (a deeper teal on the paper, a
-     brighter one on black). It colours the italic tails of headings, the key words in the intro,
-     the numbers, the eyebrow index, the dots and lines and the selection. --accent is the colour
-     itself (dots, lines, selection, button fills); --accent-display is the shade for big text (3:1
-     on its background) and --accent-text the shade for body-size words (4.5:1). --accent-mark is a
-     highlighter stroke behind accent text, for a colour that can't be read as text on its paper
-     (not needed for teal); --accent-ring outlines the dots and lines. */
-  --accent: #0f8b8d;
-  --accent-display: #0f8b8d;
-  --accent-text: #0d7c7e;
+  /* the one colour on the page besides ink: portfolio-2's red, in both themes. It colours the tails
+     of headings, the key words in the intro, the numbers, the eyebrow index, the dots and lines, the
+     bubble and the selection. --accent is the colour itself (dots, lines, selection, button fills);
+     --accent-display is the shade for big text (3:1 on its background: the red itself on the paper,
+     3.4:1) and --accent-text the shade for body-size words (4.5:1: a deeper red on the paper).
+     --accent-mark is a highlighter stroke behind accent text, for a colour that can't be read as
+     text on its paper (not needed); --accent-ring outlines the dots and lines. */
+  --accent: #f0412e;
+  --accent-display: #f0412e;
+  --accent-text: #cf331f;
   --accent-mark: transparent;
   --accent-ring: var(--accent);
   --accent-dot: var(--accent);
@@ -206,11 +206,11 @@
   --wash: #121214;
   --chip: #1b1b1f;
   --clip: #8f8466;
-  --accent: #2ed3d5;
-  --accent-display: #3adbdd;
-  --accent-text: #5ee3e5;
+  --accent: #f0412e; /* 5.5:1 on black */
+  --accent-display: #ff6450; /* portfolio-2's bright red, 7.2:1 on black */
+  --accent-text: #ff6450;
   --accent-mark: transparent;
-  --accent-ring: #2ed3d5;
+  --accent-ring: #f0412e;
   --fam-lang: #f1f1f3;
   --fam-lang-fg: #0a0a0b;
   --fam-back: #d6d6dc;
@@ -620,7 +620,7 @@ html.lenis, html.lenis body { height: auto; }
   :root[data-mode="dark"] .spot::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.09), transparent 70%); }
 
   /*
-    The accent text: teal, deeper on the paper and brighter on black. (--accent-mark can put a highlighter
+    The accent text: red, deeper on the paper and brighter on black. (--accent-mark can put a highlighter
     stroke behind it, for a colour that can't be read as text on its paper; it is transparent now.)
   */
   /* key words in running text */
@@ -768,10 +768,10 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /*
-  Buttons answer the pointer with the accent: a fill rises from the bottom and the label turns black
-  on it (terracotta on the paper, neon on black). Solid buttons get it by default (.btn-still opts
-  out: the theme switch and the big "next case study" card); .btn-fill adds it to the glass pills and
-  the outlined link buttons.
+  Buttons answer the pointer with the accent: a red fill rises from the bottom and the label turns
+  the tile's deep red on it. Solid buttons get it by default (.btn-still opts out: the theme switch
+  and the big "next case study" card); .btn-fill adds it to the glass pills and the outlined link
+  buttons.
 */
 .btn-solid:not(.btn-still), .btn-fill {
   position: relative;
@@ -791,23 +791,19 @@ html.lenis, html.lenis body { height: auto; }
 }
 @media (hover: hover) {
   .btn-solid:not(.btn-still):hover::before, .btn-fill:hover::before { transform: scaleY(1); }
-  .btn-solid:not(.btn-still):hover, .btn-fill:hover { color: #000000; border-color: var(--accent); }
+  .btn-solid:not(.btn-still):hover, .btn-fill:hover { color: #160403; border-color: var(--accent); }
 }
 
-/* the "Hi, I'm Krishna." bubble: a teal gradient with black words in both themes (a clear mid teal
-   into the accent on the paper, the bright accent into a deeper teal on black; black reads 5:1 or
-   better on every part of it), bobbing 4px while a teal halo swells and fades every 3.2 s */
+/* the "Hi, I'm Krishna." bubble: a red gradient (portfolio-2's bright red into its red) with the
+   monogram tile's deep red for the words in both themes (5.2:1 or better on every part of it),
+   bobbing 4px while a red halo swells and fades every 3.2 s */
 .bubble-hello {
-  --bubble-a: #2bb5b7;
-  --bubble-b: #0f8b8d;
+  --bubble-a: #ff6450;
+  --bubble-b: #f0412e;
   background: linear-gradient(135deg, var(--bubble-a) 0%, var(--bubble-b) 100%);
-  color: #000000;
+  color: #160403;
   box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.45);
   animation: bubble-breathe 3.2s ease-in-out infinite;
-}
-:root[data-mode="dark"] .bubble-hello {
-  --bubble-a: #2ed3d5;
-  --bubble-b: #1aa6a8;
 }
 /* while he is in pieces there is nobody to say hello: the bubble shrinks away, and pops back once he
    is back together (the figure before it carries data-paper-figure) */
@@ -829,7 +825,7 @@ html.lenis, html.lenis body { height: auto; }
   width: 0.42em;
   height: 0.42em;
   border-radius: 50%;
-  background: rgb(0 0 0 / 0.75);
+  background: rgb(22 4 3 / 0.75);
   animation: typing-dot 1.1s ease-in-out infinite;
 }
 .typing-dots i:nth-child(2) { animation-delay: 0.16s; }

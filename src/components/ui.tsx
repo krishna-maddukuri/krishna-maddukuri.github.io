@@ -117,7 +117,7 @@ export function Eyebrow({ index, label }: { index: string; label: string }) {
   )
 }
 
-/** The Instrument Serif italic tail used in every heading, in the accent colour (teal). */
+/** The Instrument Serif italic tail used in every heading, in the accent colour (red). */
 export function Accent({ children }: { children: ReactNode }) {
   return <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{children}</em>
 }
