@@ -46,7 +46,7 @@ export function CaseStudy() {
           <span>{p.eyebrow}</span>
         </div>
         <m.h1
-          className="mt-5 font-display text-[clamp(2.8rem,8vw,7.4rem)] font-bold leading-[0.92] tracking-[-0.045em]"
+          className="mt-5 font-display text-[clamp(2.8rem,8vw,7.4rem)] font-bold leading-[0.92]"
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
@@ -93,7 +93,7 @@ export function CaseStudy() {
               <div className={`mt-4 grid gap-4 ${p.metrics.length === 1 ? 'grid-cols-1' : p.metrics.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
                 {p.metrics.map((m) => (
                   <div key={m.label} className="lift rounded-2xl border border-line bg-surface p-4 sm:p-5">
-                    <div className="font-display text-[clamp(2rem,4vw,3rem)] font-semibold leading-none tracking-[-0.04em]">{m.value}</div>
+                    <div className="font-display text-[clamp(2rem,4vw,3rem)] font-semibold leading-none">{m.value}</div>
                     <div className="mt-2 text-sm leading-snug text-ink-soft">{m.label}</div>
                   </div>
                 ))}
@@ -145,7 +145,7 @@ export function CaseStudy() {
             <span className="eyebrow inline-flex items-center gap-2">
               <ArrowLeft className="size-3" /> Previous
             </span>
-            <span className="font-display text-2xl font-semibold leading-tight tracking-[-0.03em]">{prev.title}</span>
+            <span className="font-display text-2xl font-semibold leading-tight">{prev.title}</span>
           </Link>
           <Link
             to={`/work/${next.slug}`}
@@ -155,7 +155,7 @@ export function CaseStudy() {
               Next case study <ArrowRight className="size-3" />
             </span>
             <span className="flex items-end justify-between gap-6">
-              <span className="font-display text-[clamp(2rem,5vw,3.8rem)] font-semibold leading-[0.95] tracking-[-0.035em]">
+              <span className="font-display text-[clamp(2rem,5vw,3.8rem)] font-semibold leading-[0.95]">
                 {next.title}{' '}
                 <em className="font-hand font-normal not-italic opacity-60">{next.accent}</em>
               </span>

@@ -139,7 +139,7 @@ function Tile({
       <span className="tabular absolute left-2 top-1.5 font-mono text-[10px] font-medium sm:left-2.5 sm:top-2 sm:text-[11px]">
         {String(el.n).padStart(2, '0')}
       </span>
-      <span className="absolute left-2 top-[34%] font-display text-[clamp(1.05rem,2.3vw,1.95rem)] font-bold leading-none tracking-[-0.03em] sm:left-2.5">
+      <span className="absolute left-2 top-[34%] font-display text-[clamp(1.05rem,2.3vw,1.95rem)] font-bold leading-none sm:left-2.5">
         {el.sym}
       </span>
       <span className="absolute inset-x-2 bottom-1.5 hidden truncate text-[10.5px] font-medium sm:block sm:inset-x-2.5 sm:bottom-2 lg:text-[11.5px]">
@@ -177,7 +177,7 @@ function Inspector({ el, hover }: { el: Element | null; hover: boolean }) {
               className="size-14 rounded-[18px] sm:size-20 sm:rounded-[22px] lg:size-28 lg:rounded-[28px]"
             />
             <div className="min-w-0">
-              <div className="font-display text-[1.25rem] font-bold leading-tight tracking-[-0.025em] sm:text-[1.5rem] lg:text-[1.8rem]">{el.name}</div>
+              <div className="font-display text-[1.25rem] font-bold leading-tight sm:text-[1.5rem] lg:text-[1.8rem]">{el.name}</div>
               <div className="eyebrow mt-1 sm:mt-1.5">{familyLabel[el.family]}</div>
               <p className="mt-1.5 text-sm leading-snug text-ink-soft sm:mt-3 sm:text-base lg:mx-auto lg:max-w-[30ch]">{el.note}</p>
             </div>

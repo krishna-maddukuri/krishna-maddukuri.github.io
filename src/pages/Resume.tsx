@@ -30,7 +30,7 @@ export function Resume() {
           className="card-shadow mt-8 rounded-[32px] border border-line bg-surface p-6 sm:p-10 lg:p-14"
         >
           <header className="border-b border-line pb-8">
-            <h1 className="font-display text-[clamp(2.2rem,6vw,4rem)] font-bold leading-[0.95] tracking-[-0.04em]">
+            <h1 className="font-display text-[clamp(2.2rem,6vw,4rem)] font-bold leading-[0.95]">
               {site.name}
             </h1>
             <p className="mt-3 text-lg">

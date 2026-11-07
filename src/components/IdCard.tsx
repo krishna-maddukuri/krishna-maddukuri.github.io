@@ -367,7 +367,7 @@ function CardBack() {
       style={{ transform: 'rotateY(180deg)' }}
     >
       <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] opacity-65">If found, please return to</div>
-      <div className="mt-3 font-display text-[1.6rem] font-bold leading-[1.05] tracking-[-0.03em]">{site.name}</div>
+      <div className="mt-3 font-display text-[1.6rem] font-bold leading-[1.05]">{site.name}</div>
       <dl className="mt-6 flex flex-col">
         {rows.map((r) => (
           <div key={r.k} className="border-t border-white/15 py-2.5">

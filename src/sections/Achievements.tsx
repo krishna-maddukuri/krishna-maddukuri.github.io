@@ -124,11 +124,11 @@ function Card({ a, i }: { a: Achievement; i: number }) {
       </div>
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0 pb-1">
-          <div className="font-display text-[1.2rem] font-bold leading-tight tracking-[-0.02em] sm:text-[1.3rem]">{a.title}</div>
+          <div className="font-display text-[1.2rem] font-bold leading-tight sm:text-[1.3rem]">{a.title}</div>
           <div className="eyebrow mt-1.5">{a.source}</div>
           <div className="mt-2 text-sm leading-snug text-ink-soft">{a.detail}</div>
         </div>
-        <div className="shrink-0 font-display text-[clamp(3.6rem,6.5vw,5.6rem)] font-bold leading-[0.8] tracking-[-0.05em]">
+        <div className="shrink-0 font-display text-[clamp(3.6rem,6.5vw,5.6rem)] font-bold leading-[0.8]">
           <span className="accent-num">
             <CountUp value={a.value} />
             <span className="text-accent-display/40">{a.suffix}</span>

@@ -59,7 +59,7 @@ export function SectionHeading({
       <div className="heading-drift min-w-0">
         <Eyebrow index={index} label={label} />
         {/* the bold part first, the handwritten tail a beat later */}
-        <h2 className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95] tracking-[-0.04em]">
+        <h2 className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95]">
           <m.span
             className="inline-block"
             initial={{ opacity: 0, y: 24 }}

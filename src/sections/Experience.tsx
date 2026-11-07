@@ -51,7 +51,7 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
     <div className={`flex items-center ${left ? 'lg:justify-start' : 'lg:justify-end'}`}>
       {showYear && (
         <m.span
-          className="font-display text-[clamp(2.6rem,5.6vw,5.2rem)] font-extrabold leading-none tracking-[-0.05em] text-ink"
+          className="font-display text-[clamp(2.6rem,5.6vw,5.2rem)] font-extrabold leading-none text-ink"
           initial={{ opacity: 0, x: left ? -24 : 24 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.5 }}
@@ -79,7 +79,7 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
         </span>
         <span className="tabular ml-auto font-mono text-xs text-ink-soft">{ms.period}</span>
       </div>
-      <h3 className="mt-5 font-display text-[clamp(1.45rem,2.2vw,1.9rem)] font-bold leading-[1.1] tracking-[-0.025em]">{ms.title}</h3>
+      <h3 className="mt-5 font-display text-[clamp(1.45rem,2.2vw,1.9rem)] font-bold leading-[1.1]">{ms.title}</h3>
       <p className="mt-1.5 text-sm text-ink-soft">{ms.org}</p>
       <div className="mt-5">
         {ms.current ? (

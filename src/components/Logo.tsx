@@ -20,7 +20,7 @@ export function Plate({ logo, alt = '', className = 'size-10 rounded-xl', eager 
 /** The same plate with initials instead of a picture (until the logo file is in /public/logos). */
 export function Monogram({ text, color, className = 'size-10 rounded-xl text-[13px]' }: { text: string; color: string; className?: string }) {
   return (
-    <span className={`plate font-display font-bold leading-none tracking-[-0.02em] ${className}`} style={plateStyle(color)} aria-hidden>
+    <span className={`plate font-display font-bold leading-none ${className}`} style={plateStyle(color)} aria-hidden>
       <span style={{ color: `color-mix(in oklab, ${color} 82%, #000000)` }}>{text}</span>
     </span>
   )

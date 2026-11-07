@@ -48,7 +48,7 @@ export function Contact() {
             <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <span
                 ref={emailRef}
-                className="select-all font-display text-[clamp(1.2rem,5.2vw,4.4rem)] font-bold leading-none tracking-[-0.04em] [overflow-wrap:anywhere]"
+                className="select-all font-display text-[clamp(1.2rem,5.2vw,4.4rem)] font-bold leading-none [overflow-wrap:anywhere]"
               >
                 {site.email}
               </span>

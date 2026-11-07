@@ -17,7 +17,7 @@ export function About() {
           <div className="relative z-10 min-w-0">
             <Eyebrow index="01" label="About" />
             <Reveal>
-              <h2 className="mt-5 font-display text-[clamp(2.8rem,5.4vw,4.9rem)] font-bold leading-[0.95] tracking-[-0.04em]">
+              <h2 className="mt-5 font-display text-[clamp(2.8rem,5.4vw,4.9rem)] font-bold leading-[0.95]">
                 Hi, I&rsquo;m <Accent>{about.hello}</Accent>
               </h2>
             </Reveal>

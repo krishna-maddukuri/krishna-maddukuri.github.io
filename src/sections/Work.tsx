@@ -130,7 +130,7 @@ function Panel({
           className="group flex h-full w-full flex-col items-center py-6"
         >
           <span className="eyebrow tabular">{num(index)}</span>
-          <span className="mt-auto whitespace-nowrap font-display text-[20px] font-bold tracking-[-0.02em] [writing-mode:vertical-rl] rotate-180">
+          <span className="mt-auto whitespace-nowrap font-display text-[20px] font-bold [writing-mode:vertical-rl] rotate-180">
             {p.title}
           </span>
           <span className="mt-6 grid size-9 place-items-center rounded-full bg-ink text-paper transition-transform duration-300 group-hover:rotate-90">
@@ -202,7 +202,7 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
           <span className="h-px w-6 bg-line" aria-hidden />
           <span className="min-w-0 leading-snug">{p.eyebrow}</span>
         </div>
-        <h3 className="mt-5 font-display text-[clamp(2rem,3vw,2.9rem)] font-bold leading-[0.98] tracking-[-0.035em]">
+        <h3 className="mt-5 font-display text-[clamp(2rem,3vw,2.9rem)] font-bold leading-[0.98]">
           {p.title}{' '}
           <em className="accent-tail">{p.accent}</em>
         </h3>
@@ -244,7 +244,7 @@ function Row({ project: p, index, open, onToggle }: { project: Project; index: n
         className="flex w-full items-center gap-4 px-5 py-5 text-left"
       >
         <span className="eyebrow tabular">{num(index)}</span>
-        <span className="min-w-0 flex-1 font-display text-[clamp(1.25rem,5vw,1.6rem)] font-bold leading-tight tracking-[-0.03em]">
+        <span className="min-w-0 flex-1 font-display text-[clamp(1.25rem,5vw,1.6rem)] font-bold leading-tight">
           {p.title}
         </span>
         <span
@@ -266,7 +266,7 @@ function Row({ project: p, index, open, onToggle }: { project: Project; index: n
               <ProjectVisual kind={p.visual} className="aspect-[4/3] w-full" />
               <div className="flex min-w-0 flex-col gap-5">
               <div className="eyebrow">{p.eyebrow}</div>
-              <h3 className="-mt-2 font-display text-[1.9rem] font-bold leading-none tracking-[-0.03em]">
+              <h3 className="-mt-2 font-display text-[1.9rem] font-bold leading-none">
                 {p.title}{' '}
                 <em className="accent-tail">{p.accent}</em>
               </h3>

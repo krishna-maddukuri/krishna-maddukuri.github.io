@@ -12,7 +12,7 @@ export function Learning() {
           <div className="min-w-0 lg:sticky lg:top-32 lg:self-start">
             <Eyebrow index="04" label="Learning" />
             <Reveal>
-              <h2 className="mt-5 font-display text-[clamp(2.8rem,6vw,5.4rem)] font-bold leading-[0.92] tracking-[-0.04em]">
+              <h2 className="mt-5 font-display text-[clamp(2.8rem,6vw,5.4rem)] font-bold leading-[0.92]">
                 Always
                 <br />
                 <Accent>learning.</Accent>
@@ -41,7 +41,7 @@ export function Learning() {
                     <OrgMark label={item.from} className="size-12 rounded-[14px] text-[13px] sm:size-[52px] sm:rounded-2xl sm:text-sm" />
                   )}
                   <span className="min-w-0">
-                    <span className="block font-display text-[clamp(1.2rem,2vw,1.6rem)] font-semibold leading-tight tracking-[-0.02em]">
+                    <span className="block font-display text-[clamp(1.2rem,2vw,1.6rem)] font-semibold leading-tight">
                       {item.title}
                     </span>
                     <span className="mt-1 block text-sm text-ink-soft transition-colors group-hover:text-paper/70">{item.from}</span>

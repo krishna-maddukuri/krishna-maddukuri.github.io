@@ -101,8 +101,8 @@ export function Hero() {
           {site.name}
         </m.div>
         {/* wide screens: as big as the design allows, but never so wide that the first line runs into his figure
-            ("Senior Software" in Bricolage Grotesque is 6.71em wide; the figure is 0.357x as wide as it is tall) */}
-        <h1 className="mt-4 font-display text-[length:min(13.2vw,3.5rem)] font-bold leading-[0.9] tracking-[-0.045em] text-ink sm:text-[clamp(3.1rem,7.2vw,7.4rem)] lg:text-[length:min(clamp(3.1rem,min(7.2vw,11.5vh),7.4rem),calc((60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)/6.85))]">
+            ("Senior Software" was measured in Bricolage Grotesque at 6.71em; Antonio is narrower; the figure is 0.357x as wide as it is tall) */}
+        <h1 className="mt-4 font-display text-[length:min(13.2vw,3.5rem)] font-bold leading-[0.9] text-ink sm:text-[clamp(3.1rem,7.2vw,7.4rem)] lg:text-[length:min(clamp(3.1rem,min(7.2vw,11.5vh),7.4rem),calc((60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)/6.85))]">
           {site.headline.map((line, i) => (
             <span key={line} className="block overflow-hidden pb-[0.07em]">
               <m.span
