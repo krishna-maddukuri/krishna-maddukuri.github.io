@@ -1,0 +1,14 @@
+node_modules
+dist
+.DS_Store
+Thumbs.db
+*.log
+*.local
+.env*
+
+# Original full-size photos stay off GitHub (this repo is public).
+source-media/
+
+# Playwright output
+test-results/
+playwright-report/
