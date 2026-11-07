@@ -11,11 +11,11 @@ test.describe('about', () => {
     await expect(about.getByText('Quick facts').locator('..').getByText('Richmond, VA')).toBeVisible()
     await expect(about.getByRole('link', { name: /Download Krishna's resume/ })).toBeVisible()
     await expect(about.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', 'https://www.linkedin.com/in/krishna-koushik')
-    // the LinkedIn button carries the LinkedIn mark; the key words of the lead are in the accent colour (teal)
+    // the LinkedIn button carries the LinkedIn mark; the key words of the lead are in the accent colour (red)
     await expect(about.getByRole('link', { name: 'LinkedIn' }).locator('img')).toHaveAttribute('src', /linkedin\.svg$/)
     const strong = about.locator('p strong').first()
     await expect(strong).toContainText('distributed systems')
-    expect(await strong.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(94, 227, 229)')
+    expect(await strong.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(255, 100, 80)')
   })
 
   test('the ID card flips on click and on Enter, and shows the contact details on its back', async ({ page }) => {
