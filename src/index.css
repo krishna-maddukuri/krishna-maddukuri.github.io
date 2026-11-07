@@ -96,8 +96,8 @@
   --clip: #cdbf9f;
 
   /* the one colour on the page besides ink: portfolio-2's red, in both themes. It colours the tails
-     of headings, the key words in the intro, the numbers, the eyebrow index, the dots and lines, the
-     bubble and the selection. --accent is the colour itself (dots, lines, selection, button fills);
+     of headings, the key words in the intro, the numbers, the eyebrow index, the dots and lines and
+     the selection. --accent is the colour itself (dots, lines, selection, button fills);
      --accent-display is the shade for big text (3:1 on its background: the red itself on the paper,
      3.4:1) and --accent-text the shade for body-size words (4.5:1: a deeper red on the paper).
      --accent-mark is a highlighter stroke behind accent text, for a colour that can't be read as
@@ -467,29 +467,15 @@ html.lenis, html.lenis body { height: auto; }
   }
 
 
-  /* the faded name behind the hero: strong on the left,
-     fading out to the right and towards the bottom */
-  /* the footer's surname: faint ink, brightest in the middle of the screen and fading evenly towards
-     both sides and the bottom (an earlier diagonal fade made the word look pushed to the left) */
-  .watermark {
-    color: color-mix(in oklab, var(--ink) 13%, transparent);
-    -webkit-mask-image:
-      radial-gradient(60% 150% at 50% 55%, #000 0%, rgba(0, 0, 0, 0.88) 40%, rgba(0, 0, 0, 0.42) 100%),
-      linear-gradient(to bottom, #000 70%, rgba(0, 0, 0, 0.55) 100%);
-    -webkit-mask-composite: source-in;
-    mask-image:
-      radial-gradient(60% 150% at 50% 55%, #000 0%, rgba(0, 0, 0, 0.88) 40%, rgba(0, 0, 0, 0.42) 100%),
-      linear-gradient(to bottom, #000 70%, rgba(0, 0, 0, 0.55) 100%);
-    mask-composite: intersect;
-  }
-  /* the name behind the hero figure, set like portfolio-2's giant word (sections/Hero.tsx works out the
-     sizes): the hero is the frame the name's width and the gutters are measured against */
-  .hero-frame {
+  /* the giant words, set like portfolio-2's: his first names behind the hero figure, his surname in
+     the footer (components/GiantWord.tsx works out the sizes). The .wm-frame is what the word's width
+     and the gutters are measured against: the hero, the footer */
+  .wm-frame {
     container-type: inline-size;
     --wm-gutter: clamp(16px, 4vw, 44px);
   }
   .wm-wrap { width: min(100% - 2 * var(--wm-gutter), 1240px); }
-  .watermark-hero {
+  .wm-word {
     display: grid;
     row-gap: calc(var(--wm-word) * 0.12);
     font-family: "Antonio", var(--ff-display);
@@ -513,9 +499,9 @@ html.lenis, html.lenis body { height: auto; }
     paint-order: stroke fill;
     text-shadow: 0 0 70px var(--wm-glow);
   }
-  /* on load: nothing until the face is in, then the outline of every letter draws in (left to right,
-     the second line a beat later), holds a moment, then the face fills in */
-  .watermark-hero:not(.wm-play) .wm-ch { opacity: 0; }
+  /* on load (the footer: on coming into view): nothing until the face is in, then the outline of every
+     letter draws in (left to right, a second line a beat later), holds a moment, then the face fills in */
+  .wm-word:not(.wm-play) .wm-ch { opacity: 0; }
   .wm-play .wm-ch {
     animation: wm-outline 2s var(--ease-out) both;
     animation-delay: calc(0.1s + var(--l) * 0.3s + var(--i) * 0.02s);
@@ -790,58 +776,6 @@ html.lenis, html.lenis body { height: auto; }
 @media (hover: hover) {
   .btn-solid:not(.btn-still):hover::before, .btn-fill:hover::before { transform: scaleY(1); }
   .btn-solid:not(.btn-still):hover, .btn-fill:hover { color: #160403; border-color: var(--accent); }
-}
-
-/* the "Hi, I'm Krishna." bubble: a red gradient (portfolio-2's bright red into its red) with the
-   monogram tile's deep red for the words in both themes (5.2:1 or better on every part of it),
-   bobbing 4px while a red halo swells and fades every 3.2 s */
-.bubble-hello {
-  --bubble-a: #ff6450;
-  --bubble-b: #f0412e;
-  background: linear-gradient(135deg, var(--bubble-a) 0%, var(--bubble-b) 100%);
-  color: #160403;
-  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.45);
-  animation: bubble-breathe 3.2s ease-in-out infinite;
-}
-/* while he is in pieces there is nobody to say hello: the bubble shrinks away, and pops back once he
-   is back together (the figure before it carries data-paper-figure) */
-.bubble-wrap {
-  transition: opacity 0.25s var(--ease-std), transform 0.3s var(--ease-std), visibility 0s;
-}
-[data-paper-figure="scattered"] ~ .bubble-wrap {
-  opacity: 0 !important;
-  transform: scale(0.6) !important;
-  visibility: hidden;
-  transition: opacity 0.25s var(--ease-std), transform 0.3s var(--ease-std), visibility 0s 0.3s;
-}
-.bubble-float { animation: bubble-float 3.2s ease-in-out infinite; }
-.bubble-room { visibility: hidden; }
-.bubble-room::before { content: attr(data-text); }
-/* the three dots while he "types": each bounces in turn */
-.typing-dots i {
-  display: block;
-  width: 0.42em;
-  height: 0.42em;
-  border-radius: 50%;
-  background: rgb(22 4 3 / 0.75);
-  animation: typing-dot 1.1s ease-in-out infinite;
-}
-.typing-dots i:nth-child(2) { animation-delay: 0.16s; }
-.typing-dots i:nth-child(3) { animation-delay: 0.32s; }
-@keyframes typing-dot {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.55; }
-  30% { transform: translateY(-0.3em); opacity: 1; }
-}
-@keyframes bubble-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-@keyframes bubble-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 transparent, 0 10px 24px -12px rgb(0 0 0 / 0.45); }
-  50% { box-shadow: 0 0 28px 4px color-mix(in oklab, var(--accent) 55%, transparent), 0 10px 24px -12px rgb(0 0 0 / 0.45); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bubble-hello, .bubble-float, .typing-dots i { animation: none; }
 }
 
 /* the label that rides beside the pointer over the paper figure (mouse), and the button under his

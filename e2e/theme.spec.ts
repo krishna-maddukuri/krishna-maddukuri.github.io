@@ -45,7 +45,7 @@ test.describe('theme', () => {
     await fresh.close()
   })
 
-  test('the ink is black in both themes, the accent is teal in both (brighter on black, deeper on the paper), and the card header follows', async ({ page }) => {
+  test('the ink is black in both themes, the accent is red in both (brighter on black, the red itself on the paper), and the card header follows', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await openHome(page)
     // the card's header bar is painted with the variable, so read the colour it actually renders
@@ -54,9 +54,9 @@ test.describe('theme', () => {
     expect(await bar()).toBe('rgb(0, 0, 0)')
     const tail = page.locator('#about h2 em')
     const colour = () => tail.evaluate((el) => getComputedStyle(el).color)
-    expect(await colour()).toBe('rgb(58, 219, 221)')
+    expect(await colour()).toBe('rgb(255, 100, 80)')
     await themeButton(page).click()
     await expect.poll(bar).toBe('rgb(0, 0, 0)')
-    await expect.poll(colour).toBe('rgb(15, 139, 141)')
+    await expect.poll(colour).toBe('rgb(240, 65, 46)')
   })
 })

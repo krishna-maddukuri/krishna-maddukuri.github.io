@@ -24,12 +24,10 @@ export const site = {
 
   /**
    * Hero: his full-body paper figure (a cut-out with a see-through background, in /public/avatar,
-   * with the facet mesh beside it) and the chat bubble that pops up beside his head.
-   * Empty bubble = no bubble. Empty image = a placeholder figure until a picture is added.
+   * with the facet mesh beside it). Empty image = a placeholder figure until a picture is added.
    */
   hero: {
     image: 'avatar/krishna-origami.webp',
-    bubble: "Hi, I'm Krishna.",
   },
 
   /** Picture for the ID card (a portrait crop works best). Empty = initials. */

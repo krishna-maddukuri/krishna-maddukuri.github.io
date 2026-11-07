@@ -1,9 +1,10 @@
+import { useInView } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useRef, useState } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
 import { Link } from '../lib/router'
 import { site } from '../data/site'
 import { useScrollTo } from '../lib/scroll'
-import { FitWord } from '../components/FitWord'
+import { GiantWord, giantWord } from '../components/GiantWord'
 import { LinkedInMark } from '../components/Logo'
 import { ResumeLink } from '../components/ResumeLink'
 import { copyText, toast } from '../components/Toast'
@@ -109,10 +110,19 @@ export function Contact() {
   )
 }
 
+/** The footer's word: his surname, set like the giant name over the hero. */
+const fw = giantWord([site.name.split(' ').slice(-1)[0]])
+
 export function Footer() {
   const scrollTo = useScrollTo()
+  // the surname draws itself in once it is on screen
+  const word = useRef<HTMLDivElement>(null)
+  const seen = useInView(word, { once: true, amount: 0.5 })
   return (
-    <footer className="relative overflow-hidden border-t border-line pt-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 28px)' }}>
+    <footer
+      className="wm-frame relative overflow-hidden border-t border-line pt-10"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 28px)', '--wm-word': fw.word } as CSSProperties}
+    >
       <Container>
         <div className="flex flex-col gap-4 text-sm text-ink-soft sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} {site.name}</span>
@@ -129,17 +139,17 @@ export function Footer() {
           </span>
         </div>
       </Container>
-      {/* the surname, edge to edge: as wide as the page, whatever the screen */}
+      {/* the surname, as wide as the page's measure, in the style of the giant name over the hero */}
       <m.div
+        ref={word}
         aria-hidden
-        className="watermark pointer-events-none mt-8 select-none font-display font-extrabold"
-        style={{ fontOpticalSizing: 'auto' }}
+        className="wm-wrap pointer-events-none mx-auto mt-8 select-none"
         initial={{ y: '30%' }}
         whileInView={{ y: '0%' }}
         viewport={{ once: true }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        <FitWord text={site.shortName.split(' ')[1] ?? site.first} />
+        <GiantWord lines={fw.lines} play={seen} />
       </m.div>
     </footer>
   )

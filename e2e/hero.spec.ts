@@ -2,13 +2,12 @@ import { expect, test } from '@playwright/test'
 import { expectScrolledTo, openHome } from './helpers'
 
 test.describe('hero', () => {
-  test('shows the name, the headline, the intro, the figure and the chat bubble', async ({ page }) => {
+  test('shows the name, the headline, the intro and the figure', async ({ page }) => {
     await openHome(page)
     const hero = page.locator('#top')
     await expect(hero.getByRole('heading', { level: 1 })).toContainText('Senior Software')
     await expect(hero.getByRole('heading', { level: 1 })).toContainText('Engineer')
     await expect(hero.getByText('Krishna Koushik Maddukuri', { exact: true })).toBeVisible()
-    await expect(hero.getByText("Hi, I'm Krishna.")).toBeVisible()
     // the paper figure is an image to assistive tech, whether it is the folding canvas or the still picture
     const figure = hero.getByRole('img', { name: 'Krishna Koushik Maddukuri' })
     await expect(figure).toBeVisible()

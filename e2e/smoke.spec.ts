@@ -28,7 +28,7 @@ test.describe('page load', () => {
     await openHome(page)
     await page.waitForLoadState('networkidle')
     const loaded = await page.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family))
-    for (const family of ['Bricolage Grotesque', 'Geist', 'Geist Mono', 'Instrument Serif']) {
+    for (const family of ['Bricolage Grotesque', 'Geist', 'Geist Mono', 'Antonio', 'Sedgwick Ave']) {
       expect(loaded, `${family} should be loaded`).toContain(family)
     }
     expect(external).toEqual([])

@@ -1,87 +1,9 @@
-import { AnimatePresence, useReducedMotion } from 'motion/react'
-import * as m from 'motion/react-m'
-import { useEffect, useState } from 'react'
 import { site } from '../data/site'
-import { onHome } from '../lib/home'
 import { PaperFigure } from './PaperFigure'
 
-/** When the bubble appears (s after load) and how long he "types" before the message is sent. */
-const BUBBLE_IN = 1.3
-const TYPING = 1.5
-
-/** His paper figure in the hero (folding itself together), with a chat bubble that pops up beside his head. */
+/** His paper figure in the hero (folding itself together). */
 export function HeroMedia() {
-  const { image, bubble } = site.hero
-  const reduce = useReducedMotion()
-  // the greeting is sent again each time the page comes home (the name in the header)
-  const [round, setRound] = useState(0)
-  useEffect(() => onHome(() => setRound((n) => (reduce ? n : n + 1))), [reduce])
-  return (
-    <div className="relative h-full w-fit">
-      {image ? <PaperFigure /> : <PlaceholderFigure />}
-      {bubble && <Bubble key={round} text={bubble} delay={round ? 0.3 : BUBBLE_IN} />}
-    </div>
-  )
-}
-
-/**
- * The chat bubble, as a message arriving: it slides up as a small bubble with three dots bouncing
- * (he's typing), then widens into the message itself. Hidden while he is scattered (.bubble-wrap in
- * index.css). With "reduce motion" the message simply appears.
- */
-function Bubble({ text, delay }: { text: string; delay: number }) {
-  const reduce = useReducedMotion()
-  // he types once the bubble has slid in (timed from then, so a slow start never cuts the typing short)
-  const [typing, setTyping] = useState(false)
-  const [sent, setSent] = useState(false)
-  useEffect(() => {
-    if (!typing) return
-    const t = setTimeout(() => setSent(true), TYPING * 1000)
-    return () => clearTimeout(t)
-  }, [typing])
-  const showText = sent || reduce
-  return (
-    <m.div
-      // beside his neck, with the square corner pointing at him, clear of the faded name behind him.
-      // Wide screens: in the space between the name's two lines (--wm-gap, measured from the hero's top;
-      // the figure starts 14svh, at most 40px short of 100%, below that). Phones and tablets: just under
-      // the name's last line (--wm-bottom from the hero's top), and pinned 16px (sm: 24px) from the
-      // screen's right edge, however wide he is (the figure's box is centred: the margin beside it is
-      // half of what the screen has left over).
-      className="bubble-wrap absolute right-[calc(16px_-_(100vw_-_100%)_/_2)] top-[calc(var(--wm-bottom)-12px)] origin-bottom-left sm:right-[calc(24px_-_(100vw_-_100%)_/_2)] sm:top-[calc(var(--wm-bottom)-20px)] lg:left-[calc(76%+34px)] lg:right-auto lg:top-[calc(var(--wm-gap)-20px-min(4svh,40px))]"
-      initial={reduce ? false : { opacity: 0, y: 10, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: reduce ? 0 : delay }}
-      onAnimationComplete={() => setTyping(true)}
-    >
-      {/* the float is on this wrapper so the bubble itself is free to change size (bubble-float in index.css) */}
-      <div className="bubble-float relative w-fit">
-        {/* an unseen copy of the words (drawn by CSS, so it is not a second copy of the text on the page)
-            holds the finished bubble's room, so the bubble always grows from its left corner (the one
-            pointing at him) towards the right, on phones too, where it is pinned to the screen's right edge */}
-        <div className="bubble-room whitespace-nowrap px-3.5 py-2 text-[13px] font-medium sm:px-4 sm:py-2.5 sm:text-sm" data-text={text} aria-hidden />
-        {/* red gradient with a breathing halo (bubble-hello in index.css); its width eases as the dots give way to the words */}
-        <m.div
-          layout
-          transition={{ layout: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }}
-          className="bubble-hello absolute inset-y-0 left-0 flex items-center overflow-hidden whitespace-nowrap rounded-2xl rounded-bl-sm px-3.5 text-[13px] font-medium sm:px-4 sm:text-sm"
-          style={{ borderRadius: 16, borderBottomLeftRadius: 2 }}
-        >
-          <AnimatePresence initial={false} mode="popLayout">
-            {showText ? (
-              <m.span key="text" className="block" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
-                {text}
-              </m.span>
-            ) : (
-              <m.span key="dots" className="typing-dots flex items-center gap-1" aria-label="typing" exit={{ opacity: 0, transition: { duration: 0.15 } }}>
-                <i /><i /><i />
-              </m.span>
-            )}
-          </AnimatePresence>
-        </m.div>
-      </div>
-    </m.div>
-  )
+  return <div className="relative h-full w-fit">{site.hero.image ? <PaperFigure /> : <PlaceholderFigure />}</div>
 }
 
 /**

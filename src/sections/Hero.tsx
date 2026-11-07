@@ -6,8 +6,12 @@ import { useMedia } from '../hooks/useMedia'
 import { onHome } from '../lib/home'
 import { useScrollTo } from '../lib/scroll'
 import { ResumeLink } from '../components/ResumeLink'
+import { GiantWord, giantWord } from '../components/GiantWord'
 import { HeroMedia } from '../components/HeroMedia'
 import { ArrowDown, ArrowRight, EASE, plain, richWords } from '../components/ui'
+
+/** The giant name behind the hero: his first and middle names (the surname is the footer's word). */
+const wm = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null)
@@ -22,7 +26,6 @@ export function Hero() {
   // smooth when the page isn't moving things on every frame.
   const touch = useMedia('(pointer: coarse)')
 
-  const wm = watermarkLines(site.name)
   // the name draws itself in once its font is in (or after a moment, if the font is slow), so the
   // outline is never drawn in the fallback font and swapped mid-way
   const [wmPlay, setWmPlay] = useState(false)
@@ -52,39 +55,21 @@ export function Hero() {
     <section
       id="top"
       ref={ref}
-      className="hero-frame relative isolate flex flex-col overflow-hidden lg:block"
-      style={
-        {
-          minHeight: 'min(100svh, 1000px)',
-          '--wm-word': wm.word,
-          '--wm-bottom': wm.bottom,
-          '--wm-gap': wm.gap,
-        } as CSSProperties
-      }
+      className="wm-frame relative isolate flex flex-col overflow-hidden lg:block"
+      style={{ minHeight: 'min(100svh, 1000px)', '--wm-word': wm.word, '--wm-bottom': wm.bottom } as CSSProperties}
     >
-      {/* the full name behind the figure, set like portfolio-2's giant word (index.css, .watermark-hero):
-          on load each letter draws in as an outline, then fills (.wm-play); every letter is its own span
-          so it can take its turn, and each line spreads its letters to both edges of the page's measure.
-          Phones: it starts just under the header, so most of it shows above his head */}
+      {/* his name behind the figure, set like portfolio-2's giant word (components/GiantWord.tsx): on load
+          each letter draws in as an outline, then fills, and the line spreads its letters to both edges of
+          the page's measure. Phones: it starts just under the header, so most of it shows above his head */}
       <m.div
         style={touch ? undefined : { y: wmY, opacity: wmFade }}
         aria-hidden
         className="wm-wrap pointer-events-none absolute inset-x-0 top-[68px] -z-10 mx-auto select-none sm:top-[78px] lg:top-[10%]"
       >
-        <div className={`watermark-hero ${wmPlay ? 'wm-play' : ''}`}>
-          {wm.lines.map((line, l) => (
-            <div key={line.text} className="wm-line" style={{ '--l': l, '--wm-r': line.ratio } as CSSProperties}>
-              {[...line.text].map((ch, i) => (
-                <span key={i} className="wm-ch" style={{ '--i': i } as CSSProperties}>
-                  {ch}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
+        <GiantWord lines={wm.lines} play={wmPlay} />
       </m.div>
 
-      {/* figure: his cut-out photo, with the chat bubble. Phones and tablets: the first screen is him,
+      {/* figure: his cut-out photo. Phones and tablets: the first screen is him,
           from under the header down to the "Scatter him" button above the fold; the words come after
           (the button hangs below his feet into the words' top padding, so the figure sits above them;
           the badge, later in the DOM at the same level, stays tappable where it overlaps him). */}
@@ -201,55 +186,6 @@ function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
   )
 }
 
-/** How wide each capital of Antonio is at its heaviest weight, in em (and its space): the measure of a line. */
-const ANTONIO: Record<string, number> = {
-  A: 0.453, B: 0.48, C: 0.473, D: 0.492, E: 0.391, F: 0.386, G: 0.488, H: 0.508, I: 0.265, J: 0.462, K: 0.479, L: 0.367, M: 0.692,
-  N: 0.522, O: 0.488, P: 0.46, Q: 0.488, R: 0.484, S: 0.427, T: 0.345, U: 0.495, V: 0.454, W: 0.664, X: 0.438, Y: 0.429, Z: 0.365,
-  ' ': 0.179,
-}
-
-/**
- * The full name behind the figure, set like portfolio-2's giant word: everything but the surname on
- * the first line, the surname on the second ("KRISHNA KOUSHIK" over "MADDUKURI"), in Antonio at its
- * heaviest. Each line is as wide as the page's measure (1240px at most, inside portfolio-2's gutters),
- * and the whole name never taller than about 40% of the screen; when the height is the limit, the
- * letters spread out to keep both edges (CSS does the spreading: each line is a row of letters with
- * the space shared out between them).
- *
- * The size of the line with the biggest letters is --wm-word, a CSS length worked out from the hero's
- * own width (container units) and the screen's height, so nothing is measured in JavaScript; the
- * other lines are a fixed fraction of it, so every line fills the same width. Also returns how far
- * down the last line's foot is (for the badge) and where the space between the lines is (for the chat
- * bubble), both as CSS lengths from the name's top.
- */
-function watermarkLines(name: string) {
-  const words = name.toUpperCase().split(' ')
-  const texts = words.length > 1 ? [words.slice(0, -1).join(' '), words[words.length - 1]] : [words[0]]
-  // each line's natural width in em, with portfolio-2's 1.5% of slack so the letters never quite touch
-  const widths = texts.map((text) => [...text].reduce((w, ch) => w + (ANTONIO[ch] ?? 0.49), 0) * 1.0155)
-  const base = Math.min(...widths) // the narrowest line gets the biggest letters: --wm-word is its size
-  const lines = texts.map((text, i) => ({ text, ratio: base / widths[i] }))
-  // Antonio set with a line-height of 0.86: the capitals' top is 0.079em below the line's box and their
-  // foot 0.938em below it; the lines sit 0.12 word apart
-  const BOX = 0.86, TOP = 0.079, FOOT = 0.938, GAP = 0.12
-  const tops: number[] = [], feet: number[] = []
-  let y = 0
-  lines.forEach((line, i) => {
-    if (i) y += GAP
-    tops.push(y + TOP * line.ratio)
-    feet.push(y + FOOT * line.ratio)
-    y += BOX * line.ratio
-  })
-  const at = (k: number) => `calc(var(--wm-word) * ${k.toFixed(4)})`
-  return {
-    lines,
-    word: `min(calc((100cqw - 2 * var(--wm-gutter)) / ${base.toFixed(3)}), calc(1240px / ${base.toFixed(3)}), 26svh)`,
-    bottom: at(feet[feet.length - 1]),
-    // the middle of the space between the two lines: where the chat bubble sits, clear of both
-    gap: at(lines.length > 1 ? (feet[0] + tops[1]) / 2 : feet[0]),
-  }
-}
-
 /** One lap of the badge's circle (radius 46), the length the text is stretched to. */
 const BADGE_LAP = Math.round(2 * Math.PI * 46 * 100) / 100
 
@@ -262,9 +198,9 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: just under the second
-      // line of the faded name (which sits 10% down; --wm-bottom is how far down its last line ends).
-      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[84px] sm:right-6 sm:top-[52svh] sm:size-28 lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-[calc(10%+var(--wm-bottom)+20px)] lg:size-[clamp(88px,14vh,128px)]"
+      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: under the giant name
+      // (which sits 10% down; --wm-bottom is how far down its foot is), a little way below it.
+      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[84px] sm:right-6 sm:top-[52svh] sm:size-28 lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-[calc(10%+var(--wm-bottom)+min(6vh,56px))] lg:size-[clamp(88px,14vh,128px)]"
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
