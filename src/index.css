@@ -394,14 +394,19 @@ html.lenis, html.lenis body { height: auto; }
     height: 48px;
     border-radius: 12px;
   }
-  /* pressed: the whole brand (tile and name) lifts well clear of the bar, then stamps back down in place */
+  /* pressed: the whole brand (tile and name) lifts well clear of the bar (over the links beside it),
+     then stamps back down in place */
   .brand-stamp {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 10px;
     transform-origin: 50% 50%;
   }
-  .brand-stamp.is-stamping { animation: brand-stamp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .brand-stamp.is-stamping {
+    z-index: 1;
+    animation: brand-stamp 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
   .preserve-3d { transform-style: preserve-3d; }
   .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
   .no-scrollbar { scrollbar-width: none; }
@@ -699,8 +704,8 @@ html.lenis, html.lenis body { height: auto; }
 
 @keyframes brand-stamp {
   0% { transform: scale(1); }
-  30% { transform: scale(1.26); }
-  58% { transform: scale(0.94); }
+  30% { transform: scale(1.4); }
+  58% { transform: scale(0.93); }
   78% { transform: scale(1.03); }
   100% { transform: scale(1); }
 }
