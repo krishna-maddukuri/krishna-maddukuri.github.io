@@ -195,12 +195,13 @@ export function Header() {
             </nav>
           </m.div>
 
-          {/* the theme switch: a square of the same glass, exactly as tall as the bar (7px + the 32px tile + 7px), at the right corner */}
+          {/* the theme switch: a square of the same glass, exactly as tall as the bar (7px + the 32px tile + 7px), at the
+              right corner of the page's layout (the 1440px frame the hero and the sections sit in), not of the screen */}
           <m.div
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
-            className="pointer-events-auto absolute right-10 top-0"
+            className="pointer-events-auto absolute right-[max(40px,calc((100vw-1440px)/2+40px))] top-0"
           >
             <ThemeButton className="glass header-glass grid size-[46px] place-items-center rounded-xl text-[var(--bar-ink)] transition-colors hover:bg-[var(--glass-press)]" />
           </m.div>
