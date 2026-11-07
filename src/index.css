@@ -727,6 +727,10 @@ html.lenis, html.lenis body { height: auto; }
 .glass-menu::after {
   content: none;
 }
+/* and so do the panes inside the phone menu (the three quick tiles, the current section's pane) */
+.glass-menu .glass-lens {
+  box-shadow: 0 0 0 1px var(--bar-line);
+}
 
 /* the header's glass firms up a little once the page has scrolled (no JavaScript involved) */
 @supports (animation-timeline: scroll()) {
