@@ -34,7 +34,8 @@ test.describe('contact and footer', () => {
     await expect(footer).toContainText(`© ${new Date().getFullYear()} Krishna Koushik Maddukuri`)
     await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/)
     await expect(footer.getByRole('link', { name: 'Resume' })).toHaveAttribute('href', '#/resume')
-    await expect(footer.getByText('Maddukuri', { exact: true })).toBeAttached()
+    // the giant surname, one letter per span (the letters join up as the word)
+    await expect(footer.locator('.wm-word')).toHaveText('MADDUKURI')
   })
 })
 
