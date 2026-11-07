@@ -13,7 +13,15 @@ import { ArrowDown, Copy, EASE, Moon, Sun } from './ui'
 
 const sectionIds = ['top', ...navItems.map((n) => n.id)]
 const sectionLabel = Object.fromEntries(navItems.map((n) => [n.id, n.label])) as Record<string, string>
+/** His first and middle names, as the bar spells them beside the tile. */
+const givenNames = site.name.split(' ').slice(0, -1).join(' ')
 
+/**
+ * Wide screens: one floating glass bar in the middle of the top edge, with the red monogram tile
+ * and his name, the section links and the theme switch. Phones and tablets: the monogram at the
+ * left and a capsule with the theme switch and the menu button at the right. Corners are
+ * square-ish everywhere (12px on the panes).
+ */
 export function Header() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -72,17 +80,18 @@ export function Header() {
           paddingRight: 'env(safe-area-inset-right, 0px)',
         }}
       >
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-10">
+        {/* phones and tablets: the monogram at the left, the theme switch and the menu in a capsule at the right */}
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:hidden">
           <m.button
             type="button"
             onClick={() => go('top')}
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
-            className="pointer-events-auto flex items-center gap-3 rounded-full"
+            className="pointer-events-auto flex items-center gap-3 rounded-xl"
             aria-label={`${site.shortName}, back to top`}
           >
-            <span className="glass header-glass glass-press grid size-12 place-items-center rounded-full font-display text-[14px] font-bold tracking-tight text-ink lg:size-11">
+            <span className="glass header-glass glass-press grid size-12 place-items-center rounded-xl font-display text-[14px] font-bold tracking-tight text-ink">
               {site.monogram}
             </span>
           </m.button>
@@ -91,10 +100,52 @@ export function Header() {
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
-            className="pointer-events-auto flex items-center gap-2"
+            className="glass header-glass pointer-events-auto flex h-12 items-center rounded-xl p-1"
           >
-            {/* wide screens: the section pill and the theme switch */}
-            <nav aria-label="Sections" className="glass header-glass hidden items-center rounded-full p-1 lg:flex">
+            <ThemeButton className="grid size-10 place-items-center rounded-[8px] text-ink transition-colors active:bg-[var(--glass-press)]" />
+            <span className="mx-0.5 h-5 w-px bg-ink/15" aria-hidden />
+            <button
+              ref={menuButton}
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? 'Close menu' : here ? `Menu (${here})` : 'Menu'}
+              className="flex h-10 items-center gap-2.5 rounded-[8px] pl-3 pr-4 text-sm font-medium text-ink transition-colors active:bg-[var(--glass-press)]"
+            >
+              <span className="relative block h-2.5 w-4" aria-hidden>
+                <span className={`absolute left-0 h-px w-4 bg-ink transition-all duration-300 ${open ? 'top-1 rotate-45' : 'top-0'}`} />
+                <span className={`absolute left-0 h-px w-4 bg-ink transition-all duration-300 ${open ? 'top-1 -rotate-45' : 'top-2'}`} />
+              </span>
+              <MorphLabel text={open ? 'Close' : (here ?? 'Menu')} />
+            </button>
+          </m.div>
+        </div>
+
+        {/* wide screens: one bar in the middle */}
+        <div className="hidden justify-center px-10 lg:flex">
+          <m.div
+            initial={{ y: -16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
+            className="glass header-glass pointer-events-auto flex max-w-full items-center gap-[clamp(14px,2vw,26px)] rounded-xl p-[7px]"
+          >
+            {/* the brand: the red monogram tile and his first and middle names beside it */}
+            <button
+              type="button"
+              onClick={() => go('top')}
+              className="glass-press flex items-center gap-2.5 rounded-[7px] pr-1 text-[var(--bar-ink)]"
+              aria-label={`${site.shortName}, back to top`}
+            >
+              <span className="brand-tile" aria-hidden>
+                {site.monogram}
+              </span>
+              <span className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.16em]" aria-hidden>
+                {givenNames}.
+              </span>
+            </button>
+
+            <nav aria-label="Sections" className="flex items-center gap-[clamp(2px,0.6vw,8px)]">
               {navItems.map((item) => {
                 const on = active === item.id
                 return (
@@ -103,44 +154,23 @@ export function Header() {
                     type="button"
                     onClick={() => go(item.id)}
                     aria-current={on ? 'true' : undefined}
-                    className="relative rounded-full px-4 py-2 text-sm font-medium"
+                    className={`relative rounded-[6px] px-[9px] py-[9px] text-sm font-medium transition-colors ${on ? 'text-[var(--bar-ink)]' : 'text-[var(--bar-muted)] hover:text-[var(--bar-ink)]'}`}
                   >
+                    {item.label}
                     {on && (
                       <m.span
-                        layoutId="nav-pill"
-                        className="absolute inset-0 rounded-full bg-ink"
+                        layoutId="nav-line"
+                        className="absolute inset-x-[9px] bottom-[3px] h-0.5 bg-accent"
                         transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                        aria-hidden
                       />
                     )}
-                    <span className={`relative transition-colors ${on ? 'text-paper' : 'text-ink-soft hover:text-ink'}`}>
-                      {item.label}
-                    </span>
                   </button>
                 )
               })}
             </nav>
-            <ThemeButton className="btn-solid btn-still hidden size-11 place-items-center rounded-full bg-ink text-paper lg:grid" />
 
-            {/* phones and tablets: one glass capsule, the theme switch and the menu */}
-            <div className="glass header-glass flex h-12 items-center rounded-full p-1 lg:hidden">
-              <ThemeButton className="grid size-10 place-items-center rounded-full text-ink transition-colors active:bg-[var(--glass-press)]" />
-              <span className="mx-0.5 h-5 w-px bg-ink/15" aria-hidden />
-              <button
-                ref={menuButton}
-                type="button"
-                onClick={() => setOpen((v) => !v)}
-                aria-expanded={open}
-                aria-controls="mobile-menu"
-                aria-label={open ? 'Close menu' : here ? `Menu (${here})` : 'Menu'}
-                className="flex h-10 items-center gap-2.5 rounded-full pl-3 pr-4 text-sm font-medium text-ink transition-colors active:bg-[var(--glass-press)]"
-              >
-                <span className="relative block h-2.5 w-4" aria-hidden>
-                  <span className={`absolute left-0 h-px w-4 bg-ink transition-all duration-300 ${open ? 'top-1 rotate-45' : 'top-0'}`} />
-                  <span className={`absolute left-0 h-px w-4 bg-ink transition-all duration-300 ${open ? 'top-1 -rotate-45' : 'top-2'}`} />
-                </span>
-                <MorphLabel text={open ? 'Close' : (here ?? 'Menu')} />
-              </button>
-            </div>
+            <ThemeButton className="grid size-9 place-items-center rounded-[7px] border border-ink/15 text-[var(--bar-ink)] transition-colors hover:bg-[var(--glass-press)]" />
           </m.div>
         </div>
       </header>
@@ -169,7 +199,7 @@ export function Header() {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="glass glass-menu fixed z-50 flex flex-col overflow-y-auto overscroll-contain rounded-[30px] p-2 lg:hidden"
+            className="glass glass-menu fixed z-50 flex flex-col overflow-y-auto overscroll-contain rounded-[14px] p-2 lg:hidden"
             style={{
               top: 'calc(env(safe-area-inset-top, 0px) + 72px)',
               left: 'calc(env(safe-area-inset-left, 0px) + 12px)',
@@ -194,9 +224,9 @@ export function Header() {
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: EASE, delay: 0.06 + i * 0.035 }}
-                    className="relative flex items-center gap-4 rounded-[22px] px-4 py-2.5 text-left transition-colors active:bg-[var(--glass-press)]"
+                    className="relative flex items-center gap-4 rounded-[8px] px-4 py-2.5 text-left transition-colors active:bg-[var(--glass-press)]"
                   >
-                    {on && <span className="glass-lens absolute inset-0 rounded-[22px]" aria-hidden />}
+                    {on && <span className="glass-lens absolute inset-0 rounded-[8px]" aria-hidden />}
                     <span className="eyebrow tabular relative w-6">{String(i + 1).padStart(2, '0')}</span>
                     <span className="relative font-display text-[clamp(1.75rem,8.6vw,2.6rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
                       {item.label}
@@ -233,7 +263,7 @@ export function Header() {
 }
 
 const quick =
-  'glass-lens flex h-16 flex-col items-center justify-center gap-1.5 rounded-[20px] text-sm font-medium text-ink transition-[scale] duration-300 active:scale-95'
+  'glass-lens flex h-16 flex-col items-center justify-center gap-1.5 rounded-[10px] text-sm font-medium text-ink transition-[scale] duration-300 active:scale-95'
 
 function ThemeButton({ className }: { className: string }) {
   const { theme, toggle } = useTheme()

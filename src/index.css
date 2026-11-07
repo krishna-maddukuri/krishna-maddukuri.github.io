@@ -41,6 +41,15 @@
   src: url("/fonts/instrument-serif-latin-italic.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+/* Antonio, for the two letters on the monogram tile only (the same face and tile as portfolio-2) */
+@font-face {
+  font-family: "Antonio";
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url("/fonts/antonio-latin.woff2") format("woff2");
+  unicode-range: U+0041-005A;
+}
 /* metric-matched fallbacks (measured against Arial / Courier New / Georgia) */
 @font-face {
   font-family: "Bricolage Fallback";
@@ -140,6 +149,11 @@
      blurred pane with a bright specular rim where light catches its edge */
   --glass-tint: rgb(255 255 255 / 0.22);
   --glass-tint-strong: rgb(255 255 255 / 0.4);
+  /* what the header's glass firms up to once content scrolls under it: light enough that the
+     bar's text keeps at least 5:1 over black, with the blur still showing what passes behind */
+  --glass-settled: rgb(255 255 255 / 0.78);
+  --bar-ink: #0a0a0a;
+  --bar-muted: #4b4b4b;
   --glass-sheen: rgb(255 255 255 / 0.42);
   --glass-rim: rgb(255 255 255 / 0.98);
   --glass-rim-soft: rgb(255 255 255 / 0.4);
@@ -218,6 +232,10 @@
 
   --glass-tint: rgb(255 255 255 / 0.07);
   --glass-tint-strong: rgb(255 255 255 / 0.1);
+  /* in dark mode the settled pane darkens instead, so light text stays readable over the white ID card */
+  --glass-settled: rgb(8 8 10 / 0.78);
+  --bar-ink: #f5f5f7;
+  --bar-muted: #b3b3bb;
   --glass-sheen: rgb(255 255 255 / 0.16);
   --glass-rim: rgb(255 255 255 / 0.6);
   --glass-rim-soft: rgb(255 255 255 / 0.18);
@@ -357,6 +375,18 @@ html.lenis, html.lenis body { height: auto; }
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink-soft);
+  }
+  /* the brand tile in the header: red, 7px corners, the monogram in Antonio */
+  .brand-tile {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    background: #f0412e;
+    color: #160403;
+    font: 700 0.95rem/1 "Antonio", var(--ff-display);
+    letter-spacing: 0.02em;
   }
   .preserve-3d { transform-style: preserve-3d; }
   .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
@@ -663,7 +693,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 @keyframes header-settle {
   from { background-color: var(--glass-tint); }
-  to { background-color: var(--glass-tint-strong); }
+  to { background-color: var(--glass-settled); }
 }
 
 /* the theme switch: the new theme spreads out from the button as a growing circle */

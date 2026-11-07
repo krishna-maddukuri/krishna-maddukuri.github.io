@@ -9,7 +9,7 @@ test.describe('page load', () => {
     page.on('requestfailed', (r) => errors.push(`request failed: ${r.url()}`))
 
     await openHome(page)
-    await expect(page).toHaveTitle('Krishna Maddukuri')
+    await expect(page).toHaveTitle('Krishna Koushik Maddukuri')
     for (const id of ['top', 'about', 'skills', 'work', 'learning', 'experience', 'achievements', 'contact']) {
       await expect(page.locator(`#${id}`)).toBeAttached()
     }
