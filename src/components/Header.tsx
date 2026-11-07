@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from '../lib/router'
 import { navItems, site } from '../data/site'
 import { useActiveSection } from '../hooks/useActiveSection'
@@ -16,16 +16,15 @@ const sectionIds = ['top', ...navItems.map((n) => n.id)]
 const sectionLabel = Object.fromEntries(navItems.map((n) => [n.id, n.label])) as Record<string, string>
 /** His first and middle names, as the bar spells them beside the tile. */
 const givenNames = site.name.split(' ').slice(0, -1).join(' ')
-/** The same name, letter by letter, so each letter can take its turn in the ripple. */
-const letters = givenNames.split(' ').map((word) => Array.from(word))
 const barType = 'font-mono text-[12px] font-semibold uppercase tracking-[0.16em]'
 
 /**
- * Wide screens: one floating glass bar in the middle of the top edge, with the red monogram tile
- * and his name, the section links and the theme switch. Phones and tablets: the monogram at the
- * left and a capsule with the theme switch and the menu button at the right. Corners are
+ * Wide screens: one floating glass bar in the middle of the top edge, with the red monogram tile,
+ * his name and the section links, and the theme switch as a square of the same glass at the right
+ * corner. Phones and tablets: the monogram at the left and a capsule with the theme switch and the
+ * menu button at the right. Corners are
  * square-ish everywhere (12px on the panes). Pressing the name or the monogram brings the page
- * home: the tile turns over, the letters ripple, and the hero plays its welcome again (lib/home.ts).
+ * home: the brand lifts and stamps back down, and the hero plays its welcome again (lib/home.ts).
  */
 export function Header() {
   const location = useLocation()
@@ -36,8 +35,8 @@ export function Header() {
   const active = useActiveSection(isHome ? sectionIds : [], location.pathname)
   const [open, setOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
-  // how many times the name has been pressed: each press remounts the tile and the letters, so
-  // their animations start again from the beginning
+  // how many times the name has been pressed: each press remounts the brand, so its stamp starts
+  // again from the beginning
   const [pressed, setPressed] = useState(0)
 
   // Phones: the menu button names the section you're reading, like an app's title bar.
@@ -113,7 +112,7 @@ export function Header() {
             aria-label={`${site.shortName}, back to top`}
           >
             <span key={pressed} className={`brand-stamp ${pressed ? 'is-stamping' : ''}`}>
-              <span className={`brand-tile brand-tile--lg ${pressed ? 'is-flipping' : ''}`} aria-hidden>
+              <span className="brand-tile brand-tile--lg" aria-hidden>
                 <Monogram />
               </span>
             </span>
@@ -145,8 +144,8 @@ export function Header() {
           </m.div>
         </div>
 
-        {/* wide screens: one bar in the middle */}
-        <div className="hidden justify-center px-10 lg:flex">
+        {/* wide screens: one bar in the middle, and the theme switch on its own at the right corner */}
+        <div className="relative hidden justify-center px-10 lg:flex">
           <m.div
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -161,20 +160,11 @@ export function Header() {
               aria-label={`${site.shortName}, back to top`}
             >
               <span key={pressed} className={`brand-stamp ${pressed ? 'is-stamping' : ''}`}>
-                <span className={`brand-tile ${pressed ? 'is-flipping' : ''}`} aria-hidden>
+                <span className="brand-tile" aria-hidden>
                   <Monogram />
                 </span>
-                <span className={`brand-name ${barType} ${pressed ? 'is-waving' : ''}`} aria-hidden>
-                  {letters.map((word, w) => (
-                    <Fragment key={w}>
-                      {w > 0 && ' '}
-                      {word.map((ch, i) => (
-                        <span key={i} style={{ '--i': letters.slice(0, w).reduce((n, prev) => n + prev.length, 0) + i } as CSSProperties}>
-                          {ch}
-                        </span>
-                      ))}
-                    </Fragment>
-                  ))}
+                <span className={`brand-name ${barType}`} aria-hidden>
+                  {givenNames}
                 </span>
               </span>
             </button>
@@ -203,8 +193,16 @@ export function Header() {
                 )
               })}
             </nav>
+          </m.div>
 
-            <ThemeButton className="grid size-9 place-items-center rounded-[7px] border border-ink/15 text-[var(--bar-ink)] transition-colors hover:bg-[var(--glass-press)]" />
+          {/* the theme switch: a square of the same glass, as tall as the bar, at the right corner */}
+          <m.div
+            initial={{ y: -16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
+            className="pointer-events-auto absolute right-10 top-0"
+          >
+            <ThemeButton className="glass header-glass grid size-[46px] place-items-center rounded-xl text-[var(--bar-ink)] transition-colors hover:bg-[var(--glass-press)]" />
           </m.div>
         </div>
       </header>
