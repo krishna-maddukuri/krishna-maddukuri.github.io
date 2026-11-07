@@ -299,7 +299,15 @@ html {
   /* no grey flash on tap, and no double-tap zoom delay (pinch zoom still works) */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  scrollbar-gutter: stable;
+  /* no scrollbar on the page, from the first paint, in every browser: the page scrolls with the wheel,
+     the keys, touch and the header's links (the WebKit rule is for Safari before it knew scrollbar-width) */
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 body {
