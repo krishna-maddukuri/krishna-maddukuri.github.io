@@ -256,12 +256,16 @@ export function Header() {
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: EASE, delay: 0.06 + i * 0.035 }}
-                    className="relative flex items-center gap-4 rounded-[8px] px-4 py-3.5 text-left transition-colors active:bg-[var(--glass-press)]"
+                    className="group relative flex items-center gap-4 rounded-[8px] px-4 py-3.5 text-left"
                   >
-                    {on && <span className="glass-lens absolute inset-0 rounded-[8px]" aria-hidden />}
                     <span className="eyebrow tabular relative w-6">{String(i + 1).padStart(2, '0')}</span>
+                    {/* the section you're in is underlined in red, as in the bar; so is the one under your finger */}
                     <span className="relative font-mono text-[clamp(1.15rem,5.2vw,1.6rem)] font-semibold uppercase leading-[1.1] tracking-[0.14em]">
                       {item.label}
+                      <span
+                        className={`absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--brand-red)] transition-opacity duration-200 group-hover:opacity-100 group-active:opacity-100 ${on ? 'opacity-100' : 'opacity-0'}`}
+                        aria-hidden
+                      />
                     </span>
                   </m.button>
                 )
