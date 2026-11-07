@@ -52,7 +52,7 @@ export function CaseStudy() {
           transition={{ duration: 0.9, ease: EASE }}
         >
           {p.title}{' '}
-          <em className="accent-tail font-serif font-normal italic tracking-[-0.015em]">{p.accent}</em>
+          <em className="accent-tail">{p.accent}</em>
         </m.h1>
         <m.p
           className="mt-6 max-w-[58ch] text-lg text-ink-soft"
@@ -157,7 +157,7 @@ export function CaseStudy() {
             <span className="flex items-end justify-between gap-6">
               <span className="font-display text-[clamp(2rem,5vw,3.8rem)] font-semibold leading-[0.95] tracking-[-0.035em]">
                 {next.title}{' '}
-                <em className="font-serif font-normal italic tracking-[-0.01em] opacity-60">{next.accent}</em>
+                <em className="font-hand font-normal not-italic opacity-60">{next.accent}</em>
               </span>
               <span className="grid size-14 shrink-0 place-items-center rounded-full bg-paper text-ink transition-transform group-hover:translate-x-1">
                 <ArrowRight className="size-5" />

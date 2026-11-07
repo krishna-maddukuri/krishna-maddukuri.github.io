@@ -169,7 +169,7 @@ function EndNote() {
   return (
     <div className="flex w-[260px] shrink-0 snap-start items-center gap-4 pr-6" aria-hidden>
       <span className="h-px w-16 bg-ink/40" />
-      <span className="accent-tail font-serif text-[2.4rem] italic leading-none">and counting.</span>
+      <span className="accent-tail text-[2.4rem] leading-none">and counting.</span>
     </div>
   )
 }

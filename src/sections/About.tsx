@@ -64,7 +64,8 @@ export function About() {
               ))}
             </dl>
             <Reveal delay={0.2}>
-              <p className="mt-8 font-serif text-[clamp(1.7rem,2.4vw,2.2rem)] italic leading-[1.15]">
+              {/* the motto, in his own hand beside a red rule, as on portfolio-2 */}
+              <p className="mt-8 border-l-[3px] border-[var(--accent)] py-1 pl-[18px] text-[clamp(1.5rem,1.2rem+1.3vw,2.1rem)] leading-[1.15]">
                 <span className="accent-tail">&ldquo;{about.quote}&rdquo;</span>
               </p>
             </Reveal>

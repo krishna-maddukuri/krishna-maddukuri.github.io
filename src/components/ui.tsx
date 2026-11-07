@@ -35,7 +35,7 @@ export function Reveal({
   )
 }
 
-/** "02 —— SKILLS" eyebrow + bold sans headline with an italic serif tail. */
+/** "02 —— SKILLS" eyebrow + bold sans headline with a tail in his own hand. */
 export function SectionHeading({
   index,
   label,
@@ -51,14 +51,14 @@ export function SectionHeading({
   accent: string
   sub?: ReactNode
   aside?: ReactNode
-  /** put the italic part on its own line ("Always / learning.") */
+  /** put the handwritten part on its own line ("Always / learning.") */
   stack?: boolean
 }) {
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
       <div className="heading-drift min-w-0">
         <Eyebrow index={index} label={label} />
-        {/* the bold part first, the italic tail a beat later */}
+        {/* the bold part first, the handwritten tail a beat later */}
         <h2 className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95] tracking-[-0.04em]">
           <m.span
             className="inline-block"
@@ -117,9 +117,9 @@ export function Eyebrow({ index, label }: { index: string; label: string }) {
   )
 }
 
-/** The Instrument Serif italic tail used in every heading, in the accent colour (red). */
+/** The handwritten tail used in every heading (Sedgwick Ave, from portfolio-2), in the accent colour (red). */
 export function Accent({ children }: { children: ReactNode }) {
-  return <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{children}</em>
+  return <em className="accent-tail">{children}</em>
 }
 
 /** Text from site.ts with its key words marked **like this**: they come out as <strong>, in the accent colour. */

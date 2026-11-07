@@ -204,7 +204,7 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
         </div>
         <h3 className="mt-5 font-display text-[clamp(2rem,3vw,2.9rem)] font-bold leading-[0.98] tracking-[-0.035em]">
           {p.title}{' '}
-          <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{p.accent}</em>
+          <em className="accent-tail">{p.accent}</em>
         </h3>
         <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-ink-soft">{p.summary}</p>
         <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-2.5 text-sm">
@@ -268,7 +268,7 @@ function Row({ project: p, index, open, onToggle }: { project: Project; index: n
               <div className="eyebrow">{p.eyebrow}</div>
               <h3 className="-mt-2 font-display text-[1.9rem] font-bold leading-none tracking-[-0.03em]">
                 {p.title}{' '}
-                <em className="accent-tail font-serif font-normal italic tracking-[-0.01em]">{p.accent}</em>
+                <em className="accent-tail">{p.accent}</em>
               </h3>
               <p className="text-base text-ink-soft">{p.summary}</p>
               <ul className="grid gap-2 text-sm sm:grid-cols-2">

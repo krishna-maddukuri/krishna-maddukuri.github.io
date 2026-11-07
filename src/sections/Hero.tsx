@@ -102,13 +102,13 @@ export function Hero() {
         </m.div>
       </m.div>
 
-      {/* bottom-left: name, title, tagline */}
+      {/* bottom-left: his name in his own hand, the title, the intro */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
         className="relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:px-0 lg:pt-0"
       >
         <m.div
-          className="eyebrow flex items-center gap-3"
+          className="font-hand text-[clamp(1.5rem,1.1rem+1.6vw,2.4rem)] leading-[1.05] text-[var(--accent-display)]"
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: EASE, delay: 0.6 }}

@@ -5,9 +5,11 @@
 
 /*
   Type: Bricolage Grotesque (display, with its optical-size axis so big headlines get the
-  display cut), Geist for everything you read, Geist Mono for labels, Instrument Serif
-  italic for the accents. All four are self-hosted, latin only, and each has a fallback
-  face whose metrics match it, so text doesn't jump when the real font arrives.
+  display cut), Geist for everything you read, Geist Mono for labels, Sedgwick Ave (the hand
+  from portfolio-2) for the accents: the tails of headings, his name over the hero title, the
+  motto. Antonio, also from portfolio-2, for the giant name and the monogram. All self-hosted,
+  latin only; the three faces that carry running text have a fallback face whose metrics match,
+  so text doesn't jump when the real font arrives.
 */
 @font-face {
   font-family: "Bricolage Grotesque";
@@ -33,13 +35,13 @@
   src: url("/fonts/geist-mono-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+/* Sedgwick Ave, portfolio-2's hand: the lines in his own hand */
 @font-face {
-  font-family: "Instrument Serif";
-  font-style: italic;
+  font-family: "Sedgwick Ave";
+  font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/instrument-serif-latin-italic.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/sedgwick-ave-latin.woff2") format("woff2");
 }
 /* Antonio, for the giant name behind the hero and the two letters on the monogram tile (the same face as portfolio-2): capitals and the space */
 @font-face {
@@ -75,20 +77,11 @@
   descent-override: 29.5%;
   line-gap-override: 0%;
 }
-@font-face {
-  font-family: "Instrument Serif Fallback";
-  font-style: italic;
-  src: local("Georgia"), local("Times New Roman");
-  size-adjust: 90%;
-  ascent-override: 110%;
-  descent-override: 34.4%;
-  line-gap-override: 0%;
-}
 
 /*
   Layout: one long scroll on a 1440px frame. Black ink on a soft off-white (true black in
   dark mode), a faded full name behind a full-height hero figure, expressive display
-  headlines with an italic serif tail, mono eyebrows, clear liquid-glass pills.
+  headlines with a handwritten tail, mono eyebrows, clear liquid-glass pills.
 */
 :root {
   --paper: #f4f3ef;
@@ -173,7 +166,7 @@
 
   --ff-display: "Bricolage Grotesque", "Bricolage Fallback", ui-sans-serif, system-ui, sans-serif;
   --ff-body: "Geist", "Geist Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --ff-serif: "Instrument Serif", "Instrument Serif Fallback", ui-serif, Georgia, "Times New Roman", serif;
+  --ff-hand: "Sedgwick Ave", "Bradley Hand", "Segoe Print", cursive;
   --ff-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* type scale: fluid between a phone and a 1440px frame, never below readable sizes */
@@ -273,7 +266,7 @@
 
   --font-sans: var(--ff-body);
   --font-display: var(--ff-display);
-  --font-serif: var(--ff-serif);
+  --font-hand: var(--ff-hand);
   --font-mono: var(--ff-mono);
 
   --text-xs: var(--text-xs);
@@ -633,8 +626,13 @@ html.lenis, html.lenis body { height: auto; }
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
   }
-  /* the italic tail of a heading, a quote */
+  /* the tail of a heading, a quote, "and counting.": in his own hand (portfolio-2's Sedgwick Ave),
+     a little smaller than the bold type beside it so the two sit at one optical size */
   .accent-tail {
+    font-family: var(--ff-hand);
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0;
     color: var(--accent-display);
     background-image: linear-gradient(transparent 52%, var(--accent-mark) 52%, var(--accent-mark) 88%, transparent 88%);
     -webkit-box-decoration-break: clone;

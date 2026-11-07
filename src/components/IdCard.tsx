@@ -323,7 +323,7 @@ function CardFront() {
           {site.photo ? (
             <img src={site.photo} alt="" className="pointer-events-none h-full w-full object-cover" draggable={false} />
           ) : (
-            <span className="font-serif text-[3.4rem] italic leading-none text-[var(--card-ink)]">{site.monogram}</span>
+            <span className="font-hand text-[3.4rem] leading-none text-[var(--card-ink)]">{site.monogram}</span>
           )}
         </div>
         <div className="mt-4 text-center font-display text-[16px] font-bold uppercase leading-[1.1] tracking-[0.02em]">

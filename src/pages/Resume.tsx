@@ -34,7 +34,7 @@ export function Resume() {
               {site.name}
             </h1>
             <p className="mt-3 text-lg">
-              {resume.title} <em className="font-serif italic text-ink-soft">{resume.tagline}</em>
+              {resume.title} <em className="font-hand not-italic text-ink-soft">{resume.tagline}</em>
             </p>
             <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-soft">
               <span>{site.location}</span>
