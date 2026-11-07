@@ -112,8 +112,10 @@ export function Header() {
             className="pointer-events-auto flex items-center gap-3 rounded-xl"
             aria-label={`${site.shortName}, back to top`}
           >
-            <span key={pressed} className={`brand-tile brand-tile--lg glass-press ${pressed ? 'is-flipping' : ''}`} aria-hidden>
-              {site.monogram}
+            <span key={pressed} className={`brand-stamp ${pressed ? 'is-stamping' : ''}`}>
+              <span className={`brand-tile brand-tile--lg ${pressed ? 'is-flipping' : ''}`} aria-hidden>
+                {site.monogram}
+              </span>
             </span>
           </m.button>
 
@@ -155,23 +157,25 @@ export function Header() {
             <button
               type="button"
               onClick={goHome}
-              className="glass-press flex items-center gap-2.5 rounded-[7px] pr-1 text-[var(--bar-ink)]"
+              className="flex items-center rounded-[7px] pr-1 text-[var(--bar-ink)]"
               aria-label={`${site.shortName}, back to top`}
             >
-              <span key={pressed} className={`brand-tile ${pressed ? 'is-flipping' : ''}`} aria-hidden>
-                {site.monogram}
-              </span>
-              <span key={`name-${pressed}`} className={`brand-name ${barType} ${pressed ? 'is-waving' : ''}`} aria-hidden>
-                {letters.map((word, w) => (
-                  <Fragment key={w}>
-                    {w > 0 && ' '}
-                    {word.map((ch, i) => (
-                      <span key={i} style={{ '--i': letters.slice(0, w).reduce((n, prev) => n + prev.length, 0) + i } as CSSProperties}>
-                        {ch}
-                      </span>
-                    ))}
-                  </Fragment>
-                ))}
+              <span key={pressed} className={`brand-stamp ${pressed ? 'is-stamping' : ''}`}>
+                <span className={`brand-tile ${pressed ? 'is-flipping' : ''}`} aria-hidden>
+                  {site.monogram}
+                </span>
+                <span className={`brand-name ${barType} ${pressed ? 'is-waving' : ''}`} aria-hidden>
+                  {letters.map((word, w) => (
+                    <Fragment key={w}>
+                      {w > 0 && ' '}
+                      {word.map((ch, i) => (
+                        <span key={i} style={{ '--i': letters.slice(0, w).reduce((n, prev) => n + prev.length, 0) + i } as CSSProperties}>
+                          {ch}
+                        </span>
+                      ))}
+                    </Fragment>
+                  ))}
+                </span>
               </span>
             </button>
 
@@ -200,7 +204,7 @@ export function Header() {
               })}
             </nav>
 
-            <ThemeButton className="grid size-9 place-items-center rounded-[7px] border border-ink/15 text-[var(--bar-ink)] transition-colors hover:bg-[var(--glass-press)]" />
+            <ThemeButton className="grid size-8 place-items-center rounded-[7px] bg-ink text-paper transition-[opacity,scale] duration-200 hover:opacity-85 active:scale-95" />
           </m.div>
         </div>
       </header>
@@ -254,11 +258,11 @@ export function Header() {
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: EASE, delay: 0.06 + i * 0.035 }}
-                    className="relative flex items-center gap-4 rounded-[8px] px-4 py-2.5 text-left transition-colors active:bg-[var(--glass-press)]"
+                    className="relative flex items-center gap-4 rounded-[8px] px-4 py-3.5 text-left transition-colors active:bg-[var(--glass-press)]"
                   >
                     {on && <span className="glass-lens absolute inset-0 rounded-[8px]" aria-hidden />}
                     <span className="eyebrow tabular relative w-6">{String(i + 1).padStart(2, '0')}</span>
-                    <span className="relative font-display text-[clamp(1.75rem,8.6vw,2.6rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
+                    <span className="relative font-mono text-[clamp(1.15rem,5.2vw,1.6rem)] font-semibold uppercase leading-[1.1] tracking-[0.14em]">
                       {item.label}
                     </span>
                   </m.button>
@@ -293,7 +297,7 @@ export function Header() {
 }
 
 const quick =
-  'glass-lens flex h-16 flex-col items-center justify-center gap-1.5 rounded-[10px] text-sm font-medium text-ink transition-[scale] duration-300 active:scale-95'
+  'glass-lens flex h-16 flex-col items-center justify-center gap-1.5 rounded-[10px] font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink transition-[scale] duration-300 active:scale-95'
 
 function ThemeButton({ className }: { className: string }) {
   const { theme, toggle } = useTheme()
