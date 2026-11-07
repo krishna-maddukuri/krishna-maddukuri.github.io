@@ -11,7 +11,8 @@ export type GiantLine = { text: string; ratio: number }
 
 /**
  * Giant capitals set like portfolio-2's word: Antonio at its heaviest, each line as wide as the
- * page's measure (1240px at most, inside portfolio-2's gutters), and never taller than a share of
+ * page's layout (the 1440px frame less its 40px sides, so 1360px at most, the same edges as the hero's
+ * text and buttons; the gutters are narrower on small screens), and never taller than a share of
  * the screen; when the height is the limit, the letters spread out to keep both edges (CSS does the
  * spreading: each line is a row of letters with the room left over shared out between them; the
  * styles are .wm-* in index.css).
@@ -41,15 +42,15 @@ export function giantWord(texts: string[], cap = '31svh') {
   })
   return {
     lines,
-    word: `min(calc((100cqw - 2 * var(--wm-gutter)) / ${base.toFixed(3)}), calc(1240px / ${base.toFixed(3)}), ${cap})`,
+    word: `min(calc((100cqw - 2 * var(--wm-gutter)) / ${base.toFixed(3)}), calc(1360px / ${base.toFixed(3)}), ${cap})`,
     bottom: `calc(var(--wm-word) * ${foot.toFixed(4)})`,
   }
 }
 
 /**
- * The word itself: on `play`, each letter draws in as an outline, then fills (.wm-play in index.css);
- * every letter is its own span so it can take its turn. Decorative: hide it from assistive tech
- * where it is used, the name is in the page's text.
+ * The word itself: on `play`, each letter draws in as an outline (.wm-play in index.css); every
+ * letter is its own span so it can take its turn. Decorative: hide it from assistive tech where it is
+ * used, the name is in the page's text.
  */
 export function GiantWord({ lines, play }: { lines: GiantLine[]; play: boolean }) {
   return (

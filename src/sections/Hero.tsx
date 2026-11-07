@@ -10,7 +10,7 @@ import { GiantWord, giantWord } from '../components/GiantWord'
 import { HeroMedia } from '../components/HeroMedia'
 import { ArrowDown, ArrowRight, EASE, plain, richWords } from '../components/ui'
 
-/** The giant name behind the hero: his first and middle names (the surname is the footer's word). */
+/** The giant name behind the hero: his first and middle names on one line (the surname is the footer's word). */
 const wm = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
 
 export function Hero() {
