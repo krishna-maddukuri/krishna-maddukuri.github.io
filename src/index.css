@@ -381,22 +381,18 @@ html.lenis, html.lenis body { height: auto; }
   }
   /* the brand tile in the header: red, 7px corners, the monogram in Antonio */
   .brand-tile {
-    display: grid;
-    place-items: center;
+    display: block;
     width: 32px;
     height: 32px;
     border-radius: 7px;
     background: var(--brand-red);
     color: #160403;
-    font: 700 0.95rem/1 "Antonio", var(--ff-display);
-    letter-spacing: 0.02em;
   }
   /* the phone header's monogram: the same tile, as tall as the capsule beside it */
   .brand-tile--lg {
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    font-size: 1.4rem;
   }
   /* pressed: the tile turns over once and the letters of the name ripple from left to right */
   .brand-tile.is-flipping { animation: brand-flip 0.75s var(--ease-out); }
