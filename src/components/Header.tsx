@@ -178,7 +178,7 @@ export function Header() {
                     type="button"
                     onClick={() => go(item.id)}
                     aria-current={on ? 'true' : undefined}
-                    className={`relative rounded-[6px] px-[9px] py-[10px] ${barType} transition-colors ${on ? 'text-[var(--bar-ink)]' : 'text-[var(--bar-muted)] hover:text-[var(--bar-ink)]'}`}
+                    className={`relative rounded-[6px] px-[9px] py-[10px] ${barType} leading-none transition-colors ${on ? 'text-[var(--bar-ink)]' : 'text-[var(--bar-muted)] hover:text-[var(--bar-ink)]'}`}
                   >
                     {item.label}
                     {on && (
@@ -195,7 +195,7 @@ export function Header() {
             </nav>
           </m.div>
 
-          {/* the theme switch: a square of the same glass, as tall as the bar, at the right corner */}
+          {/* the theme switch: a square of the same glass, exactly as tall as the bar (7px + the 32px tile + 7px), at the right corner */}
           <m.div
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
