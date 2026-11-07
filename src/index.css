@@ -149,11 +149,11 @@
   --bar-muted: #4b4b4b;
   --bar-line: rgb(0 0 0 / 0.1);
   --brand-red: #f0412e; /* the monogram tile and the line under the current section, in both modes */
-  /* the giant name behind the hero, portfolio-2's word: a red outline with a soft red glow; its face
-     is a wash of red on the paper here, and portfolio-2's deep red in the dark */
+  /* the giant words (his name behind the hero, the surname in the footer), portfolio-2's word: a red
+     outline; the face is a wash of red on the paper here, and portfolio-2's deep red in the dark. No
+     glow: on an OLED screen the black around the letters stays true black */
   --wm-fill: color-mix(in srgb, var(--brand-red) 10%, var(--paper));
   --wm-line: var(--brand-red);
-  --wm-glow: rgb(240 65 46 / 0.14);
   --glass-sheen: rgb(255 255 255 / 0.42);
   --glass-rim: rgb(255 255 255 / 0.98);
   --glass-rim-soft: rgb(255 255 255 / 0.4);
@@ -235,7 +235,6 @@
   /* in dark mode the settled pane darkens instead, so light text stays readable over the white ID card */
   --glass-settled: rgb(8 8 10 / 0.78);
   --wm-fill: #230705;
-  --wm-glow: rgb(240 65 46 / 0.2);
   --bar-ink: #f5f5f7;
   --bar-muted: #b3b3bb;
   --bar-line: rgb(255 255 255 / 0.1);
@@ -490,14 +489,13 @@ html.lenis, html.lenis body { height: auto; }
     font-size: calc(var(--wm-word) * var(--wm-r, 1));
     white-space: pre;
   }
-  /* each letter, portfolio-2's word: a deep face, a red outline (drawn under the face, so only its outer
-     half shows) and a soft red glow */
+  /* each letter, portfolio-2's word: a deep face and a red outline (drawn under the face, so only its
+     outer half shows); no shadow or glow around it */
   .wm-ch {
     display: block;
     color: var(--wm-fill);
     -webkit-text-stroke: clamp(1px, 0.0105em, 3px) var(--wm-line);
     paint-order: stroke fill;
-    text-shadow: 0 0 70px var(--wm-glow);
   }
   /* on load (the footer: on coming into view): nothing until the face is in, then the outline of every
      letter draws in (left to right, a second line a beat later), holds a moment, then the face fills in */
