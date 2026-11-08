@@ -131,7 +131,7 @@ export function Hero() {
             ))}
           </m.span>
         </h1>
-        <SpokenIntro text={site.intro} soft={!touch} />
+        <SpokenIntro text={site.intro} />
         <ul className="hero-stats" aria-label="In numbers">
           {site.hero.stats.map((stat, i) => (
             <m.li
@@ -225,7 +225,8 @@ export function Hero() {
 /**
  * One of the three numbers: it counts up from 0 to its value (43% runs 0% … 43%) once it is first in view,
  * which on a wide screen is as the page loads, easing into the real number as portfolio-2's numbers do. With
- * reduced motion it is simply the number.
+ * reduced motion it is simply the number. Only the eye sees the count: screen readers (and anything else
+ * reading the page) always get the real number.
  */
 function CountUp({ value, delay }: { value: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null)
@@ -249,19 +250,19 @@ function CountUp({ value, delay }: { value: string; delay: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seen, reduce])
   return (
-    <m.span ref={ref} className="hero-stat-v">
-      {parts ? shown : value}
-    </m.span>
+    <span ref={ref} className="hero-stat-v">
+      <span className="sr-only">{value}</span>
+      <m.span aria-hidden>{parts ? shown : value}</m.span>
+    </span>
   )
 }
 
 /**
- * His intro line. It shows faint and soft first, then each word clears in turn,
- * as if he's saying it. (On phones the words just fade in: blurring 30 words at
- * once is heavy for a phone right when people start scrolling.) Each word is its
- * own piece, so the lines wrap as prose does on a narrow screen.
+ * His intro line. It shows faint first, then each word comes up to full strength in
+ * turn, as if he's saying it (no blur: he didn't like it). Each word is its own
+ * piece, so the lines wrap as prose does on a narrow screen.
  */
-function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
+function SpokenIntro({ text }: { text: string }) {
   const reduce = useReducedMotion()
   const words = richWords(text)
   return (
@@ -274,8 +275,8 @@ function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
           <m.span
             aria-hidden
             className="inline-block"
-            initial={reduce ? false : soft ? { opacity: 0.14, filter: 'blur(5px)', y: 3 } : { opacity: 0.14, y: 3 }}
-            animate={soft ? { opacity: 1, filter: 'blur(0px)', y: 0 } : { opacity: 1, y: 0 }}
+            initial={reduce ? false : { opacity: 0.14, y: 3 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, ease: EASE, delay: 1.1 + i * 0.065 }}
           >
             {word.map((piece, j) => (piece.strong ? <strong key={j}>{piece.text}</strong> : piece.text))}
