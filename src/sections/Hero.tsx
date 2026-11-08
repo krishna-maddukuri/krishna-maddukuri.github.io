@@ -97,41 +97,45 @@ export function Hero() {
         style={touch ? undefined : { y: textY, opacity: fade }}
         className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
       >
-        <h1 className="flex flex-col items-start gap-1">
-          <m.span
-            className="hero-hello"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.45 }}
-          >
-            {site.hero.hello}{' '}
-          </m.span>
-          {/* the red wipes in from the left, then the words rise into it */}
-          <m.span
-            className="role-block"
-            initial={{ clipPath: 'inset(0 100% 0 0)' }}
-            animate={{ clipPath: 'inset(0 0% 0 0)' }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.55 }}
-          >
-            {site.headline.map((word, i) => (
-              <Fragment key={word}>
-                {i > 0 && ' '}
-                <span className="role-line">
-                  <m.span
-                    className="block"
-                    initial={{ y: '105%' }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 0.9, ease: EASE, delay: 0.7 + i * 0.1 }}
-                  >
-                    {word}
-                    {i === site.headline.length - 1 && '.'}
-                  </m.span>
-                </span>
-              </Fragment>
-            ))}
-          </m.span>
-        </h1>
-        <SpokenIntro text={site.intro} />
+        {/* the hello, the red block and the intro, as wide as its widest line (the red block): the intro
+            wraps under the block, edge to edge */}
+        <div className="w-min">
+          <h1 className="flex flex-col items-start gap-1">
+            <m.span
+              className="hero-hello"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 0.45 }}
+            >
+              {site.hero.hello}{' '}
+            </m.span>
+            {/* the red wipes in from the left, then the words rise into it */}
+            <m.span
+              className="role-block"
+              initial={{ clipPath: 'inset(0 100% 0 0)' }}
+              animate={{ clipPath: 'inset(0 0% 0 0)' }}
+              transition={{ duration: 0.8, ease: EASE, delay: 0.55 }}
+            >
+              {site.headline.map((word, i) => (
+                <Fragment key={word}>
+                  {i > 0 && ' '}
+                  <span className="role-line">
+                    <m.span
+                      className="block"
+                      initial={{ y: '105%' }}
+                      animate={{ y: 0 }}
+                      transition={{ duration: 0.9, ease: EASE, delay: 0.7 + i * 0.1 }}
+                    >
+                      {word}
+                      {i === site.headline.length - 1 && '.'}
+                    </m.span>
+                  </span>
+                </Fragment>
+              ))}
+            </m.span>
+          </h1>
+          <SpokenIntro text={site.intro} />
+        </div>
         <ul className="hero-stats" aria-label="In numbers">
           {site.hero.stats.map((stat, i) => (
             <m.li
@@ -212,11 +216,12 @@ export function Hero() {
       </m.div>
 
       {/* the spinning badge, near his figure and clear of the words: phones and tablets beside his hip;
-          laptops narrower than 1280px in the bottom-right corner; wider screens at the foot of the page, 36px
-          left of his figure (centred at 60%, half as wide as 0.357x its height), right of the buttons */}
+          laptops narrower than 1280px in the bottom-right corner; wider screens at the foot of the page, just
+          left of his legs (its right edge 8px inside the figure's box, which is centred at 60% and half as
+          wide as 0.357x its height; his legs stand well inside that box), right of the numbers and buttons */}
       <RotatingBadge
         onClick={() => scrollTo('contact')}
-        className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-[112px] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[clamp(36px,8vh,84px)] lg:size-[clamp(112px,14.5vh,132px)] xl:right-auto xl:left-[calc(60vw-min(15.4svh,158px)-36px-clamp(112px,14.5vh,132px))]"
+        className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-[112px] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[clamp(36px,8vh,84px)] lg:size-[clamp(112px,14.5vh,132px)] xl:right-auto xl:left-[calc(60vw-min(15.4svh,158px)+8px-clamp(112px,14.5vh,132px))]"
       />
     </section>
   )

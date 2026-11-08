@@ -631,8 +631,9 @@ html.lenis, html.lenis body { height: auto; }
     background: var(--ink);
     color: var(--paper);
   }
+  /* as wide as the red block above it (its wrapper is as wide as its widest line, the block) */
   .hero-lede {
-    max-width: 38ch;
+    max-width: none;
     margin-top: clamp(20px, 2.6vw, 30px);
     color: var(--ink-soft);
     font-size: clamp(1.03rem, 0.95rem + 0.42vw, 1.2rem);

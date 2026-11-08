@@ -16,7 +16,7 @@ export const site = {
    * Words **marked like this** are the key words: bold (in the hero, bright; in the About lead, in the accent colour).
    */
   intro:
-    "For more than six years, I've built **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**.",
+    "For more than six years, I've built **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**. I design **secure, compliant, high-throughput data platforms** and see them through to production.",
   location: 'Richmond, VA',
   email: 'm.krishnakoushik@icloud.com',
   linkedin: 'https://www.linkedin.com/in/krishna-koushik',
