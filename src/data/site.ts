@@ -20,7 +20,7 @@ export const site = {
   email: 'm.krishnakoushik@icloud.com',
   linkedin: 'https://www.linkedin.com/in/krishna-koushik',
   linkedinLabel: 'linkedin.com/in/krishna-koushik',
-  openTo: 'Open to Senior Engineer roles',
+  openTo: 'Open to Software Engineer roles',
 
   /**
    * Hero: his full-body paper figure (a cut-out with a see-through background, in /public/avatar,

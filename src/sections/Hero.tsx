@@ -215,8 +215,9 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
           </text>
         </svg>
       </span>
-      <span className="glass absolute inset-[30%] grid place-items-center rounded-full">
-        <span className="live-dot size-3 rounded-full" />
+      {/* the disc in the middle reaches almost to the words (radius 38 of the 120 box, the words' baseline at 46) */}
+      <span className="glass absolute inset-[18%] grid place-items-center rounded-full">
+        <span className="live-dot size-[18%] rounded-full" />
       </span>
     </m.button>
   )
