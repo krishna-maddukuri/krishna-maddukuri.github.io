@@ -70,8 +70,23 @@ async function at(page: Page, fx: number, fy: number) {
     [fx, fy],
   )
 }
-/** The glow: a point beside his head, inside the glow's ellipse and clear of him. */
-const glow = (page: Page) => at(page, 0.1, 0.15)
+/** The glow (the browser's own gradient, a div under the canvas): how much shows, where, and how big, with his box. */
+async function glow(page: Page) {
+  return page.evaluate(() => {
+    const el = document.querySelector<HTMLElement>('#top [data-shard-layer] .figure-glow')!
+    const g = el.getBoundingClientRect()
+    const b = document.querySelector<HTMLElement>('#top [data-paper-figure]')!.getBoundingClientRect()
+    const cs = getComputedStyle(el)
+    return {
+      opacity: Number(cs.opacity),
+      bg: cs.backgroundImage,
+      dx: g.left + g.width / 2 - (b.left + b.width / 2),
+      cy: (g.top + g.height / 2 - b.top) / b.height,
+      w: g.width / b.width,
+      h: g.height / b.height,
+    }
+  })
+}
 /** The shadow: the darkest paint just right of his arm (the shadow falls a little right and down). */
 async function shadow(page: Page) {
   let most = 0
@@ -268,12 +283,19 @@ test.describe('paper figure', () => {
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    // the browser's own gradient under the shards, centred on him: 2.3 of his widths across, 1.24 of his
+    // heights tall, its middle 42% down him
     const g = await glow(page)
-    // faint warm light: well under the paint the tests above look for (alpha 40)
-    expect(g.a).toBeGreaterThan(4)
-    expect(g.a).toBeLessThan(32)
-    expect(g.r).toBeGreaterThan(200)
-    expect(await shadow(page)).toBe(0)
+    expect(g.opacity).toBeGreaterThan(0.95)
+    expect(g.bg).toContain('radial-gradient')
+    expect(Math.abs(g.dx)).toBeLessThan(2)
+    expect(g.w).toBeCloseTo(2.3, 1)
+    expect(g.h).toBeCloseTo(1.24, 1)
+    expect(g.cy).toBeCloseTo(0.42, 1)
+    // (and nothing of it in the canvas, which has neither glow nor shadow on this page: at most the faint
+    // anti-aliased edge of his sleeve where the shadow would fall)
+    expect((await at(page, 0.1, 0.15)).a).toBeLessThan(3)
+    expect(await shadow(page)).toBeLessThan(3)
   })
 
   test('on the paper page his shadow falls on the page instead', async ({ page }) => {
@@ -282,16 +304,16 @@ test.describe('paper figure', () => {
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
     expect(await shadow(page)).toBeGreaterThan(15)
-    expect((await glow(page)).a).toBeLessThan(3)
+    expect((await glow(page)).opacity).toBeLessThan(0.01)
   })
 
   test('switching the theme swaps the glow for the shadow', async ({ page }) => {
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
-    expect((await glow(page)).a).toBeGreaterThan(4)
+    expect((await glow(page)).opacity).toBeGreaterThan(0.95)
     await page.getByRole('button', { name: 'Switch to light theme' }).click()
-    await expect.poll(async () => (await glow(page)).a, { timeout: 5_000 }).toBeLessThan(3)
+    await expect.poll(async () => (await glow(page)).opacity, { timeout: 5_000 }).toBeLessThan(0.01)
     await expect.poll(() => shadow(page), { timeout: 5_000 }).toBeGreaterThan(15)
   })
 

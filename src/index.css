@@ -1084,10 +1084,25 @@ html.lenis, html.lenis body { height: auto; }
 .figure-pill { transition: opacity 0.7s var(--ease-out), scale 0.2s var(--ease-out); }
 .figure-pill:active { scale: 0.96; }
 
-/* the page's light round the still picture of him (motion reduced, or no WebGL); the moving figure draws the
-   same two itself (PaperFigure.tsx). Paper page: his paper shadow, a little down and to the right, as if the
-   cut-out stands just in front of the page. Black page: a soft glow behind his chest, so his black clothes
-   never sink into the page. (drop-shadow's third length is the blur's standard deviation, as in blur().) */
+/* the page's light round him. Black page: a soft glow behind his chest, so his black clothes never sink into
+   the page; it is the browser's own gradient (dithered, and drawn at the screen's full depth, so it stays as
+   smooth on a 4K OLED as anywhere), placed by PaperFigure.tsx under the shards. Paper page: his paper shadow,
+   a little down and to the right, as if the cut-out stands just in front of the page (the moving figure draws
+   that one itself). The still picture of him (motion reduced, or no WebGL) has both here. (drop-shadow's third
+   length is the blur's standard deviation, as in blur().) */
+:root {
+  --figure-glow: radial-gradient(closest-side, rgb(255 246 236 / 0.115), rgb(255 246 236 / 0.07) 38%, rgb(255 246 236 / 0.025) 70%, rgb(255 246 236 / 0) 100%);
+}
+.figure-glow {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--figure-glow);
+  will-change: transform, opacity;
+}
 [data-paper-figure="still"] { isolation: isolate; container-type: size; }
 [data-paper-figure="still"] img { filter: drop-shadow(5cqw 1.4cqh 1.1cqh rgb(43 34 25 / 0.26)); }
 :root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
@@ -1101,7 +1116,7 @@ html.lenis, html.lenis body { height: auto; }
   height: 124%;
   translate: -50% -50%;
   pointer-events: none;
-  background: radial-gradient(closest-side, rgb(255 246 236 / 0.115), rgb(255 246 236 / 0.07) 38%, rgb(255 246 236 / 0.025) 70%, rgb(255 246 236 / 0) 100%);
+  background: var(--figure-glow);
 }
 
 /* section headings drift a little slower than the page while they cross the screen (depth, no cost to
