@@ -143,7 +143,7 @@ export function Footer() {
       <m.div
         ref={word}
         aria-hidden
-        className="wm-wrap pointer-events-none mx-auto mt-8 select-none"
+        className="wm-wrap pointer-events-none mt-8 select-none"
         initial={{ y: '30%' }}
         whileInView={{ y: '0%' }}
         viewport={{ once: true }}

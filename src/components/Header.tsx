@@ -201,7 +201,9 @@ export function Header() {
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
-            className="pointer-events-auto absolute right-[max(40px,calc((100vw-1440px)/2+40px))] top-0"
+            // on the home page the hero's red tape takes the right edge, and the switch keeps the same 40px clear of
+            // it as the name and the list below it do
+            className={`pointer-events-auto absolute top-0 ${isHome ? 'right-[max(70px,calc((100vw-1440px)/2+40px))]' : 'right-[max(40px,calc((100vw-1440px)/2+40px))]'}`}
           >
             {/* as on the main portfolio: a solid tile in the ink, so it is light in the dark and black on the
                 paper, the icon cut out of it in the page's own colour (22px, about half the tile); it lifts on

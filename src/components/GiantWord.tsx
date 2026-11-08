@@ -7,6 +7,40 @@ const ANTONIO: Record<string, number> = {
   ' ': 0.179,
 }
 
+/**
+ * The empty space each capital carries at its left and right (in em, Antonio at its heaviest): the first
+ * letter of a line is pulled left by its left side, the last pushed right by its right side, so the ink
+ * itself, not the letters' boxes, meets the edges the page's text starts and ends on.
+ */
+const SIDES: Record<string, [number, number]> = {
+  A: [0.014, 0.013],
+  B: [0.064, 0.037],
+  C: [0.054, 0.046],
+  D: [0.064, 0.054],
+  E: [0.064, 0.032],
+  F: [0.064, 0.027],
+  G: [0.054, 0.059],
+  H: [0.064, 0.064],
+  I: [0.067, 0.067],
+  J: [0.041, 0.067],
+  K: [0.064, 0.006],
+  L: [0.064, 0.006],
+  M: [0.064, 0.065],
+  N: [0.064, 0.064],
+  O: [0.054, 0.054],
+  P: [0.064, 0.024],
+  Q: [0.054, 0.054],
+  R: [0.064, 0.042],
+  S: [0.036, 0.027],
+  T: [0.009, 0.009],
+  U: [0.058, 0.058],
+  V: [0.019, 0.018],
+  W: [0.022, 0.022],
+  X: [0.020, 0.020],
+  Y: [0.008, 0.008],
+  Z: [0.031, 0.019],
+}
+
 export type GiantLine = { text: string; ratio: number }
 
 /**
@@ -18,8 +52,9 @@ export type GiantLine = { text: string; ratio: number }
  * styles are .wm-* in index.css).
  *
  * The size of the line with the biggest letters is --wm-word, a CSS length worked out from the
- * width of the nearest .wm-frame (container units) and the screen's height, so nothing is measured
- * in JavaScript; the other lines are a fixed fraction of it, so every line fills the same width.
+ * width of the nearest .wm-frame (container units) less its two insets (--wm-l and --wm-r, index.css)
+ * and the screen's height, so nothing is measured in JavaScript; the other lines are a fixed fraction
+ * of it, so every line fills the same width.
  * `cap` is the tallest the biggest letters may be (portfolio-2 allows 31svh for its one word).
  * Also returns how far down the last line's foot is (--wm-bottom, for anything placed under the
  * word), as a CSS length from the word's top.
@@ -42,7 +77,7 @@ export function giantWord(texts: string[], cap = '31svh') {
   })
   return {
     lines,
-    word: `min(calc((100cqw - 2 * var(--wm-gutter)) / ${base.toFixed(3)}), calc(1360px / ${base.toFixed(3)}), ${cap})`,
+    word: `min(calc((100cqw - var(--wm-l) - var(--wm-r)) / ${base.toFixed(3)}), ${cap})`,
     bottom: `calc(var(--wm-word) * ${foot.toFixed(4)})`,
   }
 }
@@ -56,9 +91,19 @@ export function GiantWord({ lines, play }: { lines: GiantLine[]; play: boolean }
   return (
     <div className={`wm-word ${play ? 'wm-play' : ''}`}>
       {lines.map((line, l) => (
-        <div key={line.text} className="wm-line" style={{ '--l': l, '--wm-r': line.ratio } as CSSProperties}>
-          {[...line.text].map((ch, i) => (
-            <span key={i} className="wm-ch" style={{ '--i': i } as CSSProperties}>
+        <div key={line.text} className="wm-line" style={{ '--l': l, '--wm-ratio': line.ratio } as CSSProperties}>
+          {[...line.text].map((ch, i, all) => (
+            <span
+              key={i}
+              className="wm-ch"
+              style={
+                {
+                  '--i': i,
+                  marginLeft: i === 0 ? `${-(SIDES[ch]?.[0] ?? 0)}em` : undefined,
+                  marginRight: i === all.length - 1 ? `${-(SIDES[ch]?.[1] ?? 0)}em` : undefined,
+                } as CSSProperties
+              }
+            >
               {ch}
             </span>
           ))}

@@ -1,6 +1,6 @@
 import { animate, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { onHome } from '../lib/home'
@@ -29,6 +29,29 @@ export function Hero() {
   // the name draws itself in once its font is in (or after a moment, if the font is slow), so the
   // outline is never drawn in the fallback font and swapped mid-way
   const [wmPlay, setWmPlay] = useState(false)
+  // the two columns end on one line: the list beside his figure is stretched to the foot of the buttons,
+  // with his stack at its bottom (measured from layout offsets, so the scroll drift doesn't count)
+  const copyRef = useRef<HTMLDivElement>(null)
+  const sideRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const copy = copyRef.current
+    const side = sideRef.current
+    const cta = copy?.querySelector<HTMLElement>('.hero-cta')
+    if (!copy || !side || !cta) return
+    const wide = window.matchMedia('(min-width: 1280px)')
+    const fit = () => {
+      side.style.minHeight = ''
+      if (!wide.matches) return
+      const bottom = copy.offsetTop + cta.offsetTop + cta.offsetHeight
+      side.style.minHeight = `${Math.max(0, bottom - side.offsetTop)}px`
+    }
+    const watch = new ResizeObserver(fit)
+    watch.observe(copy)
+    watch.observe(document.documentElement)
+    document.fonts?.ready.then(fit)
+    fit()
+    return () => watch.disconnect()
+  }, [])
   useEffect(() => {
     let done = false
     const go = () => {
@@ -55,8 +78,18 @@ export function Hero() {
     <section
       id="top"
       ref={ref}
-      className="wm-frame relative isolate flex flex-col overflow-hidden lg:block"
-      style={{ minHeight: 'min(100svh, 1000px)', '--wm-word': wm.word } as CSSProperties}
+      className="wm-frame wm-frame--tape relative isolate flex flex-col overflow-hidden lg:block"
+      style={
+        {
+          minHeight: 'min(100svh, 1000px)',
+          '--wm-word': wm.word,
+          // wide screens: his figure stands 60% of the way across the 1440px frame (on a wider screen the
+          // frame is centred, so the whole composition keeps its proportions), and is about 0.357x as wide
+          // as it is tall, so half of it is this wide
+          '--fig-x': 'calc(max(0px, (100vw - 1440px) / 2) + 0.6 * min(100vw, 1440px))',
+          '--fig-half': 'min(15.4svh, 158px)',
+        } as CSSProperties
+      }
     >
       {/* his name behind the figure, set like portfolio-2's giant word (components/GiantWord.tsx): on load
           each letter draws in as an outline, then fills, and the line spreads its letters to both edges of
@@ -64,7 +97,7 @@ export function Hero() {
       <m.div
         style={touch ? undefined : { y: wmY, opacity: wmFade }}
         aria-hidden
-        className="wm-wrap pointer-events-none absolute inset-x-0 top-[68px] -z-10 mx-auto select-none sm:top-[78px] lg:top-[10%]"
+        className="wm-wrap pointer-events-none absolute inset-x-0 top-[68px] -z-10 select-none sm:top-[78px] lg:top-[10%]"
       >
         <GiantWord lines={wm.lines} play={wmPlay} />
       </m.div>
@@ -75,7 +108,7 @@ export function Hero() {
           the badge, later in the DOM at the same level, stays tappable where it overlaps him). */}
       <m.div
         style={touch ? undefined : { y: figY }}
-        className="relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[60%] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
+        className="relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[var(--fig-x)] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
       >
         <m.div
           className="relative h-full"
@@ -91,11 +124,11 @@ export function Hero() {
           buttons and three numbers. Wide screens: "Hello, I'm a" sits between the giant name and the red
           block, its tops just over the name's feet (the name's letters end 0.938 of --wm-word below its top,
           which is 10% down; the hello's line starts 0.3 of its own size above that), and the block follows
-          right under it. The column stops short of his figure (centred at 60%, about 0.357x as wide as it is
-          tall) and is a container (.hero-copy): the block's one line is sized to fit it */}
+          right under it. The column stops short of his figure (--fig-x, --fig-half) and is a container (.hero-copy): the block's one line is sized to fit it */}
       <m.div
+        ref={copyRef}
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
+        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
       >
         {/* the hello, the red block and the intro, as wide as its widest line (the red block): the intro
             wraps under the block, edge to edge */}
@@ -145,7 +178,7 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: EASE, delay: 1.2 + i * 0.08 }}
             >
-              <CountUp value={stat.value} delay={1.25 + i * 0.08} />
+              <CountUp value={stat.value} delay={1.2 + i * 0.08} />
               <span className="hero-stat-k">{stat.label}</span>
             </m.li>
           ))}
@@ -160,7 +193,7 @@ export function Hero() {
           <button
             type="button"
             onClick={() => scrollTo('work')}
-            className="btn-solid btn-key"
+            className="btn-solid btn-key btn-key--primary"
           >
             Explore work <ArrowRight className="size-4" />
           </button>
@@ -186,7 +219,8 @@ export function Hero() {
           after the words */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="hero-side relative z-10 px-4 pb-12 pt-12 sm:px-6 lg:hidden xl:absolute xl:right-[max(40px,calc((100vw-1440px)/2+40px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:block xl:w-[min(340px,calc(40vw-max(40px,calc((100vw-1440px)/2+40px))-min(15.4svh,158px)-34px))] xl:p-0"
+        ref={sideRef}
+        className="hero-side relative z-10 px-4 pb-12 pt-12 sm:px-6 lg:hidden xl:absolute xl:right-[max(70px,calc((100vw-1440px)/2+40px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:flex xl:w-[min(340px,calc(100vw-max(70px,calc((100vw-1440px)/2+40px))-var(--fig-x)-var(--fig-half)-48px))] xl:flex-col xl:justify-between xl:p-0"
       >
         <ol className="now-list">
           {site.hero.now.map((item, i) => (
@@ -216,8 +250,9 @@ export function Hero() {
       </m.div>
 
       {/* the red tape down the right edge: "Open to Software Engineer roles" climbing it without end. Phones and
-          tablets: beside his figure on the first screen only (as tall as the figure's space), so it never
-          runs over the words; wide screens: the hero's full height */}
+          tablets: from under the header to the foot of his figure, so it never runs over the words; wide
+          screens: the hero's full height, 40px clear of the name and the list (on a screen wider than the
+          1440px frame it follows the frame's edge, not the screen's) */}
       <RoleTape onClick={() => scrollTo('contact')} />
     </section>
   )
@@ -295,13 +330,13 @@ function SpokenIntro({ text }: { text: string }) {
  * jump to Contact.
  */
 function RoleTape({ onClick }: { onClick: () => void }) {
-  const run = `${site.openTo.toUpperCase()} \u2726 `
+  const run = `${site.openTo.toUpperCase()} \u2022 `
   return (
     <m.button
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      className="role-tape absolute right-0 top-0 z-30 h-[calc(96px+clamp(320px,calc(100svh-184px),760px))] sm:h-[calc(120px+clamp(360px,calc(100svh-212px),820px))] lg:bottom-0 lg:h-auto"
+      className="role-tape absolute right-0 z-30 h-[calc(28px+clamp(320px,calc(100svh-184px),760px))] sm:h-[calc(52px+clamp(360px,calc(100svh-212px),820px))] lg:bottom-0 lg:right-[max(0px,calc((100vw-1440px)/2-30px))] lg:h-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
