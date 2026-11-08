@@ -203,9 +203,9 @@ export function Header() {
             transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
             className="pointer-events-auto absolute right-[max(40px,calc((100vw-1440px)/2+40px))] top-0"
           >
-            {/* as on the main portfolio: a solid tile in the ink, so it is light in the dark and black on the
-                paper, the icon cut out of it in the page's own colour; it lifts on hover and presses on a click */}
-            <ThemeButton className="btn-solid btn-still grid size-[46px] place-items-center rounded-xl bg-ink text-paper" />
+            {/* as on the main portfolio, a tile in the ink (light in the dark, black on the paper), but in the
+                bar's liquid glass (.glass-ink); it lifts a little on hover and presses on a click */}
+            <ThemeButton className="glass glass-ink grid size-[46px] place-items-center rounded-xl transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95" />
           </m.div>
         </div>
       </header>
