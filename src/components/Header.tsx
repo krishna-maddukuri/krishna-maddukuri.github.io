@@ -206,10 +206,10 @@ export function Header() {
             className="pointer-events-auto absolute top-0 right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))]"
           >
             {/* as on the main portfolio: a solid tile in the ink, so it is light in the dark and black on the
-                paper, the icon cut out of it in the page's own colour (22px, about half the tile); it lifts on
-                hover and presses on a click */}
+                paper, the icon cut out of it in the page's own colour (22px, about half the tile). It stays level
+                with the bar beside it: a touch softer under the pointer, pressed in on a click */}
             <ThemeButton
-              className="btn-solid btn-still grid size-[46px] place-items-center rounded-xl bg-ink text-paper"
+              className="grid size-[46px] place-items-center rounded-xl bg-ink text-paper shadow-[var(--shadow-button)] transition-[background-color,scale] duration-200 hover:bg-[color-mix(in_srgb,var(--ink)_86%,var(--paper))] active:scale-95"
               icon="size-[22px]"
             />
           </m.div>
