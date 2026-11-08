@@ -1,9 +1,13 @@
 import { site } from '../data/site'
 import { PaperFigure } from './PaperFigure'
 
-/** His paper figure in the hero (folding itself together). */
-export function HeroMedia() {
-  return <div className="relative h-full w-fit">{site.hero.image ? <PaperFigure /> : <PlaceholderFigure />}</div>
+/** His paper figure in the hero (folding itself together); its shards fly on the hero's `shardLayer`. */
+export function HeroMedia({ shardLayer }: { shardLayer: HTMLElement | null }) {
+  return (
+    <div className="relative h-full w-fit">
+      {site.hero.image ? <PaperFigure layer={shardLayer} /> : <PlaceholderFigure />}
+    </div>
+  )
 }
 
 /**

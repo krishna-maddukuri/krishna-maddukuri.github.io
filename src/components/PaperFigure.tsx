@@ -1,18 +1,21 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { site } from '../data/site'
 import { onHome } from '../lib/home'
 
 /**
- * His paper-craft figure, in pieces. The picture is cut into ~450 shards that follow the
- * paper's own facets (big ones on the body, small ones on the face); phones and tablets get a
- * coarser cut of ~90 big, even pieces instead. On load they glide in from all around and lock
- * together; afterwards the figure breathes, the shards under the cursor lift out of its way,
- * and a click (or, on phones, the "Scatter him" button) blows the whole figure apart, far and
- * wide, before it settles back together.
+ * His paper-craft figure, in pieces. The picture is cut into ~460 shards that follow the paper's own
+ * facets (big ones on the body, small ones on the face). On load the shards lie spread evenly over the
+ * hero, then glide in and lock together; afterwards he breathes, and the shards under the cursor lift
+ * and part around it, photo side up. A click (or, on phones and tablets, the "Scatter him" button) sends
+ * them back out over the whole screen, each to its own spot, turning over and over on the way so the
+ * red back of the paper flashes between the photo; they drift there a moment, then come back by themselves.
  *
- * Rendered with WebGL2 in one draw call; everything per-shard happens in the vertex shader.
- * Without WebGL, or with "reduce motion" on, the plain cut-out is shown instead.
+ * The shards are drawn on a canvas as wide as the hero and as tall as its first screen, which the hero
+ * keeps behind its words and over the giant name (`layer`, its [data-shard-layer]); the figure's own box,
+ * where he stands, takes the clicks and holds the still picture. WebGL2, one draw call; everything per
+ * shard happens in the vertex shader. Without WebGL, or with "reduce motion" on, the plain cut-out is shown.
  */
 
 /** Texture pixels: the cut-out's size (the picture upscaled 4x). */
@@ -20,117 +23,137 @@ const TEX_W = 1383
 const TEX_H = 3830
 /** Distances below were tuned on a 691px-wide picture; this scales them to the texture in use. */
 const UNIT = TEX_W / 691
+/** The canvas never draws more device pixels than a 4K screen has. */
+const MAX_PIXELS = 3840 * 2160
 
-/** The canvas is much bigger than the figure so the shards have room to fly. */
-const PAD_X = 1.3 // of the figure's width, each side (more on wide screens, where the scatter reaches farther)
-const PAD_TOP = 0.45 // of the figure's height
-/**
- * How far a click sends the shards, as a multiple of the distances in buildGeometry: 1 on a phone,
- * where the scatter already fills the screen, up to REACH_WIDE on wide screens, where there is open
- * space around him to use.
- */
-const REACH_WIDE = 1.3
+/** Timing (milliseconds). */
+const FADE_IN = 450 // on load the spread shards fade in,
+const GATHER_DELAY = 400 // wait a moment, so he lands with the rest of the hero,
+const GATHER_IN = 2300 // and glide in to make him
+const SCATTER_OUT = 1000 // a click sends them out this quickly,
+const SCATTER_HOLD = 2200 // lets them drift this long,
+const GATHER_BACK = 1700 // then brings them back
+const WAVE = 1100 // when the page comes home, a ripple runs down him from head to feet, this long
 
-/** Timing (seconds). */
-const GLIDE = 1.7 // one shard's journey into place
-const STAGGER = 0.35 // the last shard starts this much after the first
-const BUILD_DELAY = 0.4 // after the figure is ready, so it lands with the rest of the hero
-const SCATTER_HOLD = 3 // a click (or the phone button) scatters him for this long, then he comes back by himself
-const WAVE = 1.1 // when the page comes home, a ripple runs down him from head to feet, this long
-/** Below this width (the lg breakpoint) the coarse mesh is used. */
-const LITE_BELOW = 1024
+/** The back of the paper: the brand red (#f0412e, the same in both modes). */
+const RED = [240 / 255, 65 / 255, 46 / 255] as const
 
 type MeshData = { w: number; h: number; p: number[]; z: number[]; t: number[] }
 type State = 'loading' | 'building' | 'ready' | 'scattered' | 'fallback'
 
 const VERT = /* glsl */ `#version 300 es
 precision highp float;
-in vec3 a_pos;      // model space: x from the body's centre line, y up from the feet, z towards the viewer
+in vec3 a_pos;    // texture px (y runs down), and the paper's relief, towards the viewer
 in vec2 a_uv;
-in vec2 a_center;   // the shard's centre
-in vec4 a_start;    // where it glides in from (xy), its starting spin, its start delay
-in vec4 a_scatter;  // where a click sends it (xy), its spin there, its depth while loose
-uniform vec2 u_center;   // model-space point at the middle of the canvas
-uniform vec2 u_scale;    // model px → clip space
-uniform float u_time;    // seconds since the build started
-uniform float u_scatter; // 0 together … 1 scattered (eased)
-uniform float u_reach;   // how far the scatter goes on this screen (1 on phones, more on wide screens)
-uniform float u_breath;  // -1..1
-uniform vec3 u_pointer;  // model-space pointer and its strength (0..1)
+in vec3 a_center; // the shard's centre, in the same space
+in vec4 a_rand;   // four random numbers of its own
+in vec2 a_cell;   // its spot in the spread: a point of u_spread, 0..1 each way
+in float a_size;  // its size: the square root of its area (texture px)
+uniform vec2 u_view;    // the canvas (CSS px)
+uniform vec3 u_fig;     // where the picture's top-left corner is on the canvas, and its scale
+uniform vec2 u_eye;     // where the perspective converges (his chest)
+uniform vec4 u_spread;  // the part of the hero the spread covers: x, y, width, height
+uniform float u_k;      // 0 together … 1 spread out
+uniform float u_time;   // seconds
+uniform float u_breath; // -1..1
+uniform vec3 u_ptr;     // the pointer on the canvas, and how hard it pushes (0..1)
+uniform float u_avg;    // the shards' average size
 out vec2 v_uv;
+out vec3 v_n;
 out float v_shade;
-out float v_alpha;
 
-const float GLIDE = ${GLIDE.toFixed(2)};
-const float CAM = ${(5200 * UNIT).toFixed(1)};
+const float PI = 3.14159265;
+const float TH = ${TEX_H.toFixed(1)};
 const float U = ${UNIT.toFixed(4)};
+const float CAM = ${(5200 * UNIT).toFixed(1)};
+const vec3 Z = vec3(0.0, 0.0, 1.0);
 
-mat2 spin(float r) { float c = cos(r), s = sin(r); return mat2(c, s, -s, c); }
+vec3 turn(vec3 v, vec3 ax, float a) { float c = cos(a), s = sin(a); return v * c + cross(ax, v) * s + ax * dot(ax, v) * (1.0 - c); }
+float ease(float x) { x = clamp(x, 0.0, 1.0); return x * x * (3.0 - 2.0 * x); }
 
 void main() {
-  float t = clamp((u_time - a_start.w) / GLIDE, 0.0, 1.0);
-  // slow start, fast middle, soft landing
-  float e = t < 0.5 ? 8.0 * t * t * t * t : 1.0 - 8.0 * pow(1.0 - t, 4.0);
-  float loose = max(1.0 - e, u_scatter);
+  float s = u_fig.z;
+  // alive: breathing, the feet staying put (the height above his feet is TH - y)
+  vec3 v = a_pos;
+  vec3 c = a_center;
+  float hv = TH - v.y;
+  float hc = TH - c.y;
+  v.xy = vec2(v.x + u_breath * 1.2 * U * hv / TH, TH - hv * (1.0 + 0.004 * u_breath));
+  c.xy = vec2(c.x + u_breath * 1.2 * U * hc / TH, TH - hc * (1.0 + 0.004 * u_breath));
+  vec3 home = vec3(u_fig.xy + c.xy * s, c.z * s); // where the shard belongs (canvas px)
+  vec3 local = (v - c) * s;                      // this corner, around the shard's centre
 
-  vec2 c = a_center;
-  // the shards under the pointer drift out of its way
-  vec2 away = c - u_pointer.xy;
+  // hover: the shards under the pointer part around it, lift and grow a touch, photo side up
+  vec2 away = home.xy - u_ptr.xy;
   float d = length(away);
-  float push = smoothstep(230.0 * U, 30.0 * U, d) * u_pointer.z;
-  vec2 pushOff = (d > 1.0 ? away / d : vec2(0.0, 1.0)) * push * 18.0 * U;
-  // where the shard is right now: gliding in, scattered by a click, nudged by the pointer, drifting a touch
-  float phase = a_start.w * 17.0 + a_scatter.w;
-  vec2 drift = vec2(sin(u_time * 0.8 + phase), cos(u_time * 0.63 + phase * 1.3)) * 12.0 * U * u_scatter; // only while loose: at rest the shards must meet exactly
-  vec2 off = a_start.xy * (1.0 - e) + a_scatter.xy * u_reach * u_scatter + pushOff + drift;
-  float ang = a_start.z * (1.0 - e) + a_scatter.z * u_scatter + push * 0.06 * sign(a_scatter.z) + sin(u_time * 0.7 + phase) * 0.05 * u_scatter;
-  vec3 p = a_pos;
-  // the lifted shards grow a touch, so they overlap their neighbours instead of leaving gaps
-  p.xy = c + spin(ang) * (p.xy - c) * (1.0 + 0.05 * push) + off;
-  p.z += 30.0 * U * push;
-  p.z += a_scatter.w * loose; // loose shards sit at their own depth, so they overlap consistently
+  float push = smoothstep(230.0 * U * s, 30.0 * U * s, d) * u_ptr.z;
+  vec2 dir = d > 0.5 ? away / d : vec2(0.0, -1.0);
+  float sg = a_rand.z < 0.5 ? -1.0 : 1.0;
+  home += vec3(dir * push * 18.0 * U * s, push * 30.0 * U * s);
+  local = turn(local * (1.0 + 0.05 * push), Z, push * 0.06 * sg);
 
-  // alive: breathing (the feet stay put)
-  p.y *= 1.0 + 0.004 * u_breath;
-  p.x += u_breath * 1.2 * U * (p.y / ${TEX_H.toFixed(1)});
+  // the spread: each shard flies out to its own spot on an arc, turning over and over (so the back of
+  // the paper flashes between the photo), and drifts and flutters there; some go a little before others
+  float k = ease(u_k * 1.5 - a_rand.y * 0.5);
+  float reach = min(u_spread.z, u_spread.w) / 900.0;
+  vec2 spot = u_spread.xy + a_cell * u_spread.zw
+    + vec2(sin(u_time * 0.7 + a_rand.z * 20.0), cos(u_time * 0.55 + a_rand.w * 20.0)) * 12.0 * reach * k;
+  float a = a_rand.x * 6.2832;
+  vec3 pos = mix(home, vec3(spot, 0.0), k) + vec3(vec2(sin(a), -cos(a)) * sin(k * PI) * 70.0 * reach, 0.0);
+  // out there the shards are all about one size, so the spread reads as an even field
+  float grow = mix(1.0, clamp(u_avg / a_size, 0.45, 2.4) * 1.3, 0.85 * k);
+  vec3 off = turn(local * grow, Z, (a_rand.w - 0.5) * 6.0 * k);
+  vec3 ax = vec3(cos(a), sin(a), 0.0);
+  float tip = (4.0 * k * (1.0 - k) * (2.4 + 1.6 * a_rand.w) + k * (0.75 + 1.05 * sin(u_time * 2.0 + a_rand.y * 30.0))) * sg;
+  pos += turn(off, ax, tip);
+  v_n = turn(Z, ax, tip);
 
-  // loose paper catches a little more light
-  v_shade = 1.0 + 0.06 * loose + 0.04 * push;
-  v_alpha = smoothstep(0.0, 0.18, t);
+  // a gentle perspective, converging on his chest
+  float f = CAM * s;
+  vec2 p = u_eye + (pos.xy - u_eye) * (f / max(f - pos.z, f * 0.2));
+  gl_Position = vec4(p.x / u_view.x * 2.0 - 1.0, 1.0 - p.y / u_view.y * 2.0, -pos.z / (4000.0 * U * s) + a_rand.y * 0.002 * k, 1.0);
   v_uv = a_uv;
-
-  float persp = CAM / (CAM - p.z);
-  vec2 s = (p.xy - u_center) * persp * u_scale;
-  gl_Position = vec4(s, -p.z / (4000.0 * U), 1.0);
+  // loose paper catches a little more light
+  v_shade = 1.0 + 0.06 * k + 0.04 * push;
 }`
 
 const FRAG = /* glsl */ `#version 300 es
 precision mediump float;
 uniform sampler2D u_tex;
+uniform vec3 u_red;
+uniform float u_alpha;
 in vec2 v_uv;
+in vec3 v_n;
 in float v_shade;
-in float v_alpha;
 out vec4 o;
 void main() {
   vec4 c = texture(u_tex, v_uv, -0.4); // premultiplied; a touch below the mip the size calls for keeps the creases crisp
-  o = vec4(min(c.rgb * v_shade, vec3(c.a)), c.a) * v_alpha;
+  if (c.a < 0.02) discard; // (the clear paper round his edges must not hide the shards behind it)
+  if (gl_FrontFacing) {
+    o = vec4(min(c.rgb * v_shade, vec3(c.a)), c.a) * u_alpha;
+  } else {
+    // the back of the paper: plain red, lit by how it faces the light
+    float lit = 0.58 + 0.52 * abs(dot(normalize(v_n), normalize(vec3(-0.4, -0.55, 0.73))));
+    o = vec4(min(u_red * lit, vec3(1.0)) * c.a, c.a) * u_alpha;
+  }
 }`
 
-export function PaperFigure({ className = '' }: { className?: string }) {
+export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | null; className?: string }) {
   const reduce = useReducedMotion()
   const boxRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<State>('loading')
   const toggleRef = useRef<() => void>(() => {})
   const labelRef = useRef<HTMLDivElement>(null)
-  const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0, on: false })
+  const hovered = useRef(false)
   const { image } = site.hero
 
   useEffect(() => {
     if (reduce) return
     const canvas = canvasRef.current
     const box = boxRef.current
-    if (!canvas || !box) return
+    const section = layer?.parentElement
+    if (!canvas || !box || !section) return
     let disposed = false
     let raf = 0
     let cleanup = () => {}
@@ -162,7 +185,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       img.onerror = () => bad(new Error('texture'))
     })
     img.src = image
-    const meshReady = fetch(window.innerWidth < LITE_BELOW ? 'avatar/krishna-origami-lite.json' : 'avatar/krishna-origami.json').then((r) => {
+    const meshReady = fetch('avatar/krishna-origami.json').then((r) => {
       if (!r.ok) throw new Error('mesh')
       return r.json() as Promise<MeshData>
     })
@@ -174,7 +197,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
 
     // --- everything below runs once the data is in ----------------------------------------
     function start(pic: HTMLImageElement, mesh: MeshData) {
-      if (!gl) return
+      if (!gl || !canvas || !box || !section) return
       const prog = program(gl, VERT, FRAG)
       if (!prog) return fail()
       gl.useProgram(prog)
@@ -182,18 +205,23 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       // geometry: three vertices per shard so each shard can move on its own
       const geo = buildGeometry(mesh)
       gl.bindVertexArray(gl.createVertexArray())
-      const attr = (name: string, data: Float32Array, size: number) => {
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
-        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+      const attr = (name: string, data: Float32Array, size: number, usage: number = gl.STATIC_DRAW) => {
+        const buf = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+        gl.bufferData(gl.ARRAY_BUFFER, data, usage)
         const loc = gl.getAttribLocation(prog, name)
-        gl.enableVertexAttribArray(loc)
-        gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0)
+        if (loc >= 0) {
+          gl.enableVertexAttribArray(loc)
+          gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0)
+        }
+        return buf
       }
       attr('a_pos', geo.pos, 3)
       attr('a_uv', geo.uv, 2)
-      attr('a_center', geo.center, 2)
-      attr('a_start', geo.start, 4)
-      attr('a_scatter', geo.scatter, 4)
+      attr('a_center', geo.center, 3)
+      attr('a_rand', geo.rand, 4)
+      attr('a_size', geo.size, 1)
+      const cellBuf = attr('a_cell', new Float32Array(geo.count * 2), 2, gl.DYNAMIC_DRAW)
 
       // the picture, premultiplied, with mipmaps for the small sizes
       gl.activeTexture(gl.TEXTURE0)
@@ -207,7 +235,6 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
       const aniso = gl.getExtension('EXT_texture_filter_anisotropic')
       if (aniso) gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT)))
-      gl.uniform1i(gl.getUniformLocation(prog, 'u_tex'), 0)
 
       gl.enable(gl.DEPTH_TEST)
       gl.depthFunc(gl.LEQUAL)
@@ -215,78 +242,173 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
       gl.clearColor(0, 0, 0, 0)
 
+      const loc = (name: string) => gl.getUniformLocation(prog, name)
       const U = {
-        center: gl.getUniformLocation(prog, 'u_center'),
-        scale: gl.getUniformLocation(prog, 'u_scale'),
-        time: gl.getUniformLocation(prog, 'u_time'),
-        scatter: gl.getUniformLocation(prog, 'u_scatter'),
-        reach: gl.getUniformLocation(prog, 'u_reach'),
-        breath: gl.getUniformLocation(prog, 'u_breath'),
-        pointer: gl.getUniformLocation(prog, 'u_pointer'),
+        view: loc('u_view'),
+        fig: loc('u_fig'),
+        eye: loc('u_eye'),
+        spread: loc('u_spread'),
+        k: loc('u_k'),
+        time: loc('u_time'),
+        breath: loc('u_breath'),
+        ptr: loc('u_ptr'),
+        alpha: loc('u_alpha'),
       }
+      gl.uniform1i(loc('u_tex'), 0)
+      gl.uniform3f(loc('u_red'), RED[0], RED[1], RED[2])
+      gl.uniform1f(loc('u_avg'), geo.avgSize)
 
-      // --- size: the canvas covers the figure plus room around it -----------------------
-      let scaleModel = 1 // CSS px per model px
+      // --- size: the canvas is as wide as the hero and runs from its top past his feet, to the bottom of
+      // the screen at least (on wide screens that is the whole hero; on phones and tablets the first screen,
+      // where the words come after him). It only grows while the width stays, so a phone's toolbar
+      // sliding away doesn't make it start over.
+      let view = { w: 1, h: 1 }
+      let sizedFor = 0
       const resize = () => {
-        const r = box!.getBoundingClientRect()
-        if (r.width === 0 || r.height === 0) return
+        const w = section.clientWidth
+        const sr = section.getBoundingClientRect()
+        const br = box.getBoundingClientRect()
+        if (w === 0 || br.height === 0) return
+        const need = Math.min(sr.height, Math.max(window.innerHeight, br.bottom - sr.top + 90))
+        const h = Math.ceil(Math.min(sr.height, w === sizedFor ? Math.max(view.h, need) : need))
+        sizedFor = w
+        view = { w, h }
+        canvas.style.height = `${h}px`
         // (test runners draw WebGL in software: one pixel per CSS pixel is plenty there)
-        const dpr = navigator.webdriver ? 1 : Math.min(window.devicePixelRatio || 1, 3)
-        // the room around him: a phone is ~2.3 figure-widths wide, a laptop ~4.6; the scatter and the
-        // canvas grow with it
-        const room = window.innerWidth / r.width
-        const reach = 1 + (REACH_WIDE - 1) * Math.min(1, Math.max(0, (room - 2.6) / 2))
-        gl.uniform1f(U.reach, reach)
-        const w = r.width * (1 + 2 * (PAD_X + (reach - 1) * 1.7))
-        const h = r.height * (1 + PAD_TOP + (reach - 1) * 0.5)
-        canvas!.style.width = `${w}px`
-        canvas!.style.height = `${h}px`
+        const dpr = navigator.webdriver ? 1 : Math.min(window.devicePixelRatio || 1, 3, Math.sqrt(MAX_PIXELS / (w * h)))
         const pw = Math.round(w * dpr)
         const ph = Math.round(h * dpr)
-        if (canvas!.width !== pw || canvas!.height !== ph) {
-          canvas!.width = pw
-          canvas!.height = ph
+        if (canvas.width !== pw || canvas.height !== ph) {
+          canvas.width = pw
+          canvas.height = ph
         }
         gl.viewport(0, 0, pw, ph)
-        scaleModel = r.height / TEX_H
-        // model space: x from the centre line, y up from the picture's bottom edge
-        const mw = w / scaleModel
-        const mh = h / scaleModel
-        gl.uniform2f(U.center, 0, mh / 2)
-        gl.uniform2f(U.scale, 2 / mw, 2 / mh)
       }
       resize()
       const ro = new ResizeObserver(resize)
-      ro.observe(box!)
+      ro.observe(section)
+      ro.observe(box)
 
-      // --- the pointer: which shards move aside -------------------------------------------
-      const ptr = { x: 0, y: 0, k: 0, tx: 0, ty: 0, tk: 0 }
+      // where he stands on the canvas right now (the hero moves him: his entrance, and the scroll on wide screens)
+      const place = () => {
+        const cr = canvas.getBoundingClientRect()
+        const br = box.getBoundingClientRect()
+        return { cr, br, x: br.left - cr.left, y: br.top - cr.top, s: br.height / TEX_H }
+      }
+
+      // --- the spread: a jittered grid over the part of the hero on screen (clear of the header and the red
+      // tape's lane), one spot per shard. Shards and spots are both taken in turn around his middle, so each
+      // shard flies out the way it already faces and the figure opens outwards.
+      let spread: [number, number, number, number] = [0, 0, 1, 1]
+      const lay = () => {
+        const { cr, x, y, s } = place()
+        const head = document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 0
+        const lane = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane')) || 0
+        let top = Math.max(cr.top, head + 8, 8)
+        let bottom = Math.min(cr.bottom, window.innerHeight) - 12
+        if (bottom - top < 160) {
+          // (the hero is mostly off screen: its own first screen, then)
+          top = cr.top + 72
+          bottom = Math.min(cr.bottom, cr.top + window.innerHeight) - 12
+        }
+        const left = Math.max(cr.left, 0) + 12
+        const right = Math.min(cr.right, window.innerWidth) - 12 - lane
+        spread = [left - cr.left, top - cr.top, Math.max(1, right - left), Math.max(1, bottom - top)]
+        const [sx, sy, sw, sh] = spread
+        const n = geo.shards
+        const rand = rng(5)
+        const cols = Math.max(1, Math.round(Math.sqrt((n * sw) / sh)))
+        const rows = Math.ceil(n / cols)
+        let spots: { u: number; v: number; a: number }[] = []
+        for (let i = 0; i < rows; i++)
+          for (let j = 0; j < cols; j++) spots.push({ u: (j + 0.15 + rand() * 0.7) / cols, v: (i + 0.15 + rand() * 0.7) / rows, a: 0 })
+        // the spare spots come out of the corners
+        spots = spots.sort((p, q) => Math.hypot(p.u - 0.5, p.v - 0.5) - Math.hypot(q.u - 0.5, q.v - 0.5)).slice(0, n)
+        const mx = x + (TEX_W / 2) * s
+        const my = y + TEX_H * 0.45 * s
+        for (const p of spots) p.a = Math.atan2(sy + p.v * sh - my, sx + p.u * sw - mx)
+        spots.sort((p, q) => p.a - q.a)
+        const data = new Float32Array(geo.count * 2)
+        geo.order.forEach((shard, i) => {
+          for (let v = 0; v < 3; v++) {
+            data[(shard * 3 + v) * 2] = spots[i].u
+            data[(shard * 3 + v) * 2 + 1] = spots[i].v
+          }
+        })
+        gl.bindBuffer(gl.ARRAY_BUFFER, cellBuf)
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW)
+      }
+
+      // --- the motion: k runs from 0 (together) to 1 (spread out) ---------------------------
+      const smooth = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+      const quick = (t: number) => 1 - Math.pow(1 - t, 3)
+      let k = 1
+      const tw = { from: 1, to: 0, t0: 0, ms: 0, ease: smooth }
+      const tween = (to: number, ms: number, ease: (t: number) => number, t0: number) => {
+        tw.from = k
+        tw.to = to
+        tw.t0 = t0
+        tw.ms = ms
+        tw.ease = ease
+      }
+      let phase: 'gather' | 'out' | 'hold' | 'rest' = 'gather'
+      let holdUntil = 0
+      let built = false
+      let holdTimer: ReturnType<typeof setTimeout> | undefined
+      const gather = (now: number) => {
+        clearTimeout(holdTimer)
+        phase = 'gather'
+        tween(0, GATHER_BACK * (0.45 + 0.55 * k), smooth, now)
+        setState(built ? 'ready' : 'building')
+      }
+      const scatter = (now: number) => {
+        // fresh spots only when he is whole (moving them mid-flight would make the shards jump)
+        if (k < 0.02) lay()
+        phase = 'out'
+        const ms = SCATTER_OUT * (0.4 + 0.6 * (1 - k))
+        tween(1, ms, quick, now)
+        setState('scattered')
+        // the frames bring him back once the hold is over; this timer does the same should the frames stop
+        // meanwhile (the hero scrolled away, a switch of tabs), so the buttons never stay on "put him back"
+        clearTimeout(holdTimer)
+        holdTimer = setTimeout(() => {
+          if (!disposed && (phase === 'out' || phase === 'hold')) {
+            gather(performance.now())
+            schedule()
+          }
+        }, ms + SCATTER_HOLD + 150)
+      }
+      toggleRef.current = () => {
+        const now = performance.now()
+        if (phase === 'out' || phase === 'hold') gather(now)
+        else scatter(now)
+        lastPointer = now
+        schedule()
+      }
+
+      // --- the pointer: which shards move aside -----------------------------------------------
+      const mouse = { x: 0, y: 0, in: false } // the mouse, in the window's px
+      const ptr = { x: 0, y: 0, k: 0 } // the eased push, in the canvas's px
+      const lbl = { x: 0, y: 0 } // the label beside the pointer, in the box's px
       let lastPointer = 0
       let wave = 0 // when the ripple started; 0 while there is none
       const onMove = (e: PointerEvent) => {
         if (e.pointerType && e.pointerType !== 'mouse') return
-        if (wave) return // the ripple is a pointer nobody holds: the mouse waits its turn
-        const r = box!.getBoundingClientRect()
-        // model-space pointer for the shards
-        cursor.current.tx = e.clientX - r.left
-        cursor.current.ty = e.clientY - r.top
-        const mx = (e.clientX - r.left) / scaleModel - TEX_W / 2
-        const my = TEX_H - (e.clientY - r.top) / scaleModel
-        ptr.tx = mx
-        ptr.ty = my
-        ptr.tk = mx > -TEX_W * 0.8 && mx < TEX_W * 0.8 && my > -80 * UNIT && my < TEX_H + 120 * UNIT ? 1 : 0
+        mouse.x = e.clientX
+        mouse.y = e.clientY
+        mouse.in = true
         lastPointer = performance.now()
       }
       const onLeave = () => {
-        ptr.tk = 0
-        cursor.current.on = false
+        mouse.in = false
+        hovered.current = false
       }
       window.addEventListener('pointermove', onMove, { passive: true })
       document.addEventListener('mouseleave', onLeave)
       window.addEventListener('blur', onLeave)
-      // home: the ripple, once he is built
+      // home: the ripple, once he is built and whole
       const offHome = onHome(() => {
-        if (!built || scatter.target === 1) return
+        if (!built || phase !== 'rest') return
         wave = performance.now()
         lastPointer = wave
         schedule()
@@ -298,97 +420,93 @@ export function PaperFigure({ className = '' }: { className?: string }) {
         visible = en.isIntersecting
         if (visible) schedule()
       })
-      io.observe(box!)
+      io.observe(canvas)
 
-      let t0 = performance.now() + BUILD_DELAY * 1000
-      let last = performance.now()
-      let built = false
+      const born = performance.now()
+      let last = born
       let frames = 0
-      const scatter = { v: 0, target: 0, until: 0 }
-      let holdTimer: ReturnType<typeof setTimeout> | undefined
-      const gather = () => {
-        clearTimeout(holdTimer)
-        scatter.target = 0
-        setState(built ? 'ready' : 'building')
-        schedule()
-      }
+      lay()
       setState('building')
-      toggleRef.current = () => {
-        const now = performance.now()
-        if (scatter.target === 0) {
-          scatter.target = 1
-          scatter.until = now + SCATTER_HOLD * 1000
-          setState('scattered')
-          // the frames bring him back once the hold is over; this timer does the same should a phone
-          // pause the frames meanwhile (a scroll, a switch of tabs), so he never stays in pieces
-          clearTimeout(holdTimer)
-          holdTimer = setTimeout(() => {
-            if (!disposed && scatter.target === 1) gather()
-          }, SCATTER_HOLD * 1000 + 100)
-        } else {
-          gather()
-        }
-        lastPointer = now
-        schedule()
-      }
+      tween(0, GATHER_IN, smooth, born + GATHER_DELAY)
 
       const frame = (now: number) => {
         raf = 0
         if (disposed) return
-        // once he is built and nobody is pointing, half the frames are plenty for breathing
+        // once he is whole and nobody is pointing, half the frames are plenty for breathing
         // (test runners draw in software and share the machine: they always get half)
         frames++
-        const busy = scatter.v > 0.001 || scatter.target > 0 || now - lastPointer < 2500
-        if ((navigator.webdriver || (built && !busy)) && frames % 2 === 1) {
+        const busy = phase !== 'rest' || now - lastPointer < 2500
+        if ((navigator.webdriver || !busy) && frames % 2 === 1) {
           if (visible && !document.hidden) schedule()
           return
         }
         const dt = Math.min(0.05, (now - last) / 1000)
         last = now
-        const time = (now - t0) / 1000
-        if (!built && time > STAGGER + GLIDE + 0.1) {
-          built = true
-          if (scatter.target === 0) setState('ready')
+
+        // the spread: out, a moment there, and back
+        if (tw.ms > 0) {
+          const p = Math.min(1, Math.max(0, (now - tw.t0) / tw.ms))
+          k = tw.from + (tw.to - tw.from) * tw.ease(p)
+          if (p >= 1) {
+            tw.ms = 0
+            if (tw.to === 1) {
+              phase = 'hold'
+              holdUntil = now + SCATTER_HOLD
+            } else {
+              phase = 'rest'
+              built = true
+              setState('ready')
+            }
+          }
         }
+        if (phase === 'hold' && now >= holdUntil) gather(now)
+
+        const { cr, br, x, y, s } = place()
+        // the pointer: the mouse, while it is over him (and he is whole) … or the ripple, a pointer nobody holds
+        let tx = mouse.x - cr.left
+        let ty = mouse.y - cr.top
+        let tk = 0
+        if (wave) {
+          const p = (now - wave) / WAVE
+          if (p >= 1) wave = 0
+          else {
+            tx = x + (TEX_W / 2) * s
+            ty = y + (-120 * UNIT + (TEX_H + 240 * UNIT) * p) * s
+            tk = 1
+          }
+        } else if (mouse.in) {
+          const dx = mouse.x - (br.left + br.width / 2)
+          const dy = mouse.y - br.top
+          tk = Math.abs(dx) < br.width * 0.8 && dy > -120 * UNIT * s && dy < br.height + 80 * UNIT * s ? 1 : 0
+        }
+        if (ptr.k < 0.001) {
+          ptr.x = tx
+          ptr.y = ty
+        }
+        const kp = 1 - Math.pow(0.00005, dt)
+        ptr.x += (tx - ptr.x) * kp
+        ptr.y += (ty - ptr.y) * kp
+        ptr.k += (tk * (built ? 1 - k : 0) - ptr.k) * (1 - Math.pow(0.0008, dt))
         // the label beside the pointer follows it with a little lag
-        const lbl = cursor.current
         const label = labelRef.current
         if (label) {
           const kl = 1 - Math.pow(0.0005, dt)
-          lbl.x += (lbl.tx - lbl.x) * kl
-          lbl.y += (lbl.ty - lbl.y) * kl
+          lbl.x += (mouse.x - br.left - lbl.x) * kl
+          lbl.y += (mouse.y - br.top - lbl.y) * kl
           label.style.transform = `translate(${lbl.x + 18}px, ${lbl.y + 22}px)`
-          label.dataset.on = lbl.on && built ? '1' : '0'
+          label.dataset.on = hovered.current && built ? '1' : '0'
         }
-        if (scatter.target === 1 && now > scatter.until) gather()
-        // the ripple: the pointer's push, swept from above his head to below his feet
-        if (wave) {
-          const p = (now - wave) / (WAVE * 1000)
-          if (p >= 1) {
-            wave = 0
-            ptr.tk = 0
-          } else {
-            ptr.tx = 0
-            ptr.ty = TEX_H + 120 * UNIT - (TEX_H + 240 * UNIT) * p
-            ptr.tk = 1
-          }
-        }
-        // scattering is quick, coming back is unhurried
-        const ks = 1 - Math.pow(scatter.target === 1 ? 0.004 : 0.03, dt)
-        scatter.v += (scatter.target - scatter.v) * ks
-        // the pointer eases towards where it is
-        const k = 1 - Math.pow(0.0008, dt)
-        const kp = 1 - Math.pow(0.00005, dt)
-        ptr.x += (ptr.tx - ptr.x) * kp
-        ptr.y += (ptr.ty - ptr.y) * kp
-        ptr.k += (ptr.tk - ptr.k) * k
-        const breath = Math.sin(now / 1900)
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-        gl.uniform1f(U.time, time)
-        gl.uniform1f(U.scatter, scatter.v)
-        gl.uniform1f(U.breath, breath)
-        gl.uniform3f(U.pointer, ptr.x, ptr.y, built ? ptr.k : 0)
+        gl.uniform2f(U.view, view.w, view.h)
+        gl.uniform3f(U.fig, x, y, s)
+        gl.uniform2f(U.eye, x + (TEX_W / 2) * s, y + TEX_H * 0.25 * s)
+        gl.uniform4f(U.spread, spread[0], spread[1], spread[2], spread[3])
+        gl.uniform1f(U.k, k)
+        gl.uniform1f(U.time, (now - born) / 1000)
+        gl.uniform1f(U.breath, Math.sin(now / 1900))
+        gl.uniform3f(U.ptr, ptr.x, ptr.y, ptr.k)
+        gl.uniform1f(U.alpha, Math.min(1, (now - born) / FADE_IN))
         gl.drawArrays(gl.TRIANGLES, 0, geo.count)
         if (visible && !document.hidden) schedule()
       }
@@ -402,7 +520,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
         }
       }
       document.addEventListener('visibilitychange', onVisibility)
-      canvas!.addEventListener('webglcontextlost', fail)
+      canvas.addEventListener('webglcontextlost', fail)
       schedule()
 
       cleanup = () => {
@@ -414,7 +532,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
         window.removeEventListener('blur', onLeave)
         offHome()
         document.removeEventListener('visibilitychange', onVisibility)
-        canvas!.removeEventListener('webglcontextlost', fail)
+        canvas.removeEventListener('webglcontextlost', fail)
       }
     }
 
@@ -423,7 +541,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
       cancelAnimationFrame(raf)
       cleanup()
     }
-  }, [reduce, image])
+  }, [reduce, image, layer])
 
   const still = reduce || state === 'fallback'
   return (
@@ -444,22 +562,21 @@ export function PaperFigure({ className = '' }: { className?: string }) {
         />
       ) : (
         <>
-          <canvas
-            ref={canvasRef}
-            role="img"
-            aria-label={site.name}
-            className="pointer-events-none absolute bottom-0 left-1/2 block max-w-none -translate-x-1/2"
-          />
+          {layer &&
+            createPortal(
+              <canvas ref={canvasRef} role="img" aria-label={site.name} className="pointer-events-none block w-full" />,
+              layer,
+            )}
           <button
             type="button"
             aria-label={state === 'scattered' ? 'Put the paper figure back together' : 'Scatter the paper figure'}
             aria-pressed={state === 'scattered'}
             onClick={() => toggleRef.current()}
             onPointerEnter={(e) => {
-              if (e.pointerType === 'mouse') cursor.current.on = true
+              if (e.pointerType === 'mouse') hovered.current = true
             }}
             onPointerLeave={() => {
-              cursor.current.on = false
+              hovered.current = false
             }}
             className="absolute inset-0 cursor-pointer rounded-[40%] focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-ink/60"
           />
@@ -494,7 +611,7 @@ export function PaperFigure({ className = '' }: { className?: string }) {
 
 /* --------------------------------------------------------------------------------------- */
 
-/** A small, repeatable random sequence, so the build looks the same on every visit. */
+/** A small, repeatable random sequence, so the motion looks the same on every visit. */
 function rng(seed: number) {
   let s = seed >>> 0
   return () => {
@@ -507,66 +624,47 @@ function rng(seed: number) {
 }
 
 /**
- * Per-shard attributes from the mesh: positions (model space), picture coordinates, the shard's
- * centre, where it glides in from and where a click sends it. The glide-in starts are spread
- * all around the figure; the scatter targets lean outwards from the body so he visibly comes apart.
+ * Per-shard attributes from the mesh: corners and centres in the picture's pixels (with the paper's
+ * relief as depth), picture coordinates, four random numbers and the shard's size. Each shard is wound
+ * counter-clockwise as drawn, so its photo side is the front face and a shard that turns over shows
+ * its back (red). `order` lists the shards in turn around his middle, for the spread.
  */
 function buildGeometry(mesh: MeshData) {
   const { p, z, t } = mesh
   const n = t.length / 3
   const pos = new Float32Array(n * 9)
   const uv = new Float32Array(n * 6)
-  const center = new Float32Array(n * 6)
-  const start = new Float32Array(n * 12)
-  const scatter = new Float32Array(n * 12)
-  const rand = rng(11)
+  const center = new Float32Array(n * 9)
+  const rand = new Float32Array(n * 12)
+  const size = new Float32Array(n * 3)
+  const angle = new Float32Array(n)
+  const r = rng(7)
   const Z_SCALE = TEX_W * 0.18
-  const X = (i: number) => p[i * 2] - TEX_W / 2
-  const Y = (i: number) => TEX_H - p[i * 2 + 1]
   for (let f = 0; f < n; f++) {
-    const idx = [t[f * 3], t[f * 3 + 1], t[f * 3 + 2]]
-    const cx = (X(idx[0]) + X(idx[1]) + X(idx[2])) / 3
-    const cy = (Y(idx[0]) + Y(idx[1]) + Y(idx[2])) / 3
-    // glide in from anywhere around him; the low shards mostly from the sides, not from below the feet
-    const a1 = rand() * Math.PI * 2
-    const d1 = (180 + rand() * 360) * UNIT
-    const sx = Math.cos(a1) * d1
-    let sy = Math.sin(a1) * d1
-    if (cy + sy < -60 * UNIT) sy = -60 * UNIT - cy
-    const spin1 = (0.35 + rand() * 0.9) * (rand() < 0.5 ? -1 : 1)
-    const delay = rand() * STAGGER
-    // scatter: far outwards from the middle of the body, with some randomness (never below his feet)
-    const ox = cx
-    const oy = cy - TEX_H * 0.5
-    const olen = Math.hypot(ox, oy) || 1
-    const a2 = Math.atan2(oy, ox) + (rand() - 0.5) * 1.4
-    const d2 = (180 + rand() * 520) * UNIT + Math.min(150 * UNIT, olen * 0.12)
-    const tx = Math.cos(a2) * d2
-    let ty = Math.sin(a2) * d2
-    if (cy + ty < -40 * UNIT) ty = -40 * UNIT - cy
-    const spin2 = (0.3 + rand() * 0.9) * (rand() < 0.5 ? -1 : 1)
-    const depth = (rand() - 0.5) * 160 * UNIT
+    let [a, b, c] = [t[f * 3], t[f * 3 + 1], t[f * 3 + 2]]
+    // (the picture's y runs down and the screen's up: this sign is clockwise in the picture)
+    const a2 = (p[b * 2] - p[a * 2]) * (p[c * 2 + 1] - p[a * 2 + 1]) - (p[c * 2] - p[a * 2]) * (p[b * 2 + 1] - p[a * 2 + 1])
+    if (a2 > 0) [b, c] = [c, b]
+    const idx = [a, b, c]
+    const cx = (p[a * 2] + p[b * 2] + p[c * 2]) / 3
+    const cy = (p[a * 2 + 1] + p[b * 2 + 1] + p[c * 2 + 1]) / 3
+    const cz = ((z[a] + z[b] + z[c]) / 3000) * Z_SCALE
+    const rr = [r(), r(), r(), r()]
+    angle[f] = Math.atan2(cy - TEX_H * 0.45, cx - TEX_W / 2)
     for (let v = 0; v < 3; v++) {
       const i = idx[v]
       const o = f * 3 + v
-      pos[o * 3] = X(i)
-      pos[o * 3 + 1] = Y(i)
-      pos[o * 3 + 2] = (z[i] / 1000) * Z_SCALE
-      uv[o * 2] = p[i * 2] / TEX_W
-      uv[o * 2 + 1] = p[i * 2 + 1] / TEX_H
-      center[o * 2] = cx
-      center[o * 2 + 1] = cy
-      start[o * 4] = sx
-      start[o * 4 + 1] = sy
-      start[o * 4 + 2] = spin1
-      start[o * 4 + 3] = delay
-      scatter[o * 4] = tx
-      scatter[o * 4 + 1] = ty
-      scatter[o * 4 + 2] = spin2
-      scatter[o * 4 + 3] = depth
+      pos.set([p[i * 2], p[i * 2 + 1], (z[i] / 1000) * Z_SCALE], o * 3)
+      uv.set([p[i * 2] / TEX_W, p[i * 2 + 1] / TEX_H], o * 2)
+      center.set([cx, cy, cz], o * 3)
+      rand.set(rr, o * 4)
+      size[o] = Math.sqrt(Math.abs(a2) / 2)
     }
   }
-  return { pos, uv, center, start, scatter, count: n * 3 }
+  const order = Array.from({ length: n }, (_, i) => i).sort((i, j) => angle[i] - angle[j])
+  let avgSize = 0
+  for (let f = 0; f < n; f++) avgSize += size[f * 3] / n
+  return { pos, uv, center, rand, size, avgSize, order, shards: n, count: n * 3 }
 }
 
 function program(gl: WebGL2RenderingContext, vs: string, fs: string) {

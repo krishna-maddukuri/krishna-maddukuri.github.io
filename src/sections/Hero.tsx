@@ -30,6 +30,8 @@ export function Hero() {
   const wide = useMedia('(min-width: 1024px)')
   const drift = wide && !touch
 
+  // where the figure's shards fly (the layer below), handed to the figure once it is in the page
+  const [shardLayer, setShardLayer] = useState<HTMLDivElement | null>(null)
   // the name draws itself in once its font is in (or after a moment, if the font is slow), so the
   // outline is never drawn in the fallback font and swapped mid-way
   const [wmPlay, setWmPlay] = useState(false)
@@ -106,6 +108,10 @@ export function Hero() {
         <GiantWord lines={wm.lines} play={wmPlay} />
       </m.div>
 
+      {/* the paper figure's shards fly here: over the giant name, under the words, anywhere on the hero's first
+          screen (components/PaperFigure.tsx draws them; the figure's own box below takes the clicks) */}
+      <div ref={setShardLayer} data-shard-layer className="pointer-events-none absolute inset-x-0 top-0 z-0" />
+
       {/* figure: his cut-out photo. Phones and tablets: the first screen is him,
           from under the header down to the "Scatter him" button above the fold; the words come after
           (the button hangs below his feet into the words' top padding, so the figure sits above them;
@@ -120,7 +126,7 @@ export function Hero() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1.2, ease: EASE, delay: 0.35 }}
         >
-          <HeroMedia />
+          <HeroMedia shardLayer={shardLayer} />
         </m.div>
       </m.div>
 
