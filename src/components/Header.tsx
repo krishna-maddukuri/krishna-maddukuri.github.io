@@ -100,8 +100,9 @@ export function Header() {
           paddingRight: 'env(safe-area-inset-right, 0px)',
         }}
       >
-        {/* phones and tablets: the monogram at the left, the theme switch and the menu in a capsule at the right */}
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 pl-3 pr-[calc(12px+var(--lane,0px))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] lg:hidden">
+        {/* phones and tablets: the monogram at the left, the theme switch and the menu in a capsule at the right
+            (the home page's red tape stops just under this row, so the capsule keeps the page's own edge) */}
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:hidden">
           <m.button
             type="button"
             onClick={goHome}
@@ -243,7 +244,7 @@ export function Header() {
             style={{
               top: 'calc(env(safe-area-inset-top, 0px) + 72px)',
               left: 'calc(env(safe-area-inset-left, 0px) + 12px)',
-              right: 'calc(env(safe-area-inset-right, 0px) + 12px + var(--lane, 0px))',
+              right: 'calc(env(safe-area-inset-right, 0px) + 12px)',
               maxHeight: 'calc(100svh - env(safe-area-inset-top, 0px) - 88px)',
               transformOrigin: 'top right',
             }}

@@ -11,8 +11,7 @@ import { HeroMedia } from '../components/HeroMedia'
 import { ArrowDown, ArrowRight, EASE, plain, richWords } from '../components/ui'
 
 /** The giant name behind the hero: his first and middle names on one line (the surname is the footer's word). */
-export const heroName = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
-const wm = heroName
+const wm = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null)
@@ -26,6 +25,10 @@ export function Hero() {
   // Phones and tablets skip the scroll-linked drift and the blur-in: native scrolling stays
   // smooth when the page isn't moving things on every frame.
   const touch = useMedia('(pointer: coarse)')
+  // the words drift and fade only where they open the page (wide screens); below 1024px they come after the
+  // figure, a screen down, and must be fully there when you reach them
+  const wide = useMedia('(min-width: 1024px)')
+  const drift = wide && !touch
 
   // the name draws itself in once its font is in (or after a moment, if the font is slow), so the
   // outline is never drawn in the fallback font and swapped mid-way
@@ -128,7 +131,7 @@ export function Hero() {
           right under it. The column stops short of his figure (--fig-x, --fig-half) and is a container (.hero-copy): the block's one line is sized to fit it */}
       <m.div
         ref={copyRef}
-        style={touch ? undefined : { y: textY, opacity: fade }}
+        style={drift ? { y: textY, opacity: fade } : undefined}
         className="hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(88px,calc(100lvh-72px-clamp(320px,calc(100svh-184px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(96px,calc(100lvh-96px-clamp(360px,calc(100svh-212px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
       >
         {/* the hello, the red block and the intro, as wide as its widest line (the red block): the intro
@@ -219,7 +222,7 @@ export function Hero() {
           most 340px. Laptops narrower than that leave it out (About says the same); phones and tablets have it
           after the words */}
       <m.div
-        style={touch ? undefined : { y: textY, opacity: fade }}
+        style={drift ? { y: textY, opacity: fade } : undefined}
         ref={sideRef}
         className="hero-side relative z-10 pb-12 pl-4 pr-[calc(16px+var(--lane,0px))] pt-12 sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] lg:hidden xl:absolute xl:right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:flex xl:w-[min(340px,calc(100vw-max(0px,(100vw-1440px)/2)-40px-var(--lane,0px)-var(--fig-x)-var(--fig-half)-48px))] xl:flex-col xl:justify-between xl:p-0"
       >

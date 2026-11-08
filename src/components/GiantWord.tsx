@@ -77,8 +77,6 @@ export function giantWord(texts: string[], cap = '31svh') {
   })
   return {
     lines,
-    /** the narrowest line's natural width in em: the word size is the measure divided by this */
-    base,
     word: `min(calc((100cqw - var(--wm-l) - var(--wm-r)) / ${base.toFixed(3)}), ${cap})`,
     bottom: `calc(var(--wm-word) * ${foot.toFixed(4)})`,
   }

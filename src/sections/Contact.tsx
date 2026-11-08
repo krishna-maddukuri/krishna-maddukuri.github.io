@@ -120,8 +120,9 @@ export function Footer() {
   const seen = useInView(word, { once: true, amount: 0.5 })
   return (
     <footer
-      className="wm-frame wm-frame--lane relative overflow-hidden border-t border-line pt-10"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 28px)', '--wm-word': fw.word } as CSSProperties}
+      className="wm-frame relative overflow-hidden border-t border-line pt-10"
+      // the home page's red tape ends at this top line, so the footer has the page's full width (no lane)
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 28px)', '--wm-word': fw.word, '--lane': '0px' } as CSSProperties}
     >
       <Container>
         <div className="flex flex-col gap-4 text-sm text-ink-soft sm:flex-row sm:items-center sm:justify-between">

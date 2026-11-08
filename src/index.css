@@ -307,11 +307,6 @@ body {
   transition: background-color 0.4s var(--ease-std), color 0.4s var(--ease-std);
 }
 
-/* the page's own box: the home page's red tape runs from its top to the foot of the footer (RoleTape.tsx) */
-#root {
-  position: relative;
-}
-
 /* paragraphs: no orphans, and never a line longer than the eye tracks comfortably */
 p {
   text-wrap: pretty;
@@ -463,7 +458,6 @@ html.lenis, html.lenis body { height: auto; }
   /* on the home page the red tape runs down the right edge, and a giant word keeps clear of it by the same
      gutter as on the left: the footer's surname everywhere, the hero's name on wide screens (on phones and
      tablets the tape starts under the name, which keeps the whole width) */
-  .wm-frame--lane { --wm-r: calc(var(--wm-l) + var(--lane, 0px)); }
   @media (min-width: 1024px) {
     .wm-frame--hero { --wm-r: calc(var(--wm-l) + var(--lane, 0px)); }
   }
@@ -756,40 +750,41 @@ html.lenis, html.lenis body { height: auto; }
   }
 
   /* the red tape down the right edge of the home page (components/RoleTape.tsx), in the red block's colours.
-     The track runs from the top of the page to the foot of the footer (the page's own box, #root); on phones
-     and tablets it starts just under the hero's giant name instead (which starts 68px down, 78px on tablets,
-     and ends 0.938 of its size lower). The window inside it is a screen tall and sticks to the top of the
-     screen, so the tape always fills the screen's right edge once the name has gone. Its words climb without
-     end (two identical halves, so moving up by half shows no seam), hold still under a pointer or keyboard
-     focus, and don't move at all for people who ask for less motion. The type sits in the middle of the tape:
-     the column is as wide as the tape (line-height), the letters 0.63 of it. Under the phone menu's scrim
-     (z 40), over everything on the page */
+     The track spans <main>: from the top of the page to the footer's top line, where it ends. On phones and
+     tablets it starts level with the top of the hero's red block instead (measured: --tape-start), below the
+     first screen, so the giant name and the figure have the first screen to themselves. The window inside it
+     sticks to the top of the screen (on phones and tablets just under the header's row, so the capsule keeps
+     its place) and reaches the foot of the screen. Its words climb without end (two identical halves, so
+     moving up by half shows no seam), hold still under a pointer or keyboard focus, and don't move at all for
+     people who ask for less motion. The type sits in the middle of the tape: the column is as wide as the tape
+     (line-height), the letters 0.63 of it. Under the phone menu's scrim (z 40), over everything on the page */
   .role-tape {
     --tape: var(--lane, 24px);
     position: absolute;
-    top: calc(68px + var(--name-word) * 0.938 + 14px);
+    top: var(--tape-start, 100lvh);
     right: 0;
     bottom: 0;
     z-index: 35;
     width: var(--tape);
     pointer-events: none;
   }
-  @media (min-width: 640px) { .role-tape { top: calc(78px + var(--name-word) * 0.938 + 14px); } }
   @media (min-width: 1024px) { .role-tape { top: 0; } }
   .role-tape-window {
+    --tape-from: calc(env(safe-area-inset-top, 0px) + 68px);
     position: sticky;
-    top: 0;
+    top: var(--tape-from);
     display: block;
     width: 100%;
-    height: 100lvh;
+    height: calc(100dvh - var(--tape-from));
     overflow: hidden;
     background: var(--brand-red);
     color: var(--role-ink);
     cursor: pointer;
     pointer-events: auto;
   }
-  /* the home page carries the tape: its width is the lane the whole page (header, sections, footer) keeps
-     clear on the right */
+  @media (min-width: 1024px) { .role-tape-window { --tape-from: 0px; } }
+  /* the home page carries the tape: its width is the lane every section (and, on wide screens, the header)
+     keeps clear on the right; the footer, where the tape ends, has the full width */
   :root:has(.role-tape) { --lane: 24px; }
   @media (min-width: 640px) { :root:has(.role-tape) { --lane: 28px; } }
   @media (min-width: 1024px) { :root:has(.role-tape) { --lane: 30px; } }

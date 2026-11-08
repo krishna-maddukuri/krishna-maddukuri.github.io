@@ -28,8 +28,9 @@ export function Home() {
   }, [location.state, navigate, scrollTo])
 
   return (
-    // the red tape runs down the right edge of the whole page, and everything keeps clear of it (--lane)
-    <main id="main">
+    // the red tape runs down the right edge of the page from the top to the footer (the track spans <main>),
+    // and everything keeps clear of it (--lane)
+    <main id="main" className="relative">
       <RoleTape onClick={() => scrollTo('contact')} />
       <Hero />
       <About />
