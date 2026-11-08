@@ -307,6 +307,11 @@ body {
   transition: background-color 0.4s var(--ease-std), color 0.4s var(--ease-std);
 }
 
+/* the page's own box: the home page's red tape runs from its top to the foot of the footer (RoleTape.tsx) */
+#root {
+  position: relative;
+}
+
 /* paragraphs: no orphans, and never a line longer than the eye tracks comfortably */
 p {
   text-wrap: pretty;
@@ -450,16 +455,17 @@ html.lenis, html.lenis body { height: auto; }
   .wm-frame {
     container-type: inline-size;
     --wm-gutter: clamp(16px, 4vw, 40px);
-    /* the measure's left and right insets: the gutters, or the 1440px frame's 40px edges on a wider
-       screen; the hero widens its right one for the red tape (.wm-frame--tape) */
-    --wm-l: max(var(--wm-gutter), (100cqw - 1360px) / 2);
+    /* the measure's left and right insets: the gutters inside the 1440px frame (centred on a wider screen),
+       the same edges as the page's text */
+    --wm-l: calc(max(0px, (100cqw - 1440px) / 2) + var(--wm-gutter));
     --wm-r: var(--wm-l);
   }
-  /* the red tape takes the hero's right edge: the name keeps clear of it, 16px on phones (the tape is
-     24px there) and 40px on wide screens, the same as the page's left edge (the tape is 30px) */
-  .wm-frame--tape { --wm-r: 40px; }
+  /* on the home page the red tape runs down the right edge, and a giant word keeps clear of it by the same
+     gutter as on the left: the footer's surname everywhere, the hero's name on wide screens (on phones and
+     tablets the tape starts under the name, which keeps the whole width) */
+  .wm-frame--lane { --wm-r: calc(var(--wm-l) + var(--lane, 0px)); }
   @media (min-width: 1024px) {
-    .wm-frame--tape { --wm-r: max(70px, (100cqw - 1360px) / 2); }
+    .wm-frame--hero { --wm-r: calc(var(--wm-l) + var(--lane, 0px)); }
   }
   .wm-wrap {
     width: calc(100% - var(--wm-l) - var(--wm-r));
@@ -749,35 +755,70 @@ html.lenis, html.lenis body { height: auto; }
     font: 500 11px / 1.2 var(--ff-mono);
   }
 
-  /* the red tape down the hero's right edge (sections/Hero.tsx), in the red block's colours: its words climb
-     without end (two identical halves, so moving up by half shows no seam), hold still under a pointer or
-     keyboard focus, and don't move at all for people who ask for less motion. The type sits in the middle
-     of the tape: the column is as wide as the tape (line-height), the letters 0.63 of it */
+  /* the red tape down the right edge of the home page (components/RoleTape.tsx), in the red block's colours.
+     The track runs from the top of the page to the foot of the footer (the page's own box, #root); on phones
+     and tablets it starts just under the hero's giant name instead (which starts 68px down, 78px on tablets,
+     and ends 0.938 of its size lower). The window inside it is a screen tall and sticks to the top of the
+     screen, so the tape always fills the screen's right edge once the name has gone. Its words climb without
+     end (two identical halves, so moving up by half shows no seam), hold still under a pointer or keyboard
+     focus, and don't move at all for people who ask for less motion. The type sits in the middle of the tape:
+     the column is as wide as the tape (line-height), the letters 0.63 of it. Under the phone menu's scrim
+     (z 40), over everything on the page */
   .role-tape {
-    --tape: 24px;
-    /* phones: below the header, so it never runs under the glass Menu bar */
-    top: 68px;
+    --tape: var(--lane, 24px);
+    position: absolute;
+    top: calc(68px + var(--name-word) * 0.938 + 14px);
+    right: 0;
+    bottom: 0;
+    z-index: 35;
     width: var(--tape);
+    pointer-events: none;
+  }
+  @media (min-width: 640px) { .role-tape { top: calc(78px + var(--name-word) * 0.938 + 14px); } }
+  @media (min-width: 1024px) { .role-tape { top: 0; } }
+  .role-tape-window {
+    position: sticky;
+    top: 0;
+    display: block;
+    width: 100%;
+    height: 100lvh;
     overflow: hidden;
     background: var(--brand-red);
     color: var(--role-ink);
     cursor: pointer;
+    pointer-events: auto;
   }
-  @media (min-width: 640px) { .role-tape { --tape: 28px; } }
-  @media (min-width: 1024px) { .role-tape { --tape: 30px; top: 0; } }
+  /* the home page carries the tape: its width is the lane the whole page (header, sections, footer) keeps
+     clear on the right */
+  :root:has(.role-tape) { --lane: 24px; }
+  @media (min-width: 640px) { :root:has(.role-tape) { --lane: 28px; } }
+  @media (min-width: 1024px) { :root:has(.role-tape) { --lane: 30px; } }
+  /* the page's 1440px frame: the gutters on both sides, plus the tape's lane on the right where there is one */
+  .page-frame {
+    --frame-pad: 16px;
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-left: var(--frame-pad);
+    padding-right: calc(var(--frame-pad) + var(--lane, 0px));
+  }
+  @media (min-width: 640px) { .page-frame { --frame-pad: 24px; } }
+  @media (min-width: 1024px) { .page-frame { --frame-pad: 40px; } }
   .role-tape-run {
-    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
     writing-mode: vertical-rl;
     white-space: nowrap;
     font: 600 calc(var(--tape) * 0.63) / var(--tape) var(--ff-display);
     letter-spacing: 0.1em;
-    animation: tape-climb 16s linear infinite;
+    animation: tape-climb 24s linear infinite;
   }
-  .role-tape:hover .role-tape-run,
-  .role-tape:focus-visible .role-tape-run {
+  .role-tape-window:hover .role-tape-run,
+  .role-tape-window:focus-visible .role-tape-run {
     animation-play-state: paused;
   }
-  .role-tape:focus-visible {
+  .role-tape-window:focus-visible {
     outline-offset: -4px;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -996,7 +1037,11 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* the label that rides beside the pointer over the paper figure (mouse), and the button under his
-   feet on phones and tablets ("Scatter him" / "Keep together"), which answers a tap with a press */
+   feet on phones and tablets ("Scatter him" / "Keep together"), which answers a tap with a press; both
+   in the keys' look (.btn-key), the button only below the wide layout */
+@media (min-width: 1024px) {
+  .figure-pill { display: none; }
+}
 .cursor-label {
   opacity: 0;
   scale: 0.9;

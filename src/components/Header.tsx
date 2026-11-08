@@ -101,7 +101,7 @@ export function Header() {
         }}
       >
         {/* phones and tablets: the monogram at the left, the theme switch and the menu in a capsule at the right */}
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:hidden">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 pl-3 pr-[calc(12px+var(--lane,0px))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] lg:hidden">
           <m.button
             type="button"
             onClick={goHome}
@@ -145,7 +145,7 @@ export function Header() {
         </div>
 
         {/* wide screens: one bar in the middle, and the theme switch on its own at the right corner */}
-        <div className="relative hidden justify-center px-10 lg:flex">
+        <div className="relative hidden justify-center pl-10 pr-[calc(40px+var(--lane,0px))] lg:flex">
           <m.div
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -201,9 +201,8 @@ export function Header() {
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
-            // on the home page the hero's red tape takes the right edge, and the switch keeps the same 40px clear of
-            // it as the name and the list below it do
-            className={`pointer-events-auto absolute top-0 ${isHome ? 'right-[max(70px,calc((100vw-1440px)/2+40px))]' : 'right-[max(40px,calc((100vw-1440px)/2+40px))]'}`}
+            // 40px in from the page's frame, like the text; on the home page that is 40px in from the red tape
+            className="pointer-events-auto absolute top-0 right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))]"
           >
             {/* as on the main portfolio: a solid tile in the ink, so it is light in the dark and black on the
                 paper, the icon cut out of it in the page's own colour (22px, about half the tile); it lifts on
@@ -244,7 +243,7 @@ export function Header() {
             style={{
               top: 'calc(env(safe-area-inset-top, 0px) + 72px)',
               left: 'calc(env(safe-area-inset-left, 0px) + 12px)',
-              right: 'calc(env(safe-area-inset-right, 0px) + 12px)',
+              right: 'calc(env(safe-area-inset-right, 0px) + 12px + var(--lane, 0px))',
               maxHeight: 'calc(100svh - env(safe-area-inset-top, 0px) - 88px)',
               transformOrigin: 'top right',
             }}

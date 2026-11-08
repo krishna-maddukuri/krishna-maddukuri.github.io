@@ -120,7 +120,7 @@ export function Footer() {
   const seen = useInView(word, { once: true, amount: 0.5 })
   return (
     <footer
-      className="wm-frame relative overflow-hidden border-t border-line pt-10"
+      className="wm-frame wm-frame--lane relative overflow-hidden border-t border-line pt-10"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 28px)', '--wm-word': fw.word } as CSSProperties}
     >
       <Container>

@@ -150,8 +150,9 @@ export function richWords(text: string): RichWord[] {
 
 export const plain = (text: string) => text.replace(/\*\*/g, '')
 
+/** The page's 1440px frame; on the home page its right side keeps clear of the red tape (.page-frame, index.css). */
 export function Container({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10 ${className}`}>{children}</div>
+  return <div className={`page-frame ${className}`}>{children}</div>
 }
 
 /* ---------------------------------------------------------------- icons -- */

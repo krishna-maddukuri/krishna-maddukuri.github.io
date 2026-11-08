@@ -468,9 +468,9 @@ export function PaperFigure({ className = '' }: { className?: string }) {
             ref={labelRef}
             aria-hidden
             data-on="0"
-            className="cursor-label pointer-events-none absolute left-0 top-0 z-30 flex items-center gap-2 whitespace-nowrap rounded-full bg-ink px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-paper shadow-lg"
+            className="btn-key cursor-label pointer-events-none absolute left-0 top-0 z-30"
           >
-            <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-paper/60' : 'bg-live'}`} />
+            <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-ink-soft' : 'bg-live'}`} />
             {state === 'scattered' ? 'Put him back' : 'Scatter him'}
           </div>
           {/* … and, below the lg breakpoint, a button under his feet that stays (tapping him works too);
@@ -481,9 +481,9 @@ export function PaperFigure({ className = '' }: { className?: string }) {
             aria-pressed={state === 'scattered'}
             disabled={state === 'loading' || state === 'building'}
             data-figure-toggle
-            className={`figure-pill absolute -bottom-[62px] left-1/2 z-30 flex h-10 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-ink px-4 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-paper shadow-lg transition-opacity duration-700 lg:hidden ${state === 'loading' || state === 'building' ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+            className={`btn-key figure-pill absolute -bottom-[62px] left-1/2 z-30 -translate-x-1/2 ${state === 'loading' || state === 'building' ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
           >
-            <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-paper/60' : 'bg-live'}`} />
+            <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-ink-soft' : 'bg-live'}`} />
             {state === 'scattered' ? 'Keep together' : 'Scatter him'}
           </button>
         </>

@@ -9,6 +9,7 @@ import { Learning } from '../sections/Learning'
 import { Skills } from '../sections/Skills'
 import { Work } from '../sections/Work'
 import { useScrollTo } from '../lib/scroll'
+import { RoleTape } from '../components/RoleTape'
 
 export function Home() {
   const location = useLocation()
@@ -27,7 +28,9 @@ export function Home() {
   }, [location.state, navigate, scrollTo])
 
   return (
+    // the red tape runs down the right edge of the whole page, and everything keeps clear of it (--lane)
     <main id="main">
+      <RoleTape onClick={() => scrollTo('contact')} />
       <Hero />
       <About />
       <Skills />

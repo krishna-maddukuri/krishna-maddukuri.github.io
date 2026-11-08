@@ -11,7 +11,8 @@ import { HeroMedia } from '../components/HeroMedia'
 import { ArrowDown, ArrowRight, EASE, plain, richWords } from '../components/ui'
 
 /** The giant name behind the hero: his first and middle names on one line (the surname is the footer's word). */
-const wm = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
+export const heroName = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
+const wm = heroName
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null)
@@ -78,7 +79,7 @@ export function Hero() {
     <section
       id="top"
       ref={ref}
-      className="wm-frame wm-frame--tape relative isolate flex flex-col overflow-hidden lg:block"
+      className="wm-frame wm-frame--hero relative isolate flex flex-col overflow-hidden lg:block"
       style={
         {
           minHeight: 'min(100svh, 1000px)',
@@ -128,7 +129,7 @@ export function Hero() {
       <m.div
         ref={copyRef}
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
+        className="hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(88px,calc(100lvh-72px-clamp(320px,calc(100svh-184px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(96px,calc(100lvh-96px-clamp(360px,calc(100svh-212px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
       >
         {/* the hello, the red block and the intro, as wide as its widest line (the red block): the intro
             wraps under the block, edge to edge */}
@@ -220,7 +221,7 @@ export function Hero() {
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
         ref={sideRef}
-        className="hero-side relative z-10 px-4 pb-12 pt-12 sm:px-6 lg:hidden xl:absolute xl:right-[max(70px,calc((100vw-1440px)/2+40px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:flex xl:w-[min(340px,calc(100vw-max(70px,calc((100vw-1440px)/2+40px))-var(--fig-x)-var(--fig-half)-48px))] xl:flex-col xl:justify-between xl:p-0"
+        className="hero-side relative z-10 pb-12 pl-4 pr-[calc(16px+var(--lane,0px))] pt-12 sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] lg:hidden xl:absolute xl:right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:flex xl:w-[min(340px,calc(100vw-max(0px,(100vw-1440px)/2)-40px-var(--lane,0px)-var(--fig-x)-var(--fig-half)-48px))] xl:flex-col xl:justify-between xl:p-0"
       >
         <ol className="now-list">
           {site.hero.now.map((item, i) => (
@@ -249,10 +250,6 @@ export function Hero() {
         </m.ul>
       </m.div>
 
-      {/* the red tape down the screen's right edge, whatever its width: "Open to Software Engineer roles" climbing
-          it without end. Phones and tablets: from under the header to the foot of his figure, so it never runs
-          over the words; wide screens: the hero's full height, at least 40px clear of the name and the list */}
-      <RoleTape onClick={() => scrollTo('contact')} />
     </section>
   )
 }
@@ -322,29 +319,3 @@ function SpokenIntro({ text }: { text: string }) {
   )
 }
 
-/**
- * The red tape down the hero's right edge, in the red block's colours: "Open to Software Engineer roles ✦"
- * climbing it without end (two identical halves, so the loop never shows a seam; it holds still under a
- * pointer or keyboard focus, and for people who ask for less motion: .role-tape in index.css). Click it to
- * jump to Contact.
- */
-function RoleTape({ onClick }: { onClick: () => void }) {
-  const run = `${site.openTo.toUpperCase()} \u2022 `
-  return (
-    <m.button
-      type="button"
-      onClick={onClick}
-      aria-label={`${site.openTo}. Go to contact`}
-      className="role-tape absolute right-0 z-30 h-[calc(28px+clamp(320px,calc(100svh-184px),760px))] sm:h-[calc(52px+clamp(360px,calc(100svh-212px),820px))] lg:bottom-0 lg:h-auto"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
-    >
-      <span className="role-tape-run" aria-hidden>
-        {Array.from({ length: 8 }, (_, i) => (
-          <span key={i}>{run}</span>
-        ))}
-      </span>
-    </m.button>
-  )
-}
