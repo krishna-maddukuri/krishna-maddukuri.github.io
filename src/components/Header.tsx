@@ -203,7 +203,9 @@ export function Header() {
             transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
             className="pointer-events-auto absolute right-[max(40px,calc((100vw-1440px)/2+40px))] top-0"
           >
-            <ThemeButton className="glass header-glass grid size-[46px] place-items-center rounded-xl text-[var(--bar-ink)] transition-colors hover:bg-[var(--glass-press)]" />
+            {/* as on the main portfolio: a solid tile in the ink, so it is light in the dark and black on the
+                paper, the icon cut out of it in the page's own colour; it lifts on hover and presses on a click */}
+            <ThemeButton className="btn-solid btn-still grid size-[46px] place-items-center rounded-xl bg-ink text-paper" />
           </m.div>
         </div>
       </header>
