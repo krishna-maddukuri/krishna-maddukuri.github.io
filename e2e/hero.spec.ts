@@ -5,11 +5,16 @@ test.describe('hero', () => {
   test('says hello, shows the role on its red block, the numbers and the figure', async ({ page }) => {
     await openHome(page)
     const hero = page.locator('#top')
-    await expect(hero.getByRole('heading', { level: 1 })).toHaveText(/^Hello, I.m Software Engineer\.$/)
+    await expect(hero.getByRole('heading', { level: 1 })).toHaveText(/^Hello, I.m a Software Engineer\.$/)
     await expect(hero.getByText('Senior Software Engineer')).toHaveCount(0)
     const numbers = hero.getByRole('list', { name: 'In numbers' }).getByRole('listitem')
     await expect(numbers).toHaveCount(3)
     await expect(numbers.first()).toContainText('6+')
+    // where he is now, before, and what he is studying, then his stack
+    for (const name of ['Bank of America', 'Capital One', 'Westcliff University']) {
+      await expect(hero.getByText(name, { exact: true })).toBeVisible()
+    }
+    await expect(hero.getByRole('list', { name: 'Main stack' }).getByRole('listitem')).toHaveCount(6)
     // the paper figure is an image to assistive tech, whether it is the folding canvas or the still picture
     const figure = hero.getByRole('img', { name: 'Krishna Koushik Maddukuri' })
     await expect(figure).toBeVisible()

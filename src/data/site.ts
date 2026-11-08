@@ -30,13 +30,21 @@ export const site = {
   hero: {
     image: 'avatar/krishna-origami.webp',
     /** The line in his hand above the red block. */
-    hello: "Hello, I'm",
+    hello: "Hello, I'm a",
     /** Three numbers under the intro, as on portfolio-2 (from the work and achievements further down). */
     stats: [
       { value: '6+', label: 'Years building software' },
       { value: '43%', label: 'Faster batch processing' },
       { value: '70%', label: 'Less deployment time' },
     ],
+    /** Beside his figure, as on portfolio-2: where he is now, where he was, what he is studying. */
+    now: [
+      { tag: 'Now', title: 'Bank of America', text: 'Full Stack Software Engineer in Pennington, NJ.' },
+      { tag: 'Before', title: 'Capital One', text: 'Senior Software Engineer on the Enterprise Credit Bureau Reporting Service.' },
+      { tag: 'Studying', title: 'Westcliff University', text: 'DBA in Technology Management, in progress.' },
+    ],
+    /** His main stack, under that list. */
+    stack: ['Java', 'Spring Boot', 'Apache Kafka', 'AWS', 'Angular', 'React'],
   },
 
   /** Picture for the ID card (a portrait crop works best). Empty = initials. */

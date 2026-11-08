@@ -1,6 +1,6 @@
 import { useReducedMotion, useScroll, useTransform } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { Fragment, useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { onHome } from '../lib/home'
@@ -87,12 +87,12 @@ export function Hero() {
         </m.div>
       </m.div>
 
-      {/* left, portfolio-2's opening: "Hello, I'm" in his hand, the role on a red block, the intro and
-          three numbers (no role tag under the block: it would only say the block again). Wide screens: as on portfolio-2, the column starts on the foot of the giant
-          name, so "Hello, I'm" lies over its lower third and the red block begins where the letters end (the
-          name's box starts 10% down and is 0.86 of --wm-word tall; the column starts 0.66 of it down, 0.2 above
-          the box's foot); it stops short of his figure (centred at 60%, about 0.357x as wide as it is tall).
-          The column is a container (.hero-copy): the block's one line is sized to fit it (index.css) */}
+      {/* left, portfolio-2's opening: "Hello, I'm a" in his hand, the role on a red block, the intro, the
+          buttons and three numbers. Wide screens: as on portfolio-2, the column starts on the foot of the giant
+          name, so "Hello, I'm a" lies over its lower third (the name's box starts 10% down and is 0.86 of
+          --wm-word tall; the column starts 0.66 of it down); the red block keeps a little gap below the
+          letters (index.css). The column stops short of his figure (centred at 60%, about 0.357x as wide as
+          it is tall) and is a container (.hero-copy): the block's one line is sized to fit it */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
         className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.66)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
@@ -132,6 +132,38 @@ export function Hero() {
           </m.span>
         </h1>
         <SpokenIntro text={site.intro} soft={!touch} />
+        {/* the buttons, under the intro as on portfolio-2 (their own look and motion). Screens 1280px and wider:
+            the spinning badge rides at the end of the row, its extra height hanging above and below it */}
+        <m.div
+          className="hero-cta relative z-20 flex flex-wrap items-center gap-3 xl:flex-nowrap"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: EASE, delay: 0.95 }}
+        >
+          <button
+            type="button"
+            onClick={() => scrollTo('work')}
+            className="btn-solid btn-key"
+          >
+            Explore work <ArrowRight className="size-4" />
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollTo('contact')}
+              className="glass-press btn-fill btn-key"
+            >
+              Let&rsquo;s talk
+            </button>
+            <ResumeLink className="glass-press btn-fill btn-key">
+              Resume <ArrowDown className="size-3.5" />
+            </ResumeLink>
+          </div>
+          <RotatingBadge
+            onClick={() => scrollTo('contact')}
+            className="relative hidden size-[clamp(112px,14.5vh,132px)] shrink-0 -my-[calc((clamp(112px,14.5vh,132px)-44px)/2)] xl:block"
+          />
+        </m.div>
         <ul className="hero-stats" aria-label="In numbers">
           {site.hero.stats.map((stat, i) => (
             <m.li
@@ -148,36 +180,48 @@ export function Hero() {
         </ul>
       </m.div>
 
-      {/* bottom-right: actions */}
+      {/* right, portfolio-2's list beside the portrait: now, before, studying, then his stack. Screens 1280px
+          and wider: right of his figure, level with the red block (the giant name's letters end 0.938 of
+          --wm-word down, plus the same little gap), as wide as the room right of the figure allows, at most
+          340px. Laptops narrower than that leave it out (About says the same); phones and tablets have it
+          after the words */}
       <m.div
-        style={touch ? undefined : { opacity: fade }}
-        className="relative z-20 flex flex-wrap items-center gap-3 px-4 pb-12 pt-8 sm:px-6 lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:flex-col lg:items-end lg:p-0 wideshort:flex-row wideshort:items-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, ease: EASE, delay: 0.95 }}
+        style={touch ? undefined : { y: textY, opacity: fade }}
+        className="hero-side relative z-10 px-4 pb-12 pt-12 sm:px-6 lg:hidden xl:absolute xl:right-[max(40px,calc((100vw-1440px)/2+40px))] xl:top-[calc(10%+var(--wm-word)*0.938+clamp(14px,1.6vw,24px))] xl:z-20 xl:block xl:w-[min(340px,calc(40vw-max(40px,calc((100vw-1440px)/2+40px))-min(15.4svh,158px)-34px))] xl:p-0"
       >
-        <button
-          type="button"
-          onClick={() => scrollTo('work')}
-          className="btn-solid btn-key"
+        <ol className="now-list">
+          {site.hero.now.map((item, i) => (
+            <m.li
+              key={item.title}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 1.05 + i * 0.1 }}
+            >
+              <p className="now-tag">{item.tag}</p>
+              <p className="now-title">{item.title}</p>
+              <p className="now-text">{item.text}</p>
+            </m.li>
+          ))}
+        </ol>
+        <m.ul
+          className="hero-stack"
+          aria-label="Main stack"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: EASE, delay: 1.4 }}
         >
-          Explore work <ArrowRight className="size-4" />
-        </button>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => scrollTo('contact')}
-            className="glass-press btn-fill btn-key"
-          >
-            Let&rsquo;s talk
-          </button>
-          <ResumeLink className="glass-press btn-fill btn-key">
-            Resume <ArrowDown className="size-3.5" />
-          </ResumeLink>
-        </div>
+          {site.hero.stack.map((name) => (
+            <li key={name}>{name}</li>
+          ))}
+        </m.ul>
       </m.div>
 
-      <RotatingBadge onClick={() => scrollTo('contact')} />
+      {/* the spinning badge on its own: phones and tablets beside his hip, laptops narrower than 1280px in the
+          bottom-right corner (from 1280px it is in the button row instead) */}
+      <RotatingBadge
+        onClick={() => scrollTo('contact')}
+        className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-[112px] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[clamp(36px,8vh,84px)] lg:size-[clamp(112px,14.5vh,132px)] xl:hidden"
+      />
     </section>
   )
 }
@@ -220,20 +264,18 @@ function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
 const BADGE_R = 47.5
 const BADGE_LAP = Math.round(2 * Math.PI * BADGE_R * 100) / 100
 
-/** The spinning "Open to …" badge. Click it to jump to Contact. */
-function RotatingBadge({ onClick }: { onClick: () => void }) {
+/** The spinning "Open to …" badge. Click it to jump to Contact. Where it sits and how big it is come from `className`. */
+function RotatingBadge({ onClick, className }: { onClick: () => void; className: string }) {
   // the loop closes on the separator, so its trailing space must survive SVG's whitespace trimming
   const text = `${site.openTo} ·\u00a0`
+  // each badge draws its words on its own circle (there are two: one for small screens, one in the button row)
+  const circle = `badge-circle-${useId().replace(/:/g, '')}`
   return (
     <m.button
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: right above the "Explore
-      // work" key, on the same right edge (the keys stand clamp(36px,8vh,84px) up from the bottom and take
-      // 108px as a column: two 44px keys on their 4px edges and a 12px gap; on wide, short screens they
-      // are one 48px row), 18px clear of it.
-      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-[112px] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[calc(clamp(36px,8vh,84px)+126px)] lg:size-[clamp(112px,14.5vh,132px)] wideshort:bottom-[calc(clamp(36px,8vh,84px)+66px)]"
+      className={className}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
@@ -243,12 +285,12 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
       <span className="spin-slow absolute inset-0" aria-hidden>
         <svg viewBox="0 0 128 128" className="block h-full w-full">
           <defs>
-            <path id="badge-circle" d={`M64 64 m-${BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 ${2 * BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 -${2 * BADGE_R} 0`} />
+            <path id={circle} d={`M64 64 m-${BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 ${2 * BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 -${2 * BADGE_R} 0`} />
           </defs>
           {/* in the portfolio's display face (Antonio), 17.5 units in the 128 box (about 17px on a desktop),
               the line once round, stretched to exactly one lap so the loop closes with no gap */}
           <text className="fill-ink font-display text-[17.5px] font-semibold uppercase" textLength={BADGE_LAP} lengthAdjust="spacing">
-            <textPath href="#badge-circle" textLength={BADGE_LAP} lengthAdjust="spacing">
+            <textPath href={`#${circle}`} textLength={BADGE_LAP} lengthAdjust="spacing">
               {text.toUpperCase()}
             </textPath>
           </text>
