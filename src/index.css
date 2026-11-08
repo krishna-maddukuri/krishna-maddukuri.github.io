@@ -1084,6 +1084,26 @@ html.lenis, html.lenis body { height: auto; }
 .figure-pill { transition: opacity 0.7s var(--ease-out), scale 0.2s var(--ease-out); }
 .figure-pill:active { scale: 0.96; }
 
+/* the page's light round the still picture of him (motion reduced, or no WebGL); the moving figure draws the
+   same two itself (PaperFigure.tsx). Paper page: his paper shadow, a little down and to the right, as if the
+   cut-out stands just in front of the page. Black page: a soft glow behind his chest, so his black clothes
+   never sink into the page. (drop-shadow's third length is the blur's standard deviation, as in blur().) */
+[data-paper-figure="still"] { isolation: isolate; container-type: size; }
+[data-paper-figure="still"] img { filter: drop-shadow(5cqw 1.4cqh 1.1cqh rgb(43 34 25 / 0.26)); }
+:root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
+:root[data-mode="dark"] [data-paper-figure="still"]::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 42%;
+  width: 230%;
+  height: 124%;
+  translate: -50% -50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgb(255 246 236 / 0.115), rgb(255 246 236 / 0.07) 38%, rgb(255 246 236 / 0.025) 70%, rgb(255 246 236 / 0) 100%);
+}
+
 /* section headings drift a little slower than the page while they cross the screen (depth, no cost to
    scrolling: the browser runs it on its own timeline); only on wide screens and when motion is welcome */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {

@@ -43,6 +43,45 @@ async function paint(page: Page) {
   })
 }
 
+/**
+ * What the shards' canvas holds at a point given in fractions of his box (it holds only the figure and the
+ * page's light round him): the average colour and alpha of a 5px patch, the colour un-premultiplied.
+ */
+async function at(page: Page, fx: number, fy: number) {
+  return page.evaluate(
+    ([fx, fy]) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('#top [data-shard-layer] canvas')!
+      const box = document.querySelector<HTMLElement>('#top [data-paper-figure]')!.getBoundingClientRect()
+      const cr = canvas.getBoundingClientRect()
+      const s = canvas.width / cr.width
+      const probe = document.createElement('canvas')
+      probe.width = canvas.width
+      probe.height = canvas.height
+      const ctx = probe.getContext('2d')!
+      ctx.drawImage(canvas, 0, 0)
+      const x = Math.round((box.left - cr.left + fx * box.width) * s)
+      const y = Math.round((box.top - cr.top + fy * box.height) * s)
+      const d = ctx.getImageData(x - 2, y - 2, 5, 5).data
+      const sum = [0, 0, 0, 0]
+      for (let i = 0; i < d.length; i++) sum[i % 4] += d[i]
+      const [r, g, b, a] = sum.map((v) => v / (d.length / 4))
+      return { r, g, b, a, lum: 0.2126 * r + 0.7152 * g + 0.0722 * b }
+    },
+    [fx, fy],
+  )
+}
+/** The glow: a point beside his head, inside the glow's ellipse and clear of him. */
+const glow = (page: Page) => at(page, 0.1, 0.15)
+/** The shadow: the darkest paint just right of his arm (the shadow falls a little right and down). */
+async function shadow(page: Page) {
+  let most = 0
+  for (let fx = 0.92; fx <= 1.06; fx += 0.02) {
+    const p = await at(page, fx, 0.3)
+    if (p.r < 120) most = Math.max(most, p.a)
+  }
+  return most
+}
+
 test.describe('paper figure', () => {
   test('gathers on load from all over the hero and ends up fully drawn', async ({ page }) => {
     await page.goto('/')
@@ -206,6 +245,56 @@ test.describe('paper figure', () => {
     expect((await paint(page)).red).toBe(0)
   })
 
+  test('wears black, with white shoes on gum soles', async ({ page }) => {
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    const chest = await at(page, 0.5, 0.42)
+    expect(chest.a).toBeGreaterThan(250)
+    expect(chest.lum).toBeLessThan(70)
+    const shoe = await at(page, 0.24, 0.94)
+    expect(shoe.a).toBeGreaterThan(250)
+    expect(shoe.lum).toBeGreaterThan(170)
+    // the sole: a band of gum along the bottom of the shoe
+    let gum = false
+    for (let fy = 0.975; fy <= 0.996 && !gum; fy += 0.002) {
+      const p = await at(page, 0.25, fy)
+      gum = p.a > 200 && p.r > 120 && p.r - p.b > 50
+    }
+    expect(gum).toBe(true)
+  })
+
+  test('on the black page a soft glow behind him keeps his black clothes off the page', async ({ page }) => {
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    const g = await glow(page)
+    // faint warm light: well under the paint the tests above look for (alpha 40)
+    expect(g.a).toBeGreaterThan(4)
+    expect(g.a).toBeLessThan(32)
+    expect(g.r).toBeGreaterThan(200)
+    expect(await shadow(page)).toBe(0)
+  })
+
+  test('on the paper page his shadow falls on the page instead', async ({ page }) => {
+    await page.addInitScript(() => sessionStorage.setItem('kkm-theme', 'light'))
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    expect(await shadow(page)).toBeGreaterThan(15)
+    expect((await glow(page)).a).toBeLessThan(3)
+  })
+
+  test('switching the theme swaps the glow for the shadow', async ({ page }) => {
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    expect((await glow(page)).a).toBeGreaterThan(4)
+    await page.getByRole('button', { name: 'Switch to light theme' }).click()
+    await expect.poll(async () => (await glow(page)).a, { timeout: 5_000 }).toBeLessThan(3)
+    await expect.poll(() => shadow(page), { timeout: 5_000 }).toBeGreaterThan(15)
+  })
+
   test('shows the still picture when motion is reduced', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
@@ -215,6 +304,13 @@ test.describe('paper figure', () => {
     await expect(img).toBeVisible()
     expect(await img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true)
     expect(await page.locator('#top canvas').count()).toBe(0)
+    // the same light round him, done in CSS: the glow on the black page …
+    expect(await figure.evaluate((el) => getComputedStyle(el, '::before').backgroundImage)).toContain('radial-gradient')
+    expect(await img.evaluate((el) => getComputedStyle(el).filter)).toBe('none')
+    // … and his shadow on the paper page
+    await page.getByRole('button', { name: 'Switch to light theme' }).click()
+    await expect.poll(() => img.evaluate((el) => getComputedStyle(el).filter)).toContain('drop-shadow')
+    expect(await figure.evaluate((el) => getComputedStyle(el, '::before').content)).toBe('none')
   })
 
   test('falls back to the still picture without WebGL', async ({ page }) => {

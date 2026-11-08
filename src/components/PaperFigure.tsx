@@ -5,17 +5,22 @@ import { site } from '../data/site'
 import { onHome } from '../lib/home'
 
 /**
- * His paper-craft figure, in pieces. The picture is cut into ~460 shards that follow the paper's own
+ * His paper-craft figure, in pieces. The picture is cut into ~500 shards that follow the paper's own
  * facets (big ones on the body, small ones on the face). On load the shards lie spread evenly over the
  * hero, then glide in and lock together; afterwards he breathes, and the shards under the cursor lift
  * and part around it, photo side up. A click (or, on phones and tablets, the "Scatter him" button) sends
  * them back out over the whole screen, each to its own spot, turning over and over on the way so the
  * red back of the paper flashes between the photo; they drift there a moment, then come back by themselves.
  *
+ * Under him, the page has a light of its own: on the black page a soft glow behind his chest, so his black
+ * clothes never sink into the page; on the paper page his paper shadow, a little down and to the right, as
+ * if the cut-out stands just in front of the page (it fades while his pieces are out).
+ *
  * The shards are drawn on a canvas as wide as the hero and as tall as its first screen, which the hero
  * keeps behind its words and over the giant name (`layer`, its [data-shard-layer]); the figure's own box,
- * where he stands, takes the clicks and holds the still picture. WebGL2, one draw call; everything per
- * shard happens in the vertex shader. Without WebGL, or with "reduce motion" on, the plain cut-out is shown.
+ * where he stands, takes the clicks and holds the still picture. WebGL2: the page's light, then the shards
+ * in one draw call; everything per shard happens in the vertex shader. Without WebGL, or with "reduce
+ * motion" on, the plain cut-out is shown, with the same glow and shadow done in CSS (index.css).
  */
 
 /** Texture pixels: the cut-out's size (the picture upscaled 4x). */
@@ -37,6 +42,15 @@ const WAVE = 1100 // when the page comes home, a ripple runs down him from head 
 
 /** The back of the paper: the brand red (#f0412e, the same in both modes). */
 const RED = [240 / 255, 65 / 255, 46 / 255] as const
+
+/**
+ * The page's light round him, in fractions of his box. Black page: an ellipse of warm light behind his
+ * chest, 1.15 box-widths and 0.62 box-heights across each way from 42% down. Paper page: his outline in a
+ * warm dark at 26%, moved 5% of his width right and 1.4% of his height down, blurred by 1.1% of his height.
+ * (index.css has the same two for the still picture.)
+ */
+const GLOW = { rx: 1.15, ry: 0.62, cy: 0.42 }
+const SHADOW = { dx: 0.05, dy: 0.014, blur: 0.011 }
 
 type MeshData = { w: number; h: number; p: number[]; z: number[]; t: number[] }
 type State = 'loading' | 'building' | 'ready' | 'scattered' | 'fallback'
@@ -138,6 +152,40 @@ void main() {
   }
 }`
 
+const AURA_VERT = /* glsl */ `#version 300 es
+precision highp float;
+in vec2 a_corner;     // 0..1 across the rectangle
+uniform vec2 u_view;  // the canvas (CSS px)
+uniform vec4 u_rect;  // where the rectangle is on it: x, y, width, height
+out vec2 v_q;
+void main() {
+  v_q = a_corner;
+  vec2 p = u_rect.xy + a_corner * u_rect.zw;
+  gl_Position = vec4(p.x / u_view.x * 2.0 - 1.0, 1.0 - p.y / u_view.y * 2.0, 0.0, 1.0);
+}`
+
+const AURA_FRAG = /* glsl */ `#version 300 es
+precision highp float;
+uniform sampler2D u_shade; // his outline, blurred (the red channel)
+uniform float u_mode;      // 0: the glow, 1: the shadow
+uniform float u_amount;    // 0..1
+in vec2 v_q;
+out vec4 o;
+void main() {
+  if (u_mode < 0.5) {
+    // warm light, strongest behind his chest and gone at the ellipse's rim
+    float r = length(v_q * 2.0 - 1.0);
+    float a = r < 0.38 ? mix(0.115, 0.07, r / 0.38) : r < 0.7 ? mix(0.07, 0.025, (r - 0.38) / 0.32) : mix(0.025, 0.0, clamp((r - 0.7) / 0.3, 0.0, 1.0));
+    a *= u_amount;
+    // a little noise (under one step of the screen's 256), so the long, faint ramp shows no bands
+    if (a > 0.0) a = max(0.0, a + (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0);
+    o = vec4(vec3(1.0, 0.965, 0.925) * a, a);
+  } else {
+    float a = texture(u_shade, v_q).r * 0.26 * u_amount;
+    o = vec4(vec3(0.169, 0.133, 0.098) * a, a);
+  }
+}`
+
 export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | null; className?: string }) {
   const reduce = useReducedMotion()
   const boxRef = useRef<HTMLDivElement>(null)
@@ -204,7 +252,8 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
 
       // geometry: three vertices per shard so each shard can move on its own
       const geo = buildGeometry(mesh)
-      gl.bindVertexArray(gl.createVertexArray())
+      const shardVao = gl.createVertexArray()
+      gl.bindVertexArray(shardVao)
       const attr = (name: string, data: Float32Array, size: number, usage: number = gl.STATIC_DRAW) => {
         const buf = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, buf)
@@ -257,6 +306,42 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       gl.uniform1i(loc('u_tex'), 0)
       gl.uniform3f(loc('u_red'), RED[0], RED[1], RED[2])
       gl.uniform1f(loc('u_avg'), geo.avgSize)
+
+      // the page's light: a rectangle drawn under the shards, for the glow or the shadow
+      const aura = program(gl, AURA_VERT, AURA_FRAG)
+      if (!aura) return fail()
+      const auraVao = gl.createVertexArray()
+      gl.bindVertexArray(auraVao)
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW)
+      const cornerLoc = gl.getAttribLocation(aura, 'a_corner')
+      gl.enableVertexAttribArray(cornerLoc)
+      gl.vertexAttribPointer(cornerLoc, 2, gl.FLOAT, false, 0, 0)
+      gl.bindVertexArray(shardVao)
+      const shade = shadowOf(pic)
+      gl.activeTexture(gl.TEXTURE1)
+      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture())
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, shade.w, shade.h, 0, gl.RED, gl.UNSIGNED_BYTE, shade.data)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+      gl.activeTexture(gl.TEXTURE0)
+      const auraLoc = (name: string) => gl.getUniformLocation(aura, name)
+      const AU = {
+        view: auraLoc('u_view'),
+        rect: auraLoc('u_rect'),
+        mode: auraLoc('u_mode'),
+        amount: auraLoc('u_amount'),
+      }
+      gl.useProgram(aura)
+      gl.uniform1i(auraLoc('u_shade'), 1)
+      gl.useProgram(prog)
+      // how much of each shows: the glow on the black page, the shadow on the paper page (eased when the theme
+      // switches; set straight away on the first frame)
+      const lit = { glow: -1, shadow: -1 }
 
       // --- size: the canvas is as wide as the hero and runs from its top past his feet, to the bottom of
       // the screen at least (on wide screens that is the whole hero; on phones and tablets the first screen,
@@ -440,7 +525,8 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
           if (visible && !document.hidden) schedule()
           return
         }
-        const dt = Math.min(0.05, (now - last) / 1000)
+        const gap = now - last
+        const dt = Math.min(0.05, gap / 1000)
         last = now
 
         // the spread: out, a moment there, and back
@@ -498,6 +584,43 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         }
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+        // the page's light, under the shards: the glow on the black page, his shadow on the paper page (which
+        // goes while his pieces are out); a switch of theme fades one into the other (straight away when the
+        // switch happened with him out of sight)
+        const dark = document.documentElement.getAttribute('data-mode') !== 'light'
+        const ke = lit.glow < 0 || gap > 250 ? 1 : 1 - Math.pow(0.0005, dt)
+        lit.glow += ((dark ? 1 : 0) - lit.glow) * ke
+        lit.shadow += ((dark ? 0 : 1) - lit.shadow) * ke
+        const fade = Math.min(1, (now - born) / FADE_IN)
+        const glowA = lit.glow * fade
+        const shadowA = lit.shadow * (1 - k) * fade
+        if (glowA > 0.002 || shadowA > 0.002) {
+          const fw = TEX_W * s
+          const fh = TEX_H * s
+          gl.useProgram(aura)
+          gl.bindVertexArray(auraVao)
+          gl.disable(gl.DEPTH_TEST)
+          gl.depthMask(false)
+          gl.uniform2f(AU.view, view.w, view.h)
+          if (shadowA > 0.002) {
+            gl.uniform1f(AU.mode, 1)
+            gl.uniform1f(AU.amount, shadowA)
+            gl.uniform4f(AU.rect, x + (SHADOW.dx - shade.px) * fw, y + (SHADOW.dy - shade.py) * fh, fw * (1 + 2 * shade.px), fh * (1 + 2 * shade.py))
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          }
+          if (glowA > 0.002) {
+            gl.uniform1f(AU.mode, 0)
+            gl.uniform1f(AU.amount, glowA)
+            gl.uniform4f(AU.rect, x + fw * (0.5 - GLOW.rx), y + fh * (GLOW.cy - GLOW.ry), fw * GLOW.rx * 2, fh * GLOW.ry * 2)
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          }
+          gl.enable(gl.DEPTH_TEST)
+          gl.depthMask(true)
+          gl.useProgram(prog)
+          gl.bindVertexArray(shardVao)
+        }
+
         gl.uniform2f(U.view, view.w, view.h)
         gl.uniform3f(U.fig, x, y, s)
         gl.uniform2f(U.eye, x + (TEX_W / 2) * s, y + TEX_H * 0.25 * s)
@@ -506,7 +629,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         gl.uniform1f(U.time, (now - born) / 1000)
         gl.uniform1f(U.breath, Math.sin(now / 1900))
         gl.uniform3f(U.ptr, ptr.x, ptr.y, ptr.k)
-        gl.uniform1f(U.alpha, Math.min(1, (now - born) / FADE_IN))
+        gl.uniform1f(U.alpha, fade)
         gl.drawArrays(gl.TRIANGLES, 0, geo.count)
         if (visible && !document.hidden) schedule()
       }
@@ -665,6 +788,58 @@ function buildGeometry(mesh: MeshData) {
   let avgSize = 0
   for (let f = 0; f < n; f++) avgSize += size[f * 3] / n
   return { pos, uv, center, rand, size, avgSize, order, shards: n, count: n * 3 }
+}
+
+/**
+ * His shadow on the paper page: the cut-out's outline at a fifth of its size, blurred (three box blurs each
+ * way, about a Gaussian of SHADOW.blur of his height), with room round it for the blur. `px` and `py` are
+ * that room, as fractions of his width and height.
+ */
+function shadowOf(pic: HTMLImageElement) {
+  const S = 0.2
+  const fw = Math.round(TEX_W * S)
+  const fh = Math.round(TEX_H * S)
+  const sigma = SHADOW.blur * fh
+  const r = Math.max(1, Math.round((Math.sqrt(4 * sigma * sigma + 1) - 1) / 2))
+  const pad = 3 * r + 2
+  const w = fw + pad * 2
+  const h = fh + pad * 2
+  const data = new Uint8Array(w * h)
+  const out = { w, h, data, px: pad / fw, py: pad / fh }
+  const c = document.createElement('canvas')
+  c.width = w
+  c.height = h
+  const g = c.getContext('2d', { willReadFrequently: true })
+  if (!g) return out
+  g.imageSmoothingQuality = 'high'
+  g.drawImage(pic, pad, pad, fw, fh)
+  const src = g.getImageData(0, 0, w, h).data
+  let a = new Float32Array(w * h)
+  let b = new Float32Array(w * h)
+  for (let i = 0; i < w * h; i++) a[i] = src[i * 4 + 3]
+  const n = 2 * r + 1
+  // one box blur along rows (step 1) or columns (step w), from a into b
+  const box = (len: number, lines: number, step: number, line: number) => {
+    for (let l = 0; l < lines; l++) {
+      const o = l * line
+      let sum = 0
+      for (let i = 0; i <= r && i < len; i++) sum += a[o + i * step]
+      for (let i = 0; i < len; i++) {
+        b[o + i * step] = sum / n
+        if (i + r + 1 < len) sum += a[o + (i + r + 1) * step]
+        if (i - r >= 0) sum -= a[o + (i - r) * step]
+      }
+    }
+    const t = a
+    a = b
+    b = t
+  }
+  for (let pass = 0; pass < 3; pass++) {
+    box(w, h, 1, w)
+    box(h, w, w, 1)
+  }
+  for (let i = 0; i < w * h; i++) data[i] = Math.min(255, Math.round(a[i]))
+  return out
 }
 
 function program(gl: WebGL2RenderingContext, vs: string, fs: string) {
