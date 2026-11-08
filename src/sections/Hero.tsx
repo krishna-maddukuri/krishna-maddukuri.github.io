@@ -249,10 +249,9 @@ export function Hero() {
         </m.ul>
       </m.div>
 
-      {/* the red tape down the right edge: "Open to Software Engineer roles" climbing it without end. Phones and
-          tablets: from under the header to the foot of his figure, so it never runs over the words; wide
-          screens: the hero's full height, 40px clear of the name and the list (on a screen wider than the
-          1440px frame it follows the frame's edge, not the screen's) */}
+      {/* the red tape down the screen's right edge, whatever its width: "Open to Software Engineer roles" climbing
+          it without end. Phones and tablets: from under the header to the foot of his figure, so it never runs
+          over the words; wide screens: the hero's full height, at least 40px clear of the name and the list */}
       <RoleTape onClick={() => scrollTo('contact')} />
     </section>
   )
@@ -336,7 +335,7 @@ function RoleTape({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      className="role-tape absolute right-0 z-30 h-[calc(28px+clamp(320px,calc(100svh-184px),760px))] sm:h-[calc(52px+clamp(360px,calc(100svh-212px),820px))] lg:bottom-0 lg:right-[max(0px,calc((100vw-1440px)/2-30px))] lg:h-auto"
+      className="role-tape absolute right-0 z-30 h-[calc(28px+clamp(320px,calc(100svh-184px),760px))] sm:h-[calc(52px+clamp(360px,calc(100svh-212px),820px))] lg:bottom-0 lg:h-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}

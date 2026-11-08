@@ -15,8 +15,8 @@ test.describe('about', () => {
     await expect(about.getByRole('link', { name: 'LinkedIn' }).locator('img')).toHaveAttribute('src', /linkedin\.svg$/)
     const strong = about.locator('p strong').first()
     await expect(strong).toContainText('distributed systems')
-    // (a step deeper than the monogram's red on the paper, so small words keep 4.5:1)
-    expect(await strong.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(217, 35, 16)')
+    // (a new visit opens in dark mode, where they are the monogram's red; on the paper they are a step deeper)
+    expect(await strong.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(240, 65, 46)')
   })
 
   test('the ID card flips on click and on Enter, and shows the contact details on its back', async ({ page }) => {
