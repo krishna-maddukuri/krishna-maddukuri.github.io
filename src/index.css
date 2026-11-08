@@ -129,8 +129,6 @@
   --key-ink: #0a0a0a;
   --key-line: rgb(0 0 0 / 0.16);
   --key-edge: #d4d0c6;
-  /* the theme switch's glass (.glass-ink): smoked on the paper */
-  --glass-ink-tint: rgb(0 0 0 / 0.8);
   --glass-sheen: rgb(255 255 255 / 0.42);
   --glass-rim: rgb(255 255 255 / 0.98);
   --glass-rim-soft: rgb(255 255 255 / 0.4);
@@ -216,7 +214,6 @@
   --key-ink: #f5f2ec;
   --key-line: rgb(255 255 255 / 0.2);
   --key-edge: #2b2b2e;
-  --glass-ink-tint: rgb(241 241 243 / 0.92);
   --bar-ink: #f5f5f7;
   --bar-muted: #b3b3bb;
   --bar-line: rgb(255 255 255 / 0.1);
@@ -699,17 +696,6 @@ html.lenis, html.lenis body { height: auto; }
 /* and so do the panes inside the phone menu (the three quick tiles, the current section's pane) */
 .glass-menu .glass-lens {
   box-shadow: 0 0 0 1px var(--bar-line);
-}
-/* the theme switch: the bar's liquid glass (blur, sheen, the same hairline edge) tinted with the ink, so
-   it is a light pane in the dark and a smoked one on the paper, its icon in the page's own colour */
-.glass-ink {
-  --glass-tint: var(--glass-ink-tint);
-  --glass-tint-strong: var(--ink);
-  color: var(--paper);
-  box-shadow: 0 0 0 1px var(--bar-line), var(--glass-shadow);
-}
-.glass-ink::after {
-  content: none;
 }
 
 /* the header's glass firms up a little once the page has scrolled (no JavaScript involved) */
