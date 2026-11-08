@@ -86,6 +86,7 @@ export function Skills() {
                 delay={waveDone ? 0 : ((i % COLS) + Math.floor(i / COLS)) * 0.05}
                 dim={family !== null && el.family !== family}
                 active={focus?.sym === el.sym}
+                hover={hover}
                 onFocus={() => setFocus(el)}
               />
             ))}
@@ -103,6 +104,7 @@ function Tile({
   delay,
   dim,
   active,
+  hover,
   onFocus,
 }: {
   el: Element
@@ -110,6 +112,7 @@ function Tile({
   delay: number
   dim: boolean
   active: boolean
+  hover: boolean
   onFocus: () => void
 }) {
   const style: CSSProperties = {
@@ -123,7 +126,10 @@ function Tile({
   return (
     <m.button
       type="button"
-      onMouseEnter={onFocus}
+      // pointing at a tile shows it only where there is a real pointer: on a touch screen a tap does, and the
+      // page scrolling under a resting finger or cursor never swaps the inspector (a new note can change its
+      // height and move everything below it, mid-scroll)
+      onMouseEnter={hover ? onFocus : undefined}
       onFocus={onFocus}
       onClick={onFocus}
       aria-label={`${el.name} (${familyLabel[el.family]})`}

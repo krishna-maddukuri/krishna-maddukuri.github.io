@@ -664,19 +664,30 @@ html.lenis, html.lenis body { height: auto; }
   .hero-cta {
     margin-top: var(--hero-gap);
   }
-  /* three numbers, always on one row: each beside its label where the column has the room, the label
-     under the number where it does not */
+  /* the three numbers: a strip of three columns, each number over its label, with a hairline between them.
+     Phones: one number per row, its label beside it. Short laptop screens: each label back beside its number,
+     so the buttons stay on the first screen */
   .hero-stats {
     display: flex;
-    gap: clamp(14px, 2.2vw, 30px);
     margin: var(--hero-gap) 0 0;
     padding: 0;
     list-style: none;
   }
   .hero-stat {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
+    padding: 0 clamp(18px, 2.4vw, 36px);
+  }
+  .hero-stat:first-child {
+    padding-left: 0;
+  }
+  .hero-stat:last-child {
+    padding-right: 0;
+  }
+  .hero-stat + .hero-stat {
+    border-left: 1px solid var(--line);
   }
   .hero-stat-v {
     color: var(--ink);
@@ -686,15 +697,42 @@ html.lenis, html.lenis body { height: auto; }
     font-variant-numeric: tabular-nums;
   }
   .hero-stat-k {
-    max-width: 10ch;
+    max-width: 16ch;
     color: var(--ink-soft);
-    font: 500 11px / 1.35 var(--ff-mono);
+    font: 500 13px / 1.4 var(--ff-mono);
   }
-  @container hero-copy (max-width: 439px) {
-    .hero-stat {
+  @media (max-width: 639px) {
+    .hero-stats {
       flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
+      gap: 16px;
+    }
+    .hero-stat {
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+      padding: 0;
+    }
+    .hero-stat + .hero-stat {
+      border-left: 0;
+    }
+    /* as wide as the widest number (43%), so the three labels start on one line */
+    .hero-stat-v {
+      min-width: 2em;
+    }
+    .hero-stat-k {
+      max-width: none;
+    }
+  }
+  @media (min-width: 1024px) and (max-height: 760px) {
+    .hero-stat {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+    }
+    .hero-stat-k {
+      max-width: 15ch;
+      font-size: 12px;
     }
   }
   /* a short laptop screen: the gaps close up so the numbers stay on the first screen */
