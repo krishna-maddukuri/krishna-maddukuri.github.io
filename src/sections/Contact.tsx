@@ -55,7 +55,7 @@ export function Contact() {
               <button
                 type="button"
                 onClick={copy}
-                className="btn-solid inline-flex h-12 w-fit shrink-0 items-center gap-2.5 rounded-full bg-ink px-6 text-sm font-medium text-paper"
+                className="btn-solid btn-key w-fit shrink-0"
               >
                 {copied ? <Check /> : <Copy />}
                 {copied ? 'Copied' : 'Copy email'}

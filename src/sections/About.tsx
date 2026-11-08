@@ -31,14 +31,14 @@ export function About() {
             </Reveal>
             <Reveal delay={0.15}>
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <ResumeLink className="btn-solid inline-flex h-12 items-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-paper">
+                <ResumeLink className="btn-solid btn-key">
                   Résumé <ArrowDown className="size-4" />
                 </ResumeLink>
                 <a
                   href={site.linkedin}
                   target="_blank"
                   rel="noreferrer"
-                  className="lift btn-fill inline-flex h-12 items-center gap-2.5 rounded-full border border-line bg-surface pl-4 pr-6 text-sm font-medium transition-colors"
+                  className="lift btn-fill btn-key"
                 >
                   <LinkedInMark className="size-5 rounded-[5px]" />
                   LinkedIn <ArrowUpRight className="size-3.5" />

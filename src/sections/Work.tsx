@@ -224,7 +224,7 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
         </div>
         <Link
           to={`/work/${p.slug}`}
-          className="btn-solid group mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-medium text-paper"
+          className="btn-solid btn-key group mt-5"
         >
           Read case study <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
@@ -286,12 +286,9 @@ function Row({ project: p, index, open, onToggle }: { project: Project; index: n
               </div>
               <Link
                 to={`/work/${p.slug}`}
-                className="btn-solid group inline-flex h-11 w-fit items-center gap-3 rounded-full bg-ink pl-5 pr-1.5 text-sm font-medium text-paper"
+                className="btn-solid btn-key group w-fit"
               >
-                Read case study
-                <span className="grid size-8 place-items-center rounded-full bg-paper text-ink">
-                  <ArrowRight className="size-3.5" />
-                </span>
+                Read case study <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
               </Link>
               </div>
             </div>
