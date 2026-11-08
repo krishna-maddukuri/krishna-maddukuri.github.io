@@ -45,7 +45,7 @@ test.describe('theme', () => {
     await fresh.close()
   })
 
-  test('the ink is black in both themes, the accent is red in both (the monogram's red in both), and the card header follows', async ({ page }) => {
+  test('the ink is black in both themes, the accent is the monogram red in both themes, and the card header follows', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await openHome(page)
     // the card's header bar is painted with the variable, so read the colour it actually renders
