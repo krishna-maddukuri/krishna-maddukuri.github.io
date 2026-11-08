@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test'
 import { expectScrolledTo, openHome } from './helpers'
 
 test.describe('hero', () => {
-  test('says hello, shows the role on its red block, the tag, the numbers and the figure', async ({ page }) => {
+  test('says hello, shows the role on its red block, the numbers and the figure', async ({ page }) => {
     await openHome(page)
     const hero = page.locator('#top')
     await expect(hero.getByRole('heading', { level: 1 })).toHaveText(/^Hello, I.m Software Engineer\.$/)
-    await expect(hero.locator('.role-tag')).toHaveText('Senior Software Engineer')
+    await expect(hero.getByText('Senior Software Engineer')).toHaveCount(0)
     const numbers = hero.getByRole('list', { name: 'In numbers' }).getByRole('listitem')
     await expect(numbers).toHaveCount(3)
     await expect(numbers.first()).toContainText('6+')
