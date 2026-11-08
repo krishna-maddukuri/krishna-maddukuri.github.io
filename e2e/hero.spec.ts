@@ -14,7 +14,8 @@ test.describe('hero', () => {
     for (const name of ['Bank of America', 'Capital One', 'Westcliff University']) {
       await expect(hero.getByText(name, { exact: true })).toBeVisible()
     }
-    await expect(hero.getByRole('list', { name: 'Main stack' }).getByRole('listitem')).toHaveCount(6)
+    await expect(hero.getByRole('list', { name: 'Main stack' }).getByRole('listitem')).toHaveCount(7)
+    await expect(hero.getByRole('list', { name: 'Main stack' })).toContainText('Kubernetes')
     // the paper figure is an image to assistive tech, whether it is the folding canvas or the still picture
     const figure = hero.getByRole('img', { name: 'Krishna Koushik Maddukuri' })
     await expect(figure).toBeVisible()

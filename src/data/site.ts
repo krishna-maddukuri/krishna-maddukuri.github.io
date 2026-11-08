@@ -39,12 +39,12 @@ export const site = {
     ],
     /** Beside his figure, as on portfolio-2: where he is now, where he was, what he is studying. */
     now: [
-      { tag: 'Now', title: 'Bank of America', text: 'Full Stack Software Engineer in Pennington, NJ.' },
+      { tag: 'Now', title: 'Bank of America', text: 'Full Stack Software Engineer in Wealth Management Technology.' },
       { tag: 'Before', title: 'Capital One', text: 'Senior Software Engineer on the Enterprise Credit Bureau Reporting Service.' },
-      { tag: 'Studying', title: 'Westcliff University', text: 'DBA in Technology Management, in progress.' },
+      { tag: 'Studying', title: 'Westcliff University', text: 'Doctorate in Business Administration, Technology Management.' },
     ],
     /** His main stack, under that list. */
-    stack: ['Java', 'Spring Boot', 'Apache Kafka', 'AWS', 'Angular', 'React'],
+    stack: ['Java', 'Spring Boot', 'Apache Kafka', 'AWS', 'Kubernetes', 'Angular', 'React'],
   },
 
   /** Picture for the ID card (a portrait crop works best). Empty = initials. */

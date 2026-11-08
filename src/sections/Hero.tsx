@@ -1,4 +1,4 @@
-import { useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { animate, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import * as m from 'motion/react-m'
 import { Fragment, useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { site } from '../data/site'
@@ -88,14 +88,14 @@ export function Hero() {
       </m.div>
 
       {/* left, portfolio-2's opening: "Hello, I'm a" in his hand, the role on a red block, the intro, the
-          buttons and three numbers. Wide screens: as on portfolio-2, the column starts on the foot of the giant
-          name, so "Hello, I'm a" lies over its lower third (the name's box starts 10% down and is 0.86 of
-          --wm-word tall; the column starts 0.66 of it down); the red block keeps a little gap below the
-          letters (index.css). The column stops short of his figure (centred at 60%, about 0.357x as wide as
-          it is tall) and is a container (.hero-copy): the block's one line is sized to fit it */}
+          buttons and three numbers. Wide screens: "Hello, I'm a" sits between the giant name and the red
+          block, its tops just over the name's feet (the name's letters end 0.938 of --wm-word below its top,
+          which is 10% down; the hello's line starts 0.3 of its own size above that), and the block follows
+          right under it. The column stops short of his figure (centred at 60%, about 0.357x as wide as it is
+          tall) and is a container (.hero-copy): the block's one line is sized to fit it */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.66)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
+        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
       >
         <h1 className="flex flex-col items-start gap-1">
           <m.span
@@ -132,10 +132,23 @@ export function Hero() {
           </m.span>
         </h1>
         <SpokenIntro text={site.intro} soft={!touch} />
-        {/* the buttons, under the intro as on portfolio-2 (their own look and motion). Screens 1280px and wider:
-            the spinning badge rides at the end of the row, its extra height hanging above and below it */}
+        <ul className="hero-stats" aria-label="In numbers">
+          {site.hero.stats.map((stat, i) => (
+            <m.li
+              key={stat.label}
+              className="hero-stat"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE, delay: 1.2 + i * 0.08 }}
+            >
+              <CountUp value={stat.value} delay={1.25 + i * 0.08} />
+              <span className="hero-stat-k">{stat.label}</span>
+            </m.li>
+          ))}
+        </ul>
+        {/* the buttons, under the numbers (their own look and motion) */}
         <m.div
-          className="hero-cta relative z-20 flex flex-wrap items-center gap-3 xl:flex-nowrap"
+          className="hero-cta relative z-20 flex flex-wrap items-center gap-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: EASE, delay: 0.95 }}
@@ -159,35 +172,17 @@ export function Hero() {
               Resume <ArrowDown className="size-3.5" />
             </ResumeLink>
           </div>
-          <RotatingBadge
-            onClick={() => scrollTo('contact')}
-            className="relative hidden size-[clamp(112px,14.5vh,132px)] shrink-0 -my-[calc((clamp(112px,14.5vh,132px)-44px)/2)] xl:block"
-          />
         </m.div>
-        <ul className="hero-stats" aria-label="In numbers">
-          {site.hero.stats.map((stat, i) => (
-            <m.li
-              key={stat.label}
-              className="hero-stat"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: EASE, delay: 1.2 + i * 0.08 }}
-            >
-              <span className="hero-stat-v">{stat.value}</span>
-              <span className="hero-stat-k">{stat.label}</span>
-            </m.li>
-          ))}
-        </ul>
       </m.div>
 
       {/* right, portfolio-2's list beside the portrait: now, before, studying, then his stack. Screens 1280px
-          and wider: right of his figure, level with the red block (the giant name's letters end 0.938 of
-          --wm-word down, plus the same little gap), as wide as the room right of the figure allows, at most
-          340px. Laptops narrower than that leave it out (About says the same); phones and tablets have it
+          and wider: right of his figure, level with the red block (the left column's top, plus the hello's
+          line, 1.05 of its size, and the h1's 4px gap), as wide as the room right of the figure allows, at
+          most 340px. Laptops narrower than that leave it out (About says the same); phones and tablets have it
           after the words */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="hero-side relative z-10 px-4 pb-12 pt-12 sm:px-6 lg:hidden xl:absolute xl:right-[max(40px,calc((100vw-1440px)/2+40px))] xl:top-[calc(10%+var(--wm-word)*0.938+clamp(14px,1.6vw,24px))] xl:z-20 xl:block xl:w-[min(340px,calc(40vw-max(40px,calc((100vw-1440px)/2+40px))-min(15.4svh,158px)-34px))] xl:p-0"
+        className="hero-side relative z-10 px-4 pb-12 pt-12 sm:px-6 lg:hidden xl:absolute xl:right-[max(40px,calc((100vw-1440px)/2+40px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:block xl:w-[min(340px,calc(40vw-max(40px,calc((100vw-1440px)/2+40px))-min(15.4svh,158px)-34px))] xl:p-0"
       >
         <ol className="now-list">
           {site.hero.now.map((item, i) => (
@@ -216,13 +211,47 @@ export function Hero() {
         </m.ul>
       </m.div>
 
-      {/* the spinning badge on its own: phones and tablets beside his hip, laptops narrower than 1280px in the
-          bottom-right corner (from 1280px it is in the button row instead) */}
+      {/* the spinning badge, near his figure and clear of the words: phones and tablets beside his hip;
+          laptops narrower than 1280px in the bottom-right corner; wider screens at the foot of the page, 36px
+          left of his figure (centred at 60%, half as wide as 0.357x its height), right of the buttons */}
       <RotatingBadge
         onClick={() => scrollTo('contact')}
-        className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-[112px] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[clamp(36px,8vh,84px)] lg:size-[clamp(112px,14.5vh,132px)] xl:hidden"
+        className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-[112px] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[clamp(36px,8vh,84px)] lg:size-[clamp(112px,14.5vh,132px)] xl:right-auto xl:left-[calc(60vw-min(15.4svh,158px)-36px-clamp(112px,14.5vh,132px))]"
       />
     </section>
+  )
+}
+
+/**
+ * One of the three numbers: it counts up from 0 to its value (43% runs 0% … 43%) once it is first in view,
+ * which on a wide screen is as the page loads, easing into the real number as portfolio-2's numbers do. With
+ * reduced motion it is simply the number.
+ */
+function CountUp({ value, delay }: { value: string; delay: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const seen = useInView(ref, { once: true })
+  const reduce = useReducedMotion()
+  const parts = /^(\d+)(.*)$/.exec(value)
+  const end = parts ? Number(parts[1]) : 0
+  const suffix = parts ? parts[2] : ''
+  const count = useMotionValue(0)
+  const shown = useTransform(count, (v) => `${Math.round(v)}${suffix}`)
+  useEffect(() => {
+    if (!parts) return
+    if (reduce) {
+      count.set(end)
+      return
+    }
+    if (!seen) return
+    // ease out, quick off the mark and slow into the real number
+    const run = animate(count, end, { duration: 1.1, delay, ease: [0.33, 1, 0.68, 1] })
+    return () => run.stop()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seen, reduce])
+  return (
+    <m.span ref={ref} className="hero-stat-v">
+      {parts ? shown : value}
+    </m.span>
   )
 }
 
