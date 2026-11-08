@@ -87,13 +87,15 @@ export function Hero() {
         </m.div>
       </m.div>
 
-      {/* bottom-left, portfolio-2's opening: "Hello, I'm" in his hand, the role on a red block, the role tag,
-          the intro and three numbers. Wide screens: the column stops short of his figure (centred at 60%, about
-          0.357x as wide as it is tall). The column is a container (.hero-copy): the block's one line is sized
-          to fit it (index.css) */}
+      {/* left, portfolio-2's opening: "Hello, I'm" in his hand, the role on a red block, the role tag, the
+          intro and three numbers. Wide screens: as on portfolio-2, the column starts on the foot of the giant
+          name, so "Hello, I'm" lies over its lower third and the red block begins where the letters end (the
+          name's box starts 10% down and is 0.86 of --wm-word tall; the column starts 0.66 of it down, 0.2 above
+          the box's foot); it stops short of his figure (centred at 60%, about 0.357x as wide as it is tall).
+          The column is a container (.hero-copy): the block's one line is sized to fit it (index.css) */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
+        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.66)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
       >
         <h1 className="flex flex-col items-start gap-1">
           <m.span
