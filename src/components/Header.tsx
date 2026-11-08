@@ -204,8 +204,12 @@ export function Header() {
             className="pointer-events-auto absolute right-[max(40px,calc((100vw-1440px)/2+40px))] top-0"
           >
             {/* as on the main portfolio: a solid tile in the ink, so it is light in the dark and black on the
-                paper, the icon cut out of it in the page's own colour; it lifts on hover and presses on a click */}
-            <ThemeButton className="btn-solid btn-still grid size-[46px] place-items-center rounded-xl bg-ink text-paper" />
+                paper, the icon cut out of it in the page's own colour (22px, about half the tile); it lifts on
+                hover and presses on a click */}
+            <ThemeButton
+              className="btn-solid btn-still grid size-[46px] place-items-center rounded-xl bg-ink text-paper"
+              icon="size-[22px]"
+            />
           </m.div>
         </div>
       </header>
@@ -317,7 +321,7 @@ function Monogram() {
 const quick =
   'glass-lens flex h-16 flex-col items-center justify-center gap-1.5 rounded-[10px] font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink transition-[scale] duration-300 active:scale-95'
 
-function ThemeButton({ className }: { className: string }) {
+function ThemeButton({ className, icon = 'size-4' }: { className: string; icon?: string }) {
   const { theme, toggle } = useTheme()
   return (
     <button
@@ -337,7 +341,7 @@ function ThemeButton({ className }: { className: string }) {
           exit={{ rotate: 90, opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
-          {theme === 'dark' ? <Sun /> : <Moon />}
+          {theme === 'dark' ? <Sun className={icon} /> : <Moon className={icon} />}
         </m.span>
       </AnimatePresence>
     </button>
