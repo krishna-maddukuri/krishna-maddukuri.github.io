@@ -178,22 +178,24 @@ function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
   )
 }
 
-/** One lap of the badge's circle (radius 46), the length the text is stretched to. */
-const BADGE_LAP = Math.round(2 * Math.PI * 46 * 100) / 100
+/** The badge's circle: its words run round at radius 30.6 in an 88-unit box; one lap is what they are stretched to. */
+const BADGE_R = 30.6
+const BADGE_LAP = Math.round(2 * Math.PI * BADGE_R * 100) / 100
 
 /** The spinning "Open to …" badge. Click it to jump to Contact. */
 function RotatingBadge({ onClick }: { onClick: () => void }) {
-  // the loop closes on the last separator, so its trailing space must survive SVG's whitespace trimming
-  const text = `${site.openTo} · ${site.location} ·\u00a0`
+  // the loop closes on the separator, so its trailing space must survive SVG's whitespace trimming
+  const text = `${site.openTo} ·\u00a0`
   return (
     <m.button
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: right above the "Explore
-      // work" button, on the same right edge (the buttons stand clamp(36px,8vh,84px) up from the bottom and
-      // are 100px tall as a column: 48 + 12 + 40; on wide, short screens they are one 48px row).
-      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-32 lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[calc(clamp(36px,8vh,84px)+118px)] lg:size-[clamp(124px,17vh,156px)] wideshort:bottom-[calc(clamp(36px,8vh,84px)+66px)]"
+      // Phones/tablets: beside his hip, in the margin right of him. Wide screens: the same idea, just right
+      // of his figure at hip height, between him and the buttons. The figure stands on the hero's floor,
+      // min(86svh,880px) tall and 0.357 times as wide, its centre at 60%: so its right edge is at
+      // 60% + 0.1785 of that height, and his hip about 0.48 of it up from the floor.
+      className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[84px] sm:right-6 sm:top-[52svh] sm:size-[100px] lg:right-auto lg:top-auto lg:left-[calc(60%+min(86svh,880px)*0.1785+28px)] lg:bottom-[calc(min(86svh,880px)*0.48-clamp(92px,11.5vh,112px)/2)] lg:size-[clamp(92px,11.5vh,112px)]"
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
@@ -201,13 +203,12 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
     >
       {/* the spin is on a wrapper, not the SVG, so the curved text is drawn once and just rotated */}
       <span className="spin-slow absolute inset-0" aria-hidden>
-        <svg viewBox="0 0 120 120" className="block h-full w-full">
+        <svg viewBox="0 0 88 88" className="block h-full w-full">
           <defs>
-            <path id="badge-circle" d="M60 60 m-46 0 a46 46 0 1 1 92 0 a46 46 0 1 1 -92 0" />
+            <path id="badge-circle" d={`M44 44 m-${BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 ${2 * BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 -${2 * BADGE_R} 0`} />
           </defs>
-          {/* the text is stretched to exactly one lap of the circle, so the loop closes with no gap */}
-          {/* in the portfolio's display face (Antonio): condensed enough that the whole line goes round at
-              14 units, about twice the size the mono face could take; its capitals stay inside the 120 box */}
+          {/* in the portfolio's display face (Antonio), 14 units in the 88 box (about 16px on a desktop), the
+              line once round, stretched to exactly one lap so the loop closes with no gap */}
           <text className="fill-ink font-display text-[14px] font-semibold uppercase" textLength={BADGE_LAP} lengthAdjust="spacing">
             <textPath href="#badge-circle" textLength={BADGE_LAP} lengthAdjust="spacing">
               {text.toUpperCase()}
@@ -215,8 +216,8 @@ function RotatingBadge({ onClick }: { onClick: () => void }) {
           </text>
         </svg>
       </span>
-      {/* the disc in the middle reaches almost to the words (radius 38 of the 120 box, the words' baseline at 46) */}
-      <span className="glass absolute inset-[18%] grid place-items-center rounded-full">
+      {/* the disc in the middle reaches almost to the words (radius 25.5 of the 88 box, the words' baseline at 30.6) */}
+      <span className="glass absolute inset-[21%] grid place-items-center rounded-full">
         <span className="live-dot size-[18%] rounded-full" />
       </span>
     </m.button>

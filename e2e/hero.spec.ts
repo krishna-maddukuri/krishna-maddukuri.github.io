@@ -31,12 +31,12 @@ test.describe('hero', () => {
     expect(res.headers()['content-type']).toContain('pdf')
   })
 
-  test('the spinning badge reads "open to roles" in a closed loop and jumps to Contact', async ({ page }) => {
+  test('the spinning badge reads "open to software engineer roles" in a closed loop and jumps to Contact', async ({ page }) => {
     await openHome(page)
     const badge = page.getByRole('button', { name: /Open to Software Engineer roles. Go to contact/ })
     await expect(badge).toBeVisible()
     const text = await badge.locator('textPath').textContent()
-    expect(text).toMatch(/OPEN TO SOFTWARE ENGINEER ROLES · RICHMOND, VA · $/)
+    expect(text).toMatch(/^OPEN TO SOFTWARE ENGINEER ROLES ·\u00a0$/)
     await badge.click()
     await expectScrolledTo(page, 'contact', 6)
   })
