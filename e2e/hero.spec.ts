@@ -2,11 +2,14 @@ import { expect, test } from '@playwright/test'
 import { expectScrolledTo, openHome } from './helpers'
 
 test.describe('hero', () => {
-  test('shows the name, the headline, the intro and the figure', async ({ page }) => {
+  test('says hello, shows the role on its red block, the tag, the numbers and the figure', async ({ page }) => {
     await openHome(page)
     const hero = page.locator('#top')
-    await expect(hero.getByRole('heading', { level: 1 })).toContainText('Senior Software')
-    await expect(hero.getByRole('heading', { level: 1 })).toContainText('Engineer')
+    await expect(hero.getByRole('heading', { level: 1 })).toHaveText(/^Hello, I.m Software Engineer\.$/)
+    await expect(hero.locator('.role-tag')).toHaveText('Senior Software Engineer')
+    const numbers = hero.getByRole('list', { name: 'In numbers' }).getByRole('listitem')
+    await expect(numbers).toHaveCount(3)
+    await expect(numbers.first()).toContainText('6+')
     // the paper figure is an image to assistive tech, whether it is the folding canvas or the still picture
     const figure = hero.getByRole('img', { name: 'Krishna Koushik Maddukuri' })
     await expect(figure).toBeVisible()
@@ -41,19 +44,17 @@ test.describe('hero', () => {
     await expectScrolledTo(page, 'contact', 6)
   })
 
-  test('the headline never runs into the figure on wide screens', async ({ page }) => {
+  test('the red block never runs into the figure on wide screens', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) < 1024)
     for (const width of [1024, 1280, 1440, 1920]) {
       await page.setViewportSize({ width, height: 900 })
       await openHome(page)
       await page.waitForTimeout(1500)
       const gap = await page.evaluate(() => {
-        // the glyphs themselves (the line's box is as wide as the column)
-        const range = document.createRange()
-        range.selectNodeContents(document.querySelector('#top h1 span span')!)
-        const text = range.getBoundingClientRect()
+        // the red block itself, padding and all
+        const block = document.querySelector('#top h1 .role-block')!.getBoundingClientRect()
         const figure = document.querySelector('#top [data-paper-figure]')!.getBoundingClientRect()
-        return figure.left - text.right
+        return figure.left - block.right
       })
       expect(gap, `gap at ${width}px`).toBeGreaterThan(16)
     }

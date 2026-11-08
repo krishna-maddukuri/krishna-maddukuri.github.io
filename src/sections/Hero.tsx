@@ -87,31 +87,72 @@ export function Hero() {
         </m.div>
       </m.div>
 
-      {/* bottom-left: the title and the intro */}
+      {/* bottom-left, portfolio-2's opening: "Hello, I'm" in his hand, the role on a red block, the role tag,
+          the intro and three numbers. Wide screens: the column stops short of his figure (centred at 60%, about
+          0.357x as wide as it is tall). The column is a container (.hero-copy): the block's one line is sized
+          to fit it (index.css) */}
       <m.div
         style={touch ? undefined : { y: textY, opacity: fade }}
-        className="relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:px-0 lg:pt-0"
+        className="hero-copy relative z-10 px-4 pt-[88px] sm:px-6 sm:pt-[96px] lg:absolute lg:bottom-[clamp(36px,8vh,84px)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)] lg:px-0 lg:pt-0"
       >
-        {/* wide screens: as big as the design allows, but never so wide that the first line runs into his figure
-            ("Senior Software" was measured in Bricolage Grotesque at 6.71em; Antonio is narrower; the figure is 0.357x as wide as it is tall) */}
-        <h1 className="font-display text-[length:min(13.2vw,3.5rem)] font-bold leading-[0.9] text-ink sm:text-[clamp(3.1rem,7.2vw,7.4rem)] lg:text-[length:min(clamp(3.1rem,min(7.2vw,11.5vh),7.4rem),calc((60vw-min(15.4svh,158px)-max(40px,calc((100vw-1440px)/2+40px))-34px)/6.85))]">
-          {site.headline.map((line, i) => (
-            <span key={line} className="block overflow-hidden pb-[0.07em]">
-              <m.span
-                className="block"
-                initial={{ y: '105%' }}
-                animate={{ y: 0 }}
-                transition={{ duration: 1, ease: EASE, delay: 0.5 + i * 0.1 }}
-              >
-                {line}
-                {i === site.headline.length - 1 && (
-                  <span className="accent-dot ml-[0.08em] inline-block size-[0.13em] translate-y-[-0.02em] rounded-full align-baseline" aria-hidden />
-                )}
-              </m.span>
-            </span>
-          ))}
+        <h1 className="flex flex-col items-start gap-1">
+          <m.span
+            className="hero-hello"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.45 }}
+          >
+            {site.hero.hello}{' '}
+          </m.span>
+          {/* the red wipes in from the left, then the words rise into it */}
+          <m.span
+            className="role-block"
+            initial={{ clipPath: 'inset(0 100% 0 0)' }}
+            animate={{ clipPath: 'inset(0 0% 0 0)' }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.55 }}
+          >
+            {site.headline.map((word, i) => (
+              <Fragment key={word}>
+                {i > 0 && ' '}
+                <span className="role-line">
+                  <m.span
+                    className="block"
+                    initial={{ y: '105%' }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.9, ease: EASE, delay: 0.7 + i * 0.1 }}
+                  >
+                    {word}
+                    {i === site.headline.length - 1 && '.'}
+                  </m.span>
+                </span>
+              </Fragment>
+            ))}
+          </m.span>
         </h1>
+        <m.p
+          className="role-tag"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: EASE, delay: 0.95 }}
+        >
+          <span className="role-dot" aria-hidden />
+          {site.role}
+        </m.p>
         <SpokenIntro text={site.intro} soft={!touch} />
+        <ul className="hero-stats" aria-label="In numbers">
+          {site.hero.stats.map((stat, i) => (
+            <m.li
+              key={stat.label}
+              className="hero-stat"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE, delay: 1.2 + i * 0.08 }}
+            >
+              <span className="hero-stat-v">{stat.value}</span>
+              <span className="hero-stat-k">{stat.label}</span>
+            </m.li>
+          ))}
+        </ul>
       </m.div>
 
       {/* bottom-right: actions */}
@@ -158,8 +199,9 @@ function SpokenIntro({ text, soft }: { text: string; soft: boolean }) {
   const reduce = useReducedMotion()
   const words = richWords(text)
   return (
-    // on wide screens it stops short of his figure (which is centred at 60% and ~0.36x as wide as tall)
-    <p className="mt-5 max-w-[38rem] text-base leading-[1.6] text-ink/80 sm:text-md lg:max-w-[min(38rem,calc(60vw-min(15.3svh,157px)-max(64px,calc((100vw-1440px)/2+64px))))]">
+    // portfolio-2's lede: muted, with the key words bright (.hero-lede in index.css); the column it sits in
+    // already stops short of his figure on wide screens
+    <p className="hero-lede">
       <span className="sr-only">{plain(text)}</span>
       {words.map((word, i) => (
         <Fragment key={i}>

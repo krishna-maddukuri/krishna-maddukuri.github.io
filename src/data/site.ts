@@ -9,13 +9,14 @@ export const site = {
   first: 'Krishna',
   monogram: 'KM',
   role: 'Senior Software Engineer',
-  headline: ['Senior Software', 'Engineer'],
+  /** The hero's red block, after "Hello, I'm", on one line (a full stop follows the last word). */
+  headline: ['Software', 'Engineer'],
   /**
-   * His intro under the hero title. It appears word by word, each word fading from faint to clear.
-   * Words **marked like this** (here and in the About lead) are the key words: bold, in the accent colour.
+   * His intro under the hero title, as on portfolio-2. It appears word by word, each word fading from faint to clear.
+   * Words **marked like this** are the key words: bold (in the hero, bright; in the About lead, in the accent colour).
    */
   intro:
-    "Hi, I'm Krishna, a senior software engineer. For more than six years, I've built **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**.",
+    "For more than six years, I've built **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**.",
   location: 'Richmond, VA',
   email: 'm.krishnakoushik@icloud.com',
   linkedin: 'https://www.linkedin.com/in/krishna-koushik',
@@ -28,6 +29,14 @@ export const site = {
    */
   hero: {
     image: 'avatar/krishna-origami.webp',
+    /** The line in his hand above the red block. */
+    hello: "Hello, I'm",
+    /** Three numbers under the intro, as on portfolio-2 (from the work and achievements further down). */
+    stats: [
+      { value: '6+', label: 'Years building software' },
+      { value: '43%', label: 'Faster batch processing' },
+      { value: '70%', label: 'Less deployment time' },
+    ],
   },
 
   /** Picture for the ID card (a portrait crop works best). Empty = initials. */
