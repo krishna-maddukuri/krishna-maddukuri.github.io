@@ -408,7 +408,6 @@ html.lenis, html.lenis body { height: auto; }
   .pipeline-card { animation: pipeline-move 7s ease-in-out infinite; }
   [data-live="false"] .dash-flow,
   [data-live="false"] .pipeline-card { animation-play-state: paused; }
-  .spin-slow { animation: spin-slow 22s linear infinite; }
 
   /* a green dot with a ring that pulses out (transform + opacity only, so it never repaints) */
   .live-dot { position: relative; background: var(--live); }
@@ -734,6 +733,43 @@ html.lenis, html.lenis body { height: auto; }
     font: 500 0.74rem / 1.2 var(--ff-mono);
   }
 
+  /* the red tape down the hero's right edge (sections/Hero.tsx), in the red block's colours: its words climb
+     without end (two identical halves, so moving up by half shows no seam), hold still under a pointer or
+     keyboard focus, and don't move at all for people who ask for less motion. The type sits in the middle
+     of the tape: the column is as wide as the tape (line-height), the letters 0.63 of it */
+  .role-tape {
+    --tape: 24px;
+    width: var(--tape);
+    overflow: hidden;
+    background: var(--brand-red);
+    color: var(--role-ink);
+    cursor: pointer;
+  }
+  @media (min-width: 640px) { .role-tape { --tape: 28px; } }
+  @media (min-width: 1024px) { .role-tape { --tape: 30px; } }
+  .role-tape-run {
+    display: block;
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+    font: 600 calc(var(--tape) * 0.63) / var(--tape) var(--ff-display);
+    letter-spacing: 0.1em;
+    animation: tape-climb 16s linear infinite;
+  }
+  .role-tape:hover .role-tape-run,
+  .role-tape:focus-visible .role-tape-run {
+    animation-play-state: paused;
+  }
+  .role-tape:focus-visible {
+    outline-offset: -4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .role-tape-run { animation: none; }
+  }
+  @keyframes tape-climb {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+  }
+
   /* key words in running text */
   strong, b, .accent-word {
     font-weight: 600;
@@ -806,7 +842,6 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 @keyframes dash-flow { to { stroke-dashoffset: -24; } }
-@keyframes spin-slow { to { transform: rotate(360deg); } }
 @keyframes pipeline-move {
   0%, 18% { transform: translateX(0); }
   38%, 60% { transform: translateX(121.154%); }

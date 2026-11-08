@@ -1,6 +1,6 @@
 import { animate, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Fragment, useEffect, useId, useRef, useState, type CSSProperties } from 'react'
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { onHome } from '../lib/home'
@@ -215,14 +215,10 @@ export function Hero() {
         </m.ul>
       </m.div>
 
-      {/* the spinning badge, near his figure and clear of the words: phones and tablets beside his hip;
-          laptops narrower than 1280px in the bottom-right corner; wider screens at the foot of the page, just
-          left of his legs (its right edge 8px inside the figure's box, which is centred at 60% and half as
-          wide as 0.357x its height; his legs stand well inside that box), right of the numbers and buttons */}
-      <RotatingBadge
-        onClick={() => scrollTo('contact')}
-        className="absolute right-3 top-[calc(54svh-4px)] z-20 size-[96px] sm:right-6 sm:top-[52svh] sm:size-[112px] lg:right-[max(40px,calc((100vw-1440px)/2+40px))] lg:top-auto lg:bottom-[clamp(36px,8vh,84px)] lg:size-[clamp(112px,14.5vh,132px)] xl:right-auto xl:left-[calc(60vw-min(15.4svh,158px)+8px-clamp(112px,14.5vh,132px))]"
-      />
+      {/* the red tape down the right edge: "Open to Software Engineer roles" climbing it without end. Phones and
+          tablets: beside his figure on the first screen only (as tall as the figure's space), so it never
+          runs over the words; wide screens: the hero's full height */}
+      <RoleTape onClick={() => scrollTo('contact')} />
     </section>
   )
 }
@@ -293,47 +289,27 @@ function SpokenIntro({ text }: { text: string }) {
 }
 
 /**
- * The badge's circle: its words run round at radius 47.5 in a 128-unit box (one unit is a pixel at its
- * desktop size); one lap is what they are stretched to, which spaces the capitals out a little.
+ * The red tape down the hero's right edge, in the red block's colours: "Open to Software Engineer roles ✦"
+ * climbing it without end (two identical halves, so the loop never shows a seam; it holds still under a
+ * pointer or keyboard focus, and for people who ask for less motion: .role-tape in index.css). Click it to
+ * jump to Contact.
  */
-const BADGE_R = 47.5
-const BADGE_LAP = Math.round(2 * Math.PI * BADGE_R * 100) / 100
-
-/** The spinning "Open to …" badge. Click it to jump to Contact. Where it sits and how big it is come from `className`. */
-function RotatingBadge({ onClick, className }: { onClick: () => void; className: string }) {
-  // the loop closes on the separator, so its trailing space must survive SVG's whitespace trimming
-  const text = `${site.openTo} ·\u00a0`
-  // each badge draws its words on its own circle (there are two: one for small screens, one in the button row)
-  const circle = `badge-circle-${useId().replace(/:/g, '')}`
+function RoleTape({ onClick }: { onClick: () => void }) {
+  const run = `${site.openTo.toUpperCase()} \u2726 `
   return (
     <m.button
       type="button"
       onClick={onClick}
       aria-label={`${site.openTo}. Go to contact`}
-      className={className}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
+      className="role-tape absolute right-0 top-0 z-30 h-[calc(96px+clamp(320px,calc(100svh-184px),760px))] sm:h-[calc(120px+clamp(360px,calc(100svh-212px),820px))] lg:bottom-0 lg:h-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
-      whileHover={{ scale: 1.06 }}
     >
-      {/* the spin is on a wrapper, not the SVG, so the curved text is drawn once and just rotated */}
-      <span className="spin-slow absolute inset-0" aria-hidden>
-        <svg viewBox="0 0 128 128" className="block h-full w-full">
-          <defs>
-            <path id={circle} d={`M64 64 m-${BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 ${2 * BADGE_R} 0 a${BADGE_R} ${BADGE_R} 0 1 1 -${2 * BADGE_R} 0`} />
-          </defs>
-          {/* in the portfolio's display face (Antonio), 17.5 units in the 128 box (about 17px on a desktop),
-              the line once round, stretched to exactly one lap so the loop closes with no gap */}
-          <text className="fill-ink font-display text-[17.5px] font-semibold uppercase" textLength={BADGE_LAP} lengthAdjust="spacing">
-            <textPath href={`#${circle}`} textLength={BADGE_LAP} lengthAdjust="spacing">
-              {text.toUpperCase()}
-            </textPath>
-          </text>
-        </svg>
-      </span>
-      {/* the disc in the middle comes to within about 9 units of the words (radius 38.5 of the 128 box, the words' baseline at 47.5) */}
-      <span className="glass absolute inset-[20%] grid place-items-center rounded-full">
-        <span className="live-dot size-[18%] rounded-full" />
+      <span className="role-tape-run" aria-hidden>
+        {Array.from({ length: 8 }, (_, i) => (
+          <span key={i}>{run}</span>
+        ))}
       </span>
     </m.button>
   )

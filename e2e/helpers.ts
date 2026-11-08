@@ -5,9 +5,9 @@ export async function openHome(page: Page, path = '/') {
   await page.goto(path)
   await page.evaluate(() => document.fonts.ready)
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  // the hero's entrance is over once the badge has faded in
-  const badge = page.getByRole('button', { name: /Go to contact/ })
-  await expect.poll(() => badge.evaluate((el) => getComputedStyle(el).opacity), { timeout: 8_000 }).toBe('1')
+  // the hero's entrance is over once the red tape has faded in
+  const tape = page.getByRole('button', { name: /Go to contact/ })
+  await expect.poll(() => tape.evaluate((el) => getComputedStyle(el).opacity), { timeout: 8_000 }).toBe('1')
 }
 
 /** Scroll through the whole page so every "reveal on view" block has revealed, then go back to the top. */
