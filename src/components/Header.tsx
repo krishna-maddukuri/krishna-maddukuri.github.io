@@ -8,6 +8,7 @@ import { announceHome } from '../lib/home'
 import { useLenis, useScrollTo } from '../lib/scroll'
 import { useTheme } from '../lib/theme'
 import { LinkedInMark } from './Logo'
+import { MONOGRAM_PATH } from './monogram'
 import { ResumeLink } from './ResumeLink'
 import { copyText, toast } from './Toast'
 import { ArrowDown, Copy, EASE, Moon, Sun } from './ui'
@@ -307,15 +308,11 @@ export function Header() {
   )
 }
 
-/**
- * The monogram as a drawing: the letters K and M of Antonio at its heaviest weight, traced from the
- * font and set to fill the tile (86% of its width, centred on their capitals). Being a drawing, it
- * sits the same on every screen and needs no font to arrive; the favicon is the same picture.
- */
+/** The monogram in its red tile (see monogram.ts); the favicon is the same picture. */
 function Monogram() {
   return (
     <svg viewBox="0 0 64 64" className="block size-full" aria-hidden>
-      <path fill="#160403" d="M4.48 54.27V9.73H11.26V30.23L18.04 9.73H25.05L17.66 31.7L25.64 54.27H18.47L11.31 33.47V54.27ZM30.34 54.27V9.73H38.77L45.1 42.27L51.04 9.73H59.52V54.27H53.47V37.67L53.72 22.43L47.73 54.07H42.34L36.09 22.43L36.34 37.67V54.27Z" />
+      <path fill="#160403" d={MONOGRAM_PATH} />
     </svg>
   )
 }

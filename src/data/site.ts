@@ -47,8 +47,8 @@ export const site = {
     stack: ['Java', 'Spring Boot', 'Apache Kafka', 'AWS', 'Kubernetes', 'Angular', 'React'],
   },
 
-  /** Picture for the ID card (a portrait crop works best). Empty = initials. */
-  photo: 'krishna-portrait.webp',
+  /** Picture for the ID card: his head and shoulders cut from the paper figure, transparent round him. */
+  photo: 'avatar/krishna-card.webp',
 
   /** The PDF in /public that every "Résumé" button downloads. Empty hides the buttons. */
   resumePdf: 'Krishna_Koushik_Maddukuri_Resume.pdf',
@@ -77,13 +77,13 @@ export const about = {
   ],
   quote: 'From the first commit to production.',
   card: {
-    title: 'Engineer ID',
-    sub: 'Portfolio · 2026',
+    title: 'Associate',
     idNo: 'KKM-0820',
-    dept: 'FinTech',
+    company: 'Bank of America',
+    dept: 'Wealth Management Technology',
     since: '2020',
-    /** printed down the lanyard strap, after his first name */
-    strap: 'engineer',
+    /** printed down the lanyard strap, over and over */
+    strap: 'Software Engineer',
   },
 }
 

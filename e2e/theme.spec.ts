@@ -45,18 +45,27 @@ test.describe('theme', () => {
     await fresh.close()
   })
 
-  test('the ink is black in both themes, the accent is the monogram red in both themes, and the card header follows', async ({ page }) => {
+  test('the accent is the monogram red in both themes, and the ID card turns over with the theme', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await openHome(page)
-    // the card's header bar is painted with the variable, so read the colour it actually renders
-    const header = page.getByRole('button', { name: /ID card for/ }).getByText('ENGINEER ID').locator('..').locator('..')
-    const bar = () => header.evaluate((el) => getComputedStyle(el).backgroundColor)
-    expect(await bar()).toBe('rgb(0, 0, 0)')
+    // the card is painted with variables, so read the colours it actually renders
+    const card = page.getByRole('button', { name: /ID card for/ })
+    const paint = (selector: string) => () => card.locator(selector).evaluate((el) => getComputedStyle(el).backgroundColor)
+    const bar = paint('[data-part="title-bar"]')
+    const front = paint('[data-face="front"]')
+    const back = paint('[data-face="back"]')
     const tail = page.locator('#about h2 em')
     const colour = () => tail.evaluate((el) => getComputedStyle(el).color)
+    // in the dark: a black card with a paper back, under the red title bar
+    expect(await bar()).toBe('rgb(240, 65, 46)')
+    expect(await front()).toBe('rgb(0, 0, 0)')
+    expect(await back()).toBe('rgb(244, 243, 239)')
     expect(await colour()).toBe('rgb(240, 65, 46)')
+    // on the paper: a white card with a black back; the title bar stays red
     await themeButton(page).click()
-    await expect.poll(bar).toBe('rgb(0, 0, 0)')
+    await expect.poll(front).toBe('rgb(255, 255, 255)')
+    await expect.poll(back).toBe('rgb(0, 0, 0)')
+    await expect.poll(bar).toBe('rgb(240, 65, 46)')
     await expect.poll(colour).toBe('rgb(240, 65, 46)')
   })
 })

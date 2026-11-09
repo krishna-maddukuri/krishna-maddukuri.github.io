@@ -2,19 +2,23 @@ import { animate, useDragControls, useInView, useMotionValue, useTransform, type
 import * as m from 'motion/react-m'
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type MouseEvent,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
 } from 'react'
+import { LINKEDIN_QR } from '../data/linkedin-qr'
 import { about, site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
+import { MONOGRAM_PATH } from './monogram'
 
-const CLIP = 34 // the metal clip sits this far above the card's top edge
-const STRAP = 18 // strap width
+const CLIP = 36 // the metal clip's top sits this far above the card's top edge (it grips the top 8px)
+const STRAP = 20 // strap width
 const HANG = 118 // the strap's length at rest, from the hook down to the clip
 const HOOK = 30 // the wall hook's size
 const HOLD_MS = 200 // phones: press and hold this long to pick the card up...
@@ -199,7 +203,8 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
               setDragging(false)
               lift(1)
             }}
-            style={{ x, y, rotate: lean, scale, transformOrigin: `50% -${CLIP}px`, touchAction: touch ? 'manipulation' : 'none' }}
+            // (the round corners are for the keyboard focus ring, so it follows the card's own corners)
+            style={{ x, y, rotate: lean, scale, transformOrigin: `50% -${CLIP}px`, touchAction: touch ? 'manipulation' : 'none', borderRadius: 18 }}
             className={`relative z-30 w-full select-none [-webkit-touch-callout:none] ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           >
             {/* two layers so each runs a single animation the GPU can take over: the swing-in, then the sway */}
@@ -256,7 +261,7 @@ function Strap({
 }) {
   const left = useTransform(() => anchorX.get() - STRAP / 2)
   const slide = useTransform(() => length.get() - reach)
-  const words = useMemo(() => `${site.first} · ${about.card.strap} · `.repeat(Math.max(4, Math.ceil(reach / 90))), [reach])
+  const words = useMemo(() => `${about.card.strap} • `.repeat(Math.max(4, Math.ceil(reach / 90))), [reach])
   return (
     <m.div
       aria-hidden
@@ -285,76 +290,131 @@ function Hook({ anchorX, anchorY, visible }: { anchorX: MotionValue<number>; anc
   )
 }
 
+/** The metal clip at the end of the strap, gripping the card's top edge (gunmetal in both themes). */
 function Clip() {
   return (
     <div className="absolute left-1/2 z-10 -translate-x-1/2" style={{ top: -CLIP }} aria-hidden>
-      <div className="relative h-[40px] w-[30px] rounded-[9px] border border-black/10 bg-clip shadow-[0_4px_10px_-4px_rgba(0,0,0,0.4)]">
-        <div className="absolute inset-x-[7px] top-[6px] h-[8px] rounded-full bg-black/15" />
-        <div className="absolute inset-x-[9px] bottom-[5px] h-[5px] rounded-full bg-black/25" />
+      <div className="relative h-[44px] w-[32px] rounded-[9px] bg-[linear-gradient(180deg,#4a4a4f,#1c1c1f)] shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_6px_12px_-6px_rgb(0_0_0/0.6)]">
+        <div className="absolute inset-x-[8px] top-[7px] h-[7px] rounded-full bg-black/60" />
+        <div className="absolute inset-x-[10px] bottom-[6px] h-[4px] rounded-full bg-white/15" />
       </div>
     </div>
   )
 }
 
-/** The name printed on the card: surname on its own line, like "KRISHNA KOUSHIK / MADDUKURI". */
+/* ------------------------------------------------------------- the card -- */
+
+/**
+ * The card is drawn on a grid 300 units wide (480 tall), as it was designed; u(n) is n of those units
+ * in the card's own width (cqw), so everything on it scales with the card, from a phone to the desktop.
+ * Each face is its own size container. The face itself is sized by its parent, so its own corners and
+ * borders stay in pixels.
+ */
+const u = (n: number) => `${+(n / 3).toFixed(4)}cqw`
+
+/** The name on the back: surname on its own line, like "KRISHNA KOUSHIK / MADDUKURI". */
 const words = site.name.split(' ')
 const nameLines = [words.slice(0, -1).join(' '), words[words.length - 1]]
 
+/** The microtext: his name and number over and over, too small to read without a lens. */
+const micro = `${site.name} · ${about.card.idNo} · `.toUpperCase().repeat(4)
+
+/** SVG ids must be unique on the page and plain enough for url(#…). */
+const useSvgId = () => 'card' + useId().replace(/[^\w-]/g, '')
+
+/**
+ * The front. Dark mode: a black card. Light mode: a white one. In both: the red title bar with
+ * the monogram (black tile, red letters), his portrait with a contact chip on its left and a
+ * barcode on its right, a holographic seal over the photo's corner, a woven line pattern and a
+ * line of microtext, his name and the company details, and a faint ghost of the photo.
+ */
 function CardFront() {
   const fields = [
-    { k: 'ID no', v: about.card.idNo },
-    { k: 'Dept', v: about.card.dept },
-    { k: 'Since', v: about.card.since },
+    { k: 'Company', v: about.card.company },
+    { k: 'Engineer since', v: about.card.since },
+    { k: 'Department', v: about.card.dept, wide: true },
   ]
   return (
-    <div className="backface-hidden absolute inset-0 flex flex-col overflow-hidden rounded-[20px] border border-black/10 bg-white text-[var(--card-ink)] shadow-[0_30px_60px_-30px_rgba(20,22,40,0.55)]">
-      <div className="flex items-center gap-3 bg-[var(--card-ink)] px-4 py-3.5 text-white">
-        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white font-display text-[12px] font-bold text-[var(--card-ink)]">
-          {site.monogram}
+    <div
+      data-face="front"
+      className="@container backface-hidden absolute inset-0 overflow-hidden rounded-[18px] border border-[var(--badge-edge)] bg-[var(--badge)] text-[var(--badge-ink)] shadow-[0_26px_50px_-28px_rgb(40_28_16/0.45)]"
+    >
+      <Weave height={430} style={{ top: u(50), height: u(430), color: 'var(--badge-weave)' }} />
+
+      <div
+        data-part="title-bar"
+        className="absolute inset-x-0 top-0 flex items-center bg-[var(--brand-red)] text-[#160403]"
+        style={{ height: u(50), padding: `0 ${u(16)} 0 ${u(14)}`, gap: u(10) }}
+      >
+        <MonogramTile size={u(28)} />
+        <span className="font-display font-bold uppercase leading-none" style={{ fontSize: u(15), letterSpacing: '0.12em' }}>
+          {about.card.title}
         </span>
-        <div className="min-w-0 leading-tight">
-          <div className="font-display text-[13.5px] font-bold uppercase tracking-[0.12em]">{about.card.title}</div>
-          <div className="mt-0.5 text-[11px] opacity-75">{about.card.sub}</div>
-        </div>
+        <span
+          className="ml-auto font-semibold leading-none tabular-nums text-[rgb(22_4_3/0.72)]"
+          style={{ fontSize: u(11.5), letterSpacing: '0.04em' }}
+        >
+          {about.card.idNo}
+        </span>
       </div>
+      <Micro style={{ insetInline: 0, top: u(53), textAlign: 'center', color: 'var(--badge-soft)' }} />
 
-      <div className="flex flex-1 flex-col items-center px-5 pt-5">
-        <div className="grid aspect-[4/5] w-[52%] place-items-center overflow-hidden rounded-[14px] border-2 border-[var(--card-ink)] bg-[#ebe9e2]">
-          {site.photo ? (
-            <img src={site.photo} alt="" className="pointer-events-none h-full w-full object-cover" draggable={false} />
-          ) : (
-            <span className="font-hand text-[3.4rem] leading-none text-[var(--card-ink)]">{site.monogram}</span>
-          )}
-        </div>
-        <div className="mt-4 text-center font-display text-[16px] font-bold uppercase leading-[1.1] tracking-[0.02em]">
-          {nameLines[0]}
-          <br />
-          {nameLines[1]}
-        </div>
-        <div className="mt-1 text-[12px] text-[#5b5b5b]">{site.role}</div>
+      <Chip style={{ left: u(22), top: u(122), width: u(34) }} />
+      <img
+        src={site.photo}
+        alt=""
+        draggable={false}
+        className="pointer-events-none absolute block"
+        style={{
+          left: u(78),
+          top: u(90),
+          width: u(144),
+          height: u(180),
+          WebkitMaskImage: 'linear-gradient(180deg, #000 72%, transparent)',
+          maskImage: 'linear-gradient(180deg, #000 72%, transparent)',
+        }}
+      />
+      <Seal style={{ left: u(60), top: u(226), width: u(38) }} />
+      <Barcode seed={about.card.idNo + site.name} style={{ right: u(16), top: u(100), width: u(34), height: u(150) }} />
 
-        <dl className="mt-4 grid w-full grid-cols-3 gap-2 text-center">
-          {fields.map((f) => (
-            <div key={f.k} className="min-w-0">
-              <dt className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-[#5b5b5b]">{f.k}</dt>
-              <dd className="mt-0.5 truncate text-[12.5px] font-semibold">{f.v}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <div className="mt-auto flex w-full items-end justify-between pb-4 pt-3">
-          <Barcode seed={about.card.idNo + site.name} />
-          <span
-            className="size-9 rounded-full border border-black/10"
-            style={{ background: 'conic-gradient(from 40deg, #d9d3ff, #c9f1e8, #f7e6b9, #f6c9de, #d9d3ff)' }}
-            aria-hidden
-          />
-        </div>
+      <div className="absolute font-display font-bold uppercase leading-none" style={{ left: u(18), top: u(318), fontSize: u(16), letterSpacing: '0.02em' }}>
+        {site.name}
       </div>
+      <dl
+        className="absolute grid grid-cols-2 border-t border-[var(--badge-line)]"
+        style={{ left: u(18), right: u(18), top: u(348), paddingTop: u(10), gap: `${u(9)} ${u(12)}` }}
+      >
+        {fields.map((f) => (
+          <div key={f.k} className={`flex min-w-0 flex-col ${f.wide ? 'col-span-2' : ''}`} style={{ gap: u(2) }}>
+            <dt className="font-medium text-[var(--badge-label)]" style={{ fontSize: u(10.5), letterSpacing: '0.02em' }}>
+              {f.k}
+            </dt>
+            <dd className="truncate font-semibold" style={{ fontSize: u(12.5) }}>
+              {f.v}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <div className="absolute text-[var(--badge-soft)]" style={{ left: u(18), bottom: u(12), fontSize: u(11) }}>
+        {site.location}
+      </div>
+      {/* the ghost image: a faint second copy of the photo, as on a printed card */}
+      <img
+        src={site.photo}
+        alt=""
+        draggable={false}
+        className="pointer-events-none absolute block opacity-20 grayscale"
+        style={{ right: u(18), bottom: u(10), width: u(36), height: u(45) }}
+      />
     </div>
   )
 }
 
+/**
+ * The back, the front's opposite: paper with black type in dark mode, black with white type in
+ * light mode. "If found, please return to", his name, how to reach him, a QR code that opens
+ * his LinkedIn profile, and the green "open to roles" tag.
+ */
 function CardBack() {
   const rows = [
     { k: 'Email', v: site.email },
@@ -363,47 +423,191 @@ function CardBack() {
   ]
   return (
     <div
-      className="backface-hidden absolute inset-0 flex flex-col rounded-[20px] border border-[var(--card-edge)] bg-[var(--card-ink)] p-6 text-white shadow-[0_30px_60px_-30px_rgba(20,22,40,0.55)]"
+      data-face="back"
+      className="@container backface-hidden absolute inset-0 overflow-hidden rounded-[18px] bg-[var(--badge-back)] text-[var(--badge-back-ink)] shadow-[0_26px_50px_-28px_rgb(40_28_16/0.5)]"
       style={{ transform: 'rotateY(180deg)' }}
     >
-      <div className="font-mono text-[10.5px] uppercase tracking-[0.16em] opacity-65">If found, please return to</div>
-      <div className="mt-3 font-display text-[1.6rem] font-bold leading-[1.05]">{site.name}</div>
-      <dl className="mt-6 flex flex-col">
-        {rows.map((r) => (
-          <div key={r.k} className="border-t border-white/15 py-2.5">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-65">{r.k}</dt>
-            <dd className="mt-0.5 text-[13.5px] [overflow-wrap:anywhere]">{r.v}</dd>
+      <Weave height={480} style={{ top: 0, height: u(480), color: 'var(--badge-back-weave)' }} />
+      <div className="absolute inset-0 flex flex-col" style={{ padding: `${u(22)} ${u(22)} ${u(18)}` }}>
+        <div className="flex items-center" style={{ gap: u(10) }}>
+          <MonogramTile size={u(28)} ring />
+          <span className="font-medium text-[var(--badge-back-soft)]" style={{ fontSize: u(11.5) }}>
+            If found, please return to
+          </span>
+          <Contactless className="ml-auto block shrink-0 opacity-50" style={{ width: u(18) }} />
+        </div>
+        <div className="font-display font-bold uppercase leading-none" style={{ marginTop: u(16), fontSize: u(30), letterSpacing: '0.01em' }}>
+          {nameLines[0]}
+          <br />
+          {nameLines[1]}
+        </div>
+        <dl className="flex flex-col" style={{ marginTop: u(14) }}>
+          {rows.map((r, i) => (
+            <div
+              key={r.k}
+              className={`flex flex-col border-t border-[var(--badge-back-line)] ${i === rows.length - 1 ? 'border-b' : ''}`}
+              style={{ padding: `${u(8)} 0`, gap: u(2) }}
+            >
+              <dt className="font-medium text-[var(--badge-back-label)]" style={{ fontSize: u(10.5), letterSpacing: '0.02em' }}>
+                {r.k}
+              </dt>
+              <dd className="[overflow-wrap:anywhere]" style={{ fontSize: u(13) }}>
+                {r.v}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-auto flex items-center" style={{ gap: u(14) }}>
+          <div
+            className="flex shrink-0 border border-[var(--badge-qr-edge)] bg-white"
+            style={{ width: u(92), height: u(92), padding: u(9), borderRadius: u(10) }}
+          >
+            <svg
+              viewBox={`0 0 ${LINKEDIN_QR.size} ${LINKEDIN_QR.size}`}
+              className="block size-full"
+              shapeRendering="crispEdges"
+              role="img"
+              aria-label={`QR code for ${site.linkedinLabel}`}
+            >
+              <path fill="#000000" d={LINKEDIN_QR.path} />
+            </svg>
           </div>
-        ))}
-      </dl>
-      <div className="mt-auto">
-        <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[12px]">
-          <span className="live-dot size-1.5 rounded-full" aria-hidden />
+          <div className="flex flex-col" style={{ gap: u(4) }}>
+            <span className="font-semibold" style={{ fontSize: u(12.5) }}>
+              Scan to connect
+            </span>
+            <span className="text-[var(--badge-back-soft)]" style={{ fontSize: u(12) }}>
+              LinkedIn, straight to my profile
+            </span>
+          </div>
+        </div>
+        <span
+          className="inline-flex items-center self-start rounded-full bg-[var(--badge-back-pill)] text-[var(--badge-back-pill-ink)]"
+          style={{ marginTop: u(14), gap: u(8), padding: `${u(7)} ${u(12)}`, fontSize: u(12) }}
+        >
+          <span className="live-dot shrink-0 rounded-full" style={{ width: u(7), height: u(7) }} aria-hidden />
           {site.openTo}
         </span>
-        <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.14em] opacity-55">Tap to flip back</div>
       </div>
+      <Micro style={{ left: u(22), right: u(22), bottom: u(6), color: 'var(--badge-back-soft)' }} />
     </div>
   )
 }
 
-function Barcode({ seed }: { seed: string }) {
-  const bars = useMemo(() => {
-    const out: { x: number; w: number }[] = []
-    let x = 0
-    for (let i = 0; i < seed.length && x < 96; i++) {
-      const c = seed.charCodeAt(i)
-      const w = 1 + (c % 3)
-      out.push({ x, w })
-      x += w + 1 + ((c >> 2) % 3)
+/** The monogram on the card: a black tile with the letters in the monogram's red. */
+function MonogramTile({ size, ring = false }: { size: string; ring?: boolean }) {
+  return (
+    <span
+      className={`block shrink-0 bg-black ${ring ? 'shadow-[inset_0_0_0_1px_rgb(255_255_255/0.22)]' : ''}`}
+      style={{ width: size, height: size, borderRadius: `calc(${size} / 4)` }}
+      aria-hidden
+    >
+      <svg viewBox="0 0 64 64" className="block size-full">
+        <path className="fill-[var(--brand-red)]" d={MONOGRAM_PATH} />
+      </svg>
+    </span>
+  )
+}
+
+/** A fine woven line pattern (two crossing waves, 48 × 12 units a repeat), under everything on a face. */
+const WEAVE =
+  'M0 6L4 7.8L8 9.12L12 9.6L16 9.12L20 7.8L24 6L28 4.2L32 2.88L36 2.4L40 2.88L44 4.2L48 6M0 6L4 4.2L8 2.88L12 2.4L16 2.88L20 4.2L24 6L28 7.8L32 9.12L36 9.6L40 9.12L44 7.8L48 6'
+
+function Weave({ height, style }: { height: number; style: CSSProperties }) {
+  const id = useSvgId()
+  return (
+    <svg viewBox={`0 0 300 ${height}`} aria-hidden className="pointer-events-none absolute inset-x-0 block w-full" style={style}>
+      <defs>
+        <pattern id={id} width="48" height="12" patternUnits="userSpaceOnUse">
+          <path d={WEAVE} fill="none" stroke="currentColor" strokeWidth="0.6" />
+        </pattern>
+      </defs>
+      <rect width="300" height={height} fill={`url(#${id})`} />
+    </svg>
+  )
+}
+
+function Micro({ style }: { style: CSSProperties }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute overflow-hidden whitespace-nowrap font-semibold opacity-75"
+      style={{ height: u(5), fontSize: u(3.8), lineHeight: u(5), letterSpacing: '0.08em', ...style }}
+    >
+      {micro}
+    </div>
+  )
+}
+
+/** The contact chip, in gold. */
+function Chip({ style }: { style: CSSProperties }) {
+  const id = useSvgId()
+  return (
+    <svg viewBox="0 0 34 26" aria-hidden className="pointer-events-none absolute block" style={style}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ecd393" />
+          <stop offset="0.55" stopColor="#c49a4a" />
+          <stop offset="1" stopColor="#e6c57e" />
+        </linearGradient>
+      </defs>
+      <rect x="0.5" y="0.5" width="33" height="25" rx="5" fill={`url(#${id})`} stroke="#7d5f25" strokeWidth="0.8" />
+      <path d="M0.5 9H10.5M0.5 17H10.5M23.5 9H33.5M23.5 17H33.5M10.5 0.5V25.5M23.5 0.5V25.5M10.5 13H23.5" fill="none" stroke="#7d5f25" strokeWidth="0.8" />
+    </svg>
+  )
+}
+
+/** The holographic seal over the photo's corner: a round iridescent sticker with the monogram pressed in. */
+function Seal({ style }: { style: CSSProperties }) {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute grid aspect-square place-items-center rounded-full opacity-[0.92] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.55),0_1px_3px_rgb(0_0_0/0.3)]"
+      style={{
+        ...style,
+        background:
+          'linear-gradient(135deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 50%), conic-gradient(from 40deg, #d9d3ff, #c9f1e8, #f7e6b9, #f6c9de, #d9d3ff)',
+      }}
+    >
+      <span className="absolute inset-[10.5%] rounded-full border-[0.75px] border-dashed border-[rgb(22_4_3/0.28)]" />
+      <svg viewBox="0 0 64 64" className="relative block w-[47%]">
+        <path className="fill-[rgb(22_4_3/0.38)]" d={MONOGRAM_PATH} />
+      </svg>
+    </span>
+  )
+}
+
+/** The contactless mark (four widening arcs). */
+function Contactless({ className, style }: { className: string; style: CSSProperties }) {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden className={className} style={style}>
+      <path
+        d="M2 7.5A2.9 2.9 0 0 1 2 12.5M5.5 5A5.8 5.8 0 0 1 5.5 15M9 2.5A8.6 8.6 0 0 1 9 17.5M12.5 0.5A11 11 0 0 1 12.5 19.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+/** A barcode standing on end, its bars made from his ID number and name; in the card's ink. */
+function Barcode({ seed, style }: { seed: string; style: CSSProperties }) {
+  const path = useMemo(() => {
+    let d = ''
+    for (let y = 0, i = 0; seed; i++) {
+      const c = seed.charCodeAt(i % seed.length)
+      const h = 1 + (c % 3)
+      if (y + h > 120) break
+      d += `M0 ${y}h27v${h}h-27z`
+      y += h + 1 + ((c >> 2) % 3)
     }
-    return out
+    return d
   }, [seed])
   return (
-    <svg viewBox="0 0 100 26" className="h-[26px] w-[100px] shrink-0" aria-hidden>
-      {bars.map((b, i) => (
-        <rect key={i} x={b.x} y="0" width={b.w} height="26" className="fill-[var(--card-ink)]" />
-      ))}
+    <svg viewBox="0 0 27 120" preserveAspectRatio="none" aria-hidden className="pointer-events-none absolute block fill-current" style={style}>
+      <path d={path} />
     </svg>
   )
 }
