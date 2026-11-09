@@ -1,4 +1,4 @@
-import Lenis from 'lenis'
+import type Lenis from 'lenis'
 import { warmSections } from './deferSections'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 
@@ -14,23 +14,31 @@ const touchFirst = () => typeof window !== 'undefined' && window.matchMedia('(po
  * Buttery smooth wheel scrolling (Lenis) for mouse and trackpad. Phones and tablets keep
  * native scrolling: Lenis can't improve it there, and its touch listeners would make
  * every scroll wait for the page's code. Also off for people who ask for reduced motion.
+ * Its code is fetched only where it is used, after the page is up: phones never download it.
  */
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const [lenis, setLenis] = useState<Lenis | null>(null)
 
   useEffect(() => {
     if (prefersReducedMotion() || touchFirst()) return
-    const instance = new Lenis({ lerp: 0.1, smoothWheel: true })
+    let instance: Lenis | null = null
     let frame = 0
-    const raf = (time: number) => {
-      instance.raf(time)
+    let gone = false
+    import('lenis').then(({ default: Lenis }) => {
+      if (gone) return
+      const lenis = new Lenis({ lerp: 0.1, smoothWheel: true })
+      instance = lenis
+      const raf = (time: number) => {
+        lenis.raf(time)
+        frame = requestAnimationFrame(raf)
+      }
       frame = requestAnimationFrame(raf)
-    }
-    frame = requestAnimationFrame(raf)
-    setLenis(instance)
+      setLenis(lenis)
+    })
     return () => {
+      gone = true
       cancelAnimationFrame(frame)
-      instance.destroy()
+      instance?.destroy()
       setLenis(null)
     }
   }, [])
