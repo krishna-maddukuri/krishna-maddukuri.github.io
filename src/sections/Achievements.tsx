@@ -53,7 +53,7 @@ function PinnedTrack() {
 
   return (
     <section id="achievements" ref={sectionRef} className="relative" style={{ height: `calc(100svh + ${dist}px)` }}>
-      <div className="sticky top-0 flex h-svh flex-col justify-center gap-10 overflow-hidden py-16 lg:gap-14">
+      <div className="sticky top-0 flex h-svh flex-col justify-center gap-10 overflow-hidden py-16 lg:gap-[clamp(28px,5svh,56px)]">
         <Container>{heading}</Container>
 
         <m.div

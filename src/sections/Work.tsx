@@ -18,10 +18,13 @@ export function Work() {
     hoverTimer.current = setTimeout(() => setActive(i), 140)
   }
   const hoverCancel = () => clearTimeout(hoverTimer.current)
-  // The row is 610px tall unless the open panel's words need more (a long title that wraps, three
-  // rows of chips): then it grows to fit, so the "Read case study" button is never cut off.
-  const [rowHeight, setRowHeight] = useState(ROW_MIN)
-  const measure = useCallback((h: number) => setRowHeight(Math.max(ROW_MIN, Math.ceil(h))), [])
+  // The row is as tall as the screen leaves room for (so the section fits on one screen; 610px at most)
+  // unless the open panel's words need more (a long title that wraps, three rows of chips): then it
+  // grows to fit, so the "Read case study" button is never cut off.
+  const rowMin = useRowMin()
+  const [need, setNeed] = useState(0)
+  const rowHeight = Math.max(rowMin, need)
+  const measure = useCallback((h: number) => setNeed(Math.ceil(h)), [])
   // The open panel's inside is laid out at the width it will have once the panels have finished
   // sliding (the row minus the closed ones), not at whatever width it is passing through: the words
   // then wrap the way they will end up, the height is right from the first frame, and the slide only
@@ -41,7 +44,7 @@ export function Work() {
   }, [wide])
 
   return (
-    <section id="work" className="relative py-[clamp(56px,8vw,112px)]">
+    <section id="work" className="fit-section relative">
       <Container>
         <SectionHeading
           index="03"
@@ -55,7 +58,7 @@ export function Work() {
           }
         />
 
-        <Reveal className="mt-10 lg:mt-12">
+        <Reveal className="mt-10 lg:mt-[clamp(14px,2.6svh,48px)]">
           {wide ? (
             <div ref={rowRef} className="flex gap-3 transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ height: rowHeight }}>
               {projects.map((p, i) => (
@@ -86,8 +89,20 @@ export function Work() {
 }
 
 const num = (i: number) => String(i + 1).padStart(2, '0')
-/** The desktop row's height when the open panel's words fit (px). */
-const ROW_MIN = 610
+/**
+ * The desktop row's height when the open panel's words fit (px): what the screen's height leaves after
+ * the section's padding and heading (about 0.77 of it, less 40px), between 380 and 610.
+ */
+function useRowMin() {
+  const read = () => (typeof window === 'undefined' ? 610 : Math.round(Math.min(610, Math.max(380, window.innerHeight * 0.77 - 40))))
+  const [h, setH] = useState(read)
+  useEffect(() => {
+    const on = () => setH(read())
+    window.addEventListener('resize', on)
+    return () => window.removeEventListener('resize', on)
+  }, [])
+  return h
+}
 /** A closed panel's width and the gap between panels (px; basis-[64px] and gap-3 below). */
 const CLOSED_WIDTH = 64
 const GAP = 12
@@ -143,7 +158,7 @@ function Panel({
         {open && (
           <m.div
             key={p.slug}
-            className="absolute inset-y-0 left-0 grid w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 p-8 2xl:gap-10 2xl:p-10"
+            className="absolute inset-y-0 left-0 grid w-full grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-8 p-[clamp(18px,3.2svh,32px)] 2xl:gap-10 2xl:p-[clamp(24px,3.8svh,40px)]"
             style={width ? { width } : undefined}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: 0.5, delay: 0.3 } }}
@@ -202,12 +217,12 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
           <span className="h-px w-6 bg-line" aria-hidden />
           <span className="min-w-0 leading-snug">{p.eyebrow}</span>
         </div>
-        <h3 className="mt-5 font-display text-[clamp(2rem,3vw,2.9rem)] font-bold leading-[0.98]">
+        <h3 className="mt-[clamp(10px,2svh,20px)] font-display text-[length:min(2.9rem,3vw,4.8svh)] font-bold leading-[0.98]">
           {p.title}{' '}
           <em className="accent-tail">{p.accent}</em>
         </h3>
-        <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-ink-soft">{p.summary}</p>
-        <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-2.5 text-sm">
+        <p className="mt-[clamp(8px,1.6svh,16px)] max-w-[52ch] text-[length:max(15px,min(16px,2svh))] leading-[1.55] text-ink-soft">{p.summary}</p>
+        <ul className="mt-[clamp(8px,1.6svh,20px)] grid grid-cols-2 gap-x-5 gap-y-[clamp(4px,1svh,10px)] text-sm">
           {p.highlights.map((h) => (
             <li key={h} className="flex gap-2">
               <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-ink" aria-hidden />
@@ -216,7 +231,7 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
           ))}
         </ul>
       </div>
-      <div ref={bottomRef} className="mt-auto pt-6">
+      <div ref={bottomRef} className="mt-auto pt-[clamp(10px,2svh,24px)]">
         <div className="flex flex-wrap gap-1.5">
           {p.tools.map((t) => (
             <ToolChip key={t} name={t} />
@@ -224,7 +239,7 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
         </div>
         <Link
           to={`/work/${p.slug}`}
-          className="btn-solid btn-key group mt-5"
+          className="btn-solid btn-key group mt-[clamp(8px,1.6svh,20px)]"
         >
           Read case study <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>

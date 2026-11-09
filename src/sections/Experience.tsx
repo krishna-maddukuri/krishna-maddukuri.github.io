@@ -5,14 +5,17 @@ import { timeline, type Milestone } from '../data/site'
 import { OrgMark } from '../components/Logo'
 import { Container, EASE, SectionHeading } from '../components/ui'
 
-/** The "Education & experience." timeline: a centre line, big years, cards alternating sides. */
+/**
+ * The "Education & experience." timeline: a centre line, big years, cards alternating sides. It runs over
+ * more than one screen; on wide screens its sizes follow the screen's height, like the other sections.
+ */
 export function Experience() {
   const listRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: listRef, offset: ['start 70%', 'end 55%'] })
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 })
 
   return (
-    <section id="experience" className="relative py-[clamp(56px,8vw,112px)]">
+    <section id="experience" className="fit-section relative">
       <Container>
         <SectionHeading
           index="05"
@@ -26,7 +29,10 @@ export function Experience() {
           }
         />
 
-        <div ref={listRef} className="relative mt-12 lg:mt-16">
+        <div
+          ref={listRef}
+          className="relative mt-12 lg:mt-[clamp(16px,3.2svh,64px)] lg:[--tl-mark:clamp(34px,4.6svh,44px)] lg:[--tl-pad:clamp(16px,2.6svh,28px)]"
+        >
           {/* the line: left on phones, centre on desktop */}
           <div className="absolute bottom-0 left-[7px] top-0 w-px bg-line lg:left-1/2" aria-hidden />
           <m.div
@@ -35,7 +41,7 @@ export function Experience() {
             aria-hidden
           />
 
-          <div className="flex flex-col gap-12 lg:gap-6">
+          <div className="flex flex-col gap-12 lg:gap-[clamp(12px,2.2svh,24px)]">
             {timeline.map((m, i) => (
               <Row key={`${m.title} · ${m.org}`} ms={m} left={i % 2 === 0} showYear={i === 0 || timeline[i - 1].year !== m.year} />
             ))}
@@ -51,7 +57,7 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
     <div className={`flex items-center ${left ? 'lg:justify-start' : 'lg:justify-end'}`}>
       {showYear && (
         <m.span
-          className="font-display text-[clamp(2.6rem,5.6vw,5.2rem)] font-extrabold leading-none text-ink"
+          className="font-display text-[clamp(2.6rem,5.6vw,5.2rem)] font-extrabold leading-none text-ink lg:text-[length:min(5.2rem,5.6vw,8svh)]"
           initial={{ opacity: 0, x: left ? -24 : 24 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.5 }}
@@ -65,7 +71,7 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
 
   const card = (
     <m.article
-      className="lift spot rounded-[22px] border border-line bg-surface p-6 sm:p-7"
+      className="lift spot rounded-[22px] border border-line bg-surface p-6 sm:p-7 lg:p-[var(--tl-pad)]"
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
@@ -74,14 +80,16 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
       {/* the mark, the kind and the dates; on a narrow card the dates drop to their own line */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <span className="flex items-center gap-3">
-          <OrgMark label={ms.org} className="size-11 rounded-[13px] text-[13px]" />
+          <OrgMark label={ms.org} className="size-11 rounded-[13px] text-[13px] lg:size-[var(--tl-mark)]" />
           <span className="rounded-md bg-chip px-2.5 py-1 font-mono text-xs uppercase tracking-[0.14em] text-ink-soft">{ms.kind}</span>
         </span>
         <span className="tabular ml-auto font-mono text-xs text-ink-soft">{ms.period}</span>
       </div>
-      <h3 className="mt-5 font-display text-[clamp(1.45rem,2.2vw,1.9rem)] font-bold leading-[1.1]">{ms.title}</h3>
+      <h3 className="mt-5 font-display text-[clamp(1.45rem,2.2vw,1.9rem)] font-bold leading-[1.1] lg:mt-[clamp(8px,1.6svh,20px)] lg:text-[length:min(1.9rem,2.2vw,3.3svh)]">
+        {ms.title}
+      </h3>
       <p className="mt-1.5 text-sm text-ink-soft">{ms.org}</p>
-      <div className="mt-5">
+      <div className="mt-5 lg:mt-[clamp(8px,1.6svh,20px)]">
         {ms.current ? (
           <span className="inline-flex items-center gap-2 rounded-full bg-ink px-3.5 py-1.5 text-sm font-medium text-paper">
             <span className="live-dot size-1.5 rounded-full" aria-hidden /> {ms.badge}
@@ -95,9 +103,9 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
 
   return (
     <div className="relative grid gap-4 pl-10 lg:grid-cols-2 lg:gap-x-20 lg:pl-0">
-      {/* dot on the line */}
+      {/* dot on the line, level with the middle of the card's mark */}
       <span
-        className={`absolute left-0 top-3 size-[15px] rounded-full border-2 lg:left-1/2 lg:top-8 lg:-translate-x-1/2 ${
+        className={`absolute left-0 top-3 size-[15px] rounded-full border-2 lg:left-1/2 lg:top-[calc(var(--tl-pad)_+_var(--tl-mark)_/_2_-_7.5px)] lg:-translate-x-1/2 ${
           ms.current ? 'border-[color:var(--accent-ring)] bg-accent' : 'border-ink bg-paper'
         }`}
         aria-hidden

@@ -32,7 +32,7 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="relative py-[clamp(56px,8vw,112px)]">
+    <section id="contact" className="fit-section relative">
       <Container>
         <SectionHeading
           index="07"
@@ -42,13 +42,13 @@ export function Contact() {
           sub="I'm open to senior software engineering roles in backend, cloud and data platforms. Email is the fastest way to reach me."
         />
 
-        <Reveal className="mt-10 lg:mt-14">
-          <div className="card-shadow rounded-[32px] border border-line bg-surface p-6 sm:p-10 lg:p-14">
+        <Reveal className="mt-10 lg:mt-[clamp(16px,3svh,56px)]">
+          <div className="card-shadow rounded-[32px] border border-line bg-surface p-6 sm:p-10 lg:p-[clamp(24px,5svh,56px)]">
             <div className="eyebrow">Email</div>
             <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <span
                 ref={emailRef}
-                className="select-all font-display text-[clamp(1.2rem,5.2vw,4.4rem)] font-bold leading-none [overflow-wrap:anywhere]"
+                className="select-all font-display text-[clamp(1.2rem,5.2vw,4.4rem)] font-bold leading-none [overflow-wrap:anywhere] lg:text-[length:min(4.4rem,5.2vw,7.5svh)]"
               >
                 {site.email}
               </span>
@@ -62,7 +62,7 @@ export function Contact() {
               </button>
             </div>
 
-            <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+            <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:mt-[clamp(16px,3.5svh,40px)] lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
               <a
                 href={site.linkedin}
                 target="_blank"

@@ -59,7 +59,7 @@ export function SectionHeading({
       <div className="heading-drift min-w-0">
         <Eyebrow index={index} label={label} />
         {/* the bold part first, the handwritten tail a beat later */}
-        <h2 className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95]">
+        <h2 className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95] lg:mt-[clamp(8px,1.5svh,20px)] lg:text-[length:min(5.4rem,6vw,7svh)]">
           <m.span
             className="inline-block"
             initial={{ opacity: 0, y: 24 }}
@@ -82,7 +82,7 @@ export function SectionHeading({
         </h2>
         {sub && (
           <Reveal delay={0.3} y={14}>
-            <p className="mt-5 max-w-[52ch] text-md text-ink-soft">{sub}</p>
+            <p className="mt-5 max-w-[52ch] text-md text-ink-soft lg:mt-[clamp(8px,1.6svh,20px)]">{sub}</p>
           </Reveal>
         )}
       </div>

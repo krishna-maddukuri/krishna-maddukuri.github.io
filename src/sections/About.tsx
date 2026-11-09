@@ -15,7 +15,7 @@ export function About() {
   const sectionRef = useRef<HTMLElement>(null)
 
   return (
-    <section id="about" ref={sectionRef} className="about-section relative">
+    <section id="about" ref={sectionRef} className="fit-section relative">
       <Container>
         <div className="about-grid">
           <div className="relative z-10 min-w-0 [grid-area:head]">

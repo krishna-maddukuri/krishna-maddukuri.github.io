@@ -1111,6 +1111,23 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /*
+  The home page's sections on wide screens (≥1024): each fits on one screen. Its top padding clears the
+  header's bar and its bottom padding is small, both following the screen's height (svh), and inside it
+  sizes its type and spacing by the screen's height too (checked from 1280 × 720 to 2560 × 1440). The
+  exceptions: Experience, a long timeline, runs over more than one screen (sized the same way), and
+  Achievements pins while its cards slide past. Phones and tablets keep the even rhythm.
+*/
+.fit-section {
+  padding-block: clamp(56px, 8vw, 112px);
+}
+@media (min-width: 1024px) {
+  .fit-section {
+    padding-top: clamp(70px, 9svh, 112px);
+    padding-bottom: clamp(16px, 2.5svh, 64px);
+  }
+}
+
+/*
   About: the heading and his story in a panel on the left, the hanging ID card on the right, the quick
   facts across the whole width under both (on phones: heading, panel, card, facts). The panel is
   portfolio-2's: a hairline edge, 14px corners, the story in its lead size with bright bold key words,
@@ -1119,9 +1136,6 @@ html.lenis, html.lenis body { height: auto; }
   On wide screens the section is sized by the screen's height (svh) as well as its width, so all of it,
   heading to facts, fits on one screen (checked from 1280 × 720 to 2560 × 1440).
 */
-.about-section {
-  padding-block: clamp(56px, 8vw, 112px);
-}
 .about-grid {
   display: grid;
   align-items: start;
@@ -1203,10 +1217,6 @@ html.lenis, html.lenis body { height: auto; }
   .about-fact-note { font-size: 14px; }
 }
 @media (min-width: 1024px) {
-  .about-section {
-    padding-top: clamp(70px, 9svh, 112px);
-    padding-bottom: clamp(16px, 2.5svh, 64px);
-  }
   .about-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
     grid-template-areas: 'head card' 'panel card' 'facts facts';
@@ -1294,4 +1304,25 @@ html.lenis, html.lenis body { height: auto; }
     transition-duration: 0.01ms !important;
   }
   html { scroll-behavior: auto; }
+}
+
+/*
+  Skills on wide screens: the six rows of tiles share what the screen's height leaves after the heading,
+  the families and the padding, up to square tiles; on a short screen the tiles are wider than tall, the
+  symbol and name keep clear of each other (sizes follow the tile's height).
+*/
+@media (min-width: 1024px) {
+  .skills-table {
+    --tile-h: clamp(54px, calc((74svh - 160px) / 6 - 10px), 112px);
+  }
+  .skills-tile {
+    aspect-ratio: auto;
+    height: var(--tile-h);
+  }
+  .skills-num { top: calc(var(--tile-h) * 0.07); }
+  .skills-sym {
+    top: calc(var(--tile-h) * 0.27);
+    font-size: min(1.95rem, calc(var(--tile-h) * 0.36), 2.3vw);
+  }
+  .skills-name { bottom: calc(var(--tile-h) * 0.07); }
 }

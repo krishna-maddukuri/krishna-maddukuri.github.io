@@ -42,7 +42,7 @@ export function Skills() {
   }
 
   return (
-    <section id="skills" className="relative py-[clamp(56px,8vw,112px)]">
+    <section id="skills" className="fit-section relative">
       <Container>
         <SectionHeading
           index="02"
@@ -52,7 +52,7 @@ export function Skills() {
           sub={`${hover ? 'Hover' : 'Tap'} a tile to see what it is, or pick a family to light it up.`}
         />
 
-        <div className="mt-9 flex flex-wrap gap-2.5" role="group" aria-label="Light up a family">
+        <div className="mt-9 flex flex-wrap gap-2.5 lg:mt-[clamp(12px,2.4svh,36px)]" role="group" aria-label="Light up a family">
           {families.map((f) => {
             const on = family === f.id
             return (
@@ -76,8 +76,8 @@ export function Skills() {
           })}
         </div>
 
-        <div className="mt-8 grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(250px,300px)] lg:gap-10 xl:gap-14">
-          <div ref={tableRef} className="grid grid-cols-5 gap-1.5 min-[520px]:grid-cols-8 sm:gap-2.5">
+        <div className="mt-8 grid items-center gap-6 lg:mt-[clamp(12px,2.4svh,32px)] lg:grid-cols-[minmax(0,1fr)_minmax(250px,300px)] lg:gap-10 xl:gap-14">
+          <div ref={tableRef} className="skills-table grid grid-cols-5 gap-1.5 min-[520px]:grid-cols-8 sm:gap-2.5">
             {elements.map((el, i) => (
               <Tile
                 key={el.sym}
@@ -138,17 +138,17 @@ function Tile({
       whileTap={{ scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       style={style}
-      className={`relative aspect-square min-w-0 rounded-[12px] text-left shadow-sm transition-[background-color,color,opacity,box-shadow] duration-500 hover:shadow-md sm:rounded-[14px] ${
+      className={`skills-tile relative aspect-square min-w-0 rounded-[12px] text-left shadow-sm transition-[background-color,color,opacity,box-shadow] duration-500 hover:shadow-md sm:rounded-[14px] ${
         dim ? 'opacity-[0.18]' : 'opacity-100'
       } ${el.family === OUTLINE ? 'hover:bg-wash!' : ''}`}
     >
-      <span className="tabular absolute left-2 top-1.5 font-mono text-[10px] font-medium sm:left-2.5 sm:top-2 sm:text-[11px]">
+      <span className="skills-num tabular absolute left-2 top-1.5 font-mono text-[10px] font-medium sm:left-2.5 sm:top-2 sm:text-[11px]">
         {String(el.n).padStart(2, '0')}
       </span>
-      <span className="absolute left-2 top-[34%] font-display text-[clamp(1.05rem,2.3vw,1.95rem)] font-bold leading-none sm:left-2.5">
+      <span className="skills-sym absolute left-2 top-[34%] font-display text-[clamp(1.05rem,2.3vw,1.95rem)] font-bold leading-none sm:left-2.5">
         {el.sym}
       </span>
-      <span className="absolute inset-x-2 bottom-1.5 hidden truncate text-[10.5px] font-medium sm:block sm:inset-x-2.5 sm:bottom-2 lg:text-[11.5px]">
+      <span className="skills-name absolute inset-x-2 bottom-1.5 hidden truncate text-[10.5px] font-medium sm:block sm:inset-x-2.5 sm:bottom-2 lg:text-[11.5px]">
         {el.name}
       </span>
     </m.button>
@@ -162,7 +162,7 @@ function Tile({
 function Inspector({ el, hover }: { el: Element | null; hover: boolean }) {
   return (
     <div
-      className="glass sticky top-[calc(env(safe-area-inset-top,0px)+72px)] z-20 order-first flex min-h-[124px] items-center rounded-[26px] p-3.5 sm:min-h-[148px] sm:p-5 lg:relative lg:top-auto lg:order-none lg:min-h-[340px] lg:justify-center lg:p-7"
+      className="glass sticky top-[calc(env(safe-area-inset-top,0px)+72px)] z-20 order-first flex min-h-[124px] items-center rounded-[26px] p-3.5 sm:min-h-[148px] sm:p-5 lg:relative lg:top-auto lg:order-none lg:min-h-[min(340px,40svh)] lg:justify-center lg:p-7"
       aria-live="polite"
     >
       <AnimatePresence mode="wait" initial={false}>
