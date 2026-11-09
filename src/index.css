@@ -163,8 +163,6 @@
   --glass-lens: rgb(255 255 255 / 0.62);
   --glass-blur: 22px;
   --scrim: rgb(0 0 0 / 0.12);
-  --menu-tint: rgb(255 255 255 / 0.5);
-  --menu-blur: 14px;
 
   /* portfolio-2's four faces */
   --ff-display: "Antonio", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
@@ -271,8 +269,6 @@
   --glass-press: rgb(255 255 255 / 0.1);
   --glass-lens: rgb(255 255 255 / 0.12);
   --scrim: rgb(0 0 0 / 0.3);
-  --menu-tint: rgb(12 12 14 / 0.5);
-  --menu-blur: 14px;
   color-scheme: dark;
 }
 
@@ -573,8 +569,6 @@ html.lenis, html.lenis body { height: auto; }
       var(--glass-shadow);
   }
   .glass-strong { background-color: var(--glass-tint-strong); }
-  /* the phone menu: as clear as the pills, blurred a little more so its words stay readable over anything */
-  .glass-menu { --glass-blur: 30px; }
   /* the rim: brightest at the top left, softer at the bottom right */
   .glass::after {
     content: "";
@@ -1031,12 +1025,9 @@ html.lenis, html.lenis body { height: auto; }
 .glass-menu .glass-lens {
   box-shadow: 0 0 0 1px var(--bar-line);
 }
-/* the phone menu is see-through like the header's glass: a lighter blur and a light tint, so the page
-   shows through it (softened), and a lighter scrim round it */
-.glass-menu {
-  --glass-blur: var(--menu-blur);
-  background-color: var(--menu-tint);
-}
+/* the phone menu is exactly as see-through as the header's bar: the bar's tint once the page has scrolled
+   (its scroll animation settles on --glass-settled) and the bar's blur; a light scrim round it */
+.glass-menu { background-color: var(--glass-settled); }
 
 /* the header's glass firms up a little once the page has scrolled (no JavaScript involved) */
 @supports (animation-timeline: scroll()) {
@@ -1309,6 +1300,9 @@ html.lenis, html.lenis body { height: auto; }
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+  /* (Windows asks for this when its Transparency effects are off.) The phone menu stays as see-through as
+     the header's bar, which keeps its tint (its scroll animation sets it) and loses its blur: the same */
+  .glass-menu { background-color: var(--glass-settled); }
 }
 
 @media (prefers-reduced-motion: reduce) {
