@@ -1,12 +1,13 @@
-import { animate, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { animate, useInView, useMotionValue, useReducedMotion, useScroll, useTransform, type MotionValue } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { achievements, type Achievement } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { Icon } from '../components/icons'
 import { OrgMark } from '../components/Logo'
 import { orgFor } from '../data/logos'
 import { ArrowRight, Container, SectionHeading } from '../components/ui'
+import { CSS_SCROLL } from '../lib/scrollTimeline'
 
 const heading = (
   <SectionHeading
@@ -23,7 +24,21 @@ export function Achievements() {
   return wide && !reduce ? <PinnedTrack /> : <SwipeTrack />
 }
 
-/** Desktop: the section pins and scrolling down slides the cards sideways. */
+/** The pinned track's slide and its progress line from script, for browsers without CSS scroll-driven animations. */
+function useScriptSlide(ref: RefObject<HTMLElement | null>, dist: MotionValue<number>) {
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  const x = useTransform(() => -scrollYProgress.get() * dist.get())
+  return { x, scrollYProgress }
+}
+const useSlide: (ref: RefObject<HTMLElement | null>, dist: MotionValue<number>) => ReturnType<typeof useScriptSlide> | null = CSS_SCROLL
+  ? () => null
+  : useScriptSlide
+
+/**
+ * Desktop: the section pins and scrolling down slides the cards sideways. Where the browser can, the slide
+ * and the progress line follow the scroll in CSS (`.ach-track`, `.ach-progress` in index.css, by the distance
+ * in --ach-dist), with no script per frame.
+ */
 function PinnedTrack() {
   const sectionRef = useRef<HTMLElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
@@ -48,18 +63,22 @@ function PinnedTrack() {
     }
   }, [distMV])
 
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] })
-  const x = useTransform(() => -scrollYProgress.get() * distMV.get())
+  const script = useSlide(sectionRef, distMV)
 
   return (
-    <section id="achievements" ref={sectionRef} className="relative" style={{ height: `calc(100svh + ${dist}px)` }}>
+    <section
+      id="achievements"
+      ref={sectionRef}
+      className="ach-scroll relative"
+      style={{ height: `calc(100svh + ${dist}px)`, '--ach-dist': `${dist}px` } as CSSProperties}
+    >
       <div className="sticky top-0 flex h-svh flex-col justify-center gap-10 overflow-hidden py-16 lg:gap-[clamp(28px,5svh,56px)]">
         <Container>{heading}</Container>
 
         <m.div
           ref={trackRef}
-          style={{ x }}
-          className="flex w-max items-center gap-6 px-[max(24px,calc((100vw-1440px)/2+40px))] py-4"
+          style={script ? { x: script.x } : undefined}
+          className="ach-track flex w-max items-center gap-6 px-[max(24px,calc((100vw-1440px)/2+40px))] py-4"
         >
           {achievements.map((a, i) => (
             <Card key={a.title} a={a} i={i} />
@@ -70,7 +89,7 @@ function PinnedTrack() {
         <Container>
           <div className="flex items-center gap-5">
             <div className="relative h-px flex-1 bg-line">
-              <m.div className="absolute inset-0 origin-left bg-ink" style={{ scaleX: scrollYProgress }} />
+              <m.div className="ach-progress absolute inset-0 origin-left bg-ink" style={script ? { scaleX: script.scrollYProgress } : undefined} />
             </div>
             <span className="eyebrow inline-flex items-center gap-2">
               Keep scrolling <ArrowRight className="size-3" />

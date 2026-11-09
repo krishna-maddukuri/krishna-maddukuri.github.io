@@ -1,10 +1,12 @@
 import { animate, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import type { RefObject } from 'react'
 import * as m from 'motion/react-m'
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { onHome } from '../lib/home'
 import { useScrollTo } from '../lib/scroll'
+import { CSS_SCROLL } from '../lib/scrollTimeline'
 import { ResumeLink } from '../components/ResumeLink'
 import { GiantWord, giantWord } from '../components/GiantWord'
 import { HeroMedia } from '../components/HeroMedia'
@@ -13,22 +15,35 @@ import { ArrowDown, ArrowRight, EASE, plain, richWords } from '../components/ui'
 /** The giant name behind the hero: his first and middle names on one line (the surname is the footer's word). */
 const wm = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
 
+/**
+ * The hero's drift as you scroll away from it (the name sinks and dims, the figure and the words rise, the
+ * words fade), from script: only for browsers without CSS scroll-driven animations. Everywhere else it is
+ * the `.hero-drift-*` rules in index.css and this is not used.
+ */
+function useScriptDrift(ref: RefObject<HTMLElement | null>) {
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  return {
+    wmY: useTransform(scrollYProgress, [0, 1], ['0%', '40%']),
+    wmFade: useTransform(scrollYProgress, [0, 0.8], [1, 0.2]),
+    figY: useTransform(scrollYProgress, [0, 1], ['0%', '-6%']),
+    textY: useTransform(scrollYProgress, [0, 1], ['0%', '-30%']),
+    fade: useTransform(scrollYProgress, [0, 0.7], [1, 0]),
+  }
+}
+// one or the other for the life of the page, so the hooks called never change
+const useDrift: (ref: RefObject<HTMLElement | null>) => ReturnType<typeof useScriptDrift> | null = CSS_SCROLL ? () => null : useScriptDrift
+
 export function Hero() {
   const ref = useRef<HTMLElement>(null)
   const scrollTo = useScrollTo()
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const wmY = useTransform(scrollYProgress, [0, 1], ['0%', '40%'])
-  const wmFade = useTransform(scrollYProgress, [0, 0.8], [1, 0.2])
-  const figY = useTransform(scrollYProgress, [0, 1], ['0%', '-6%'])
-  const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-30%'])
-  const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0])
+  const script = useDrift(ref)
   // Phones and tablets skip the scroll-linked drift and the blur-in: native scrolling stays
   // smooth when the page isn't moving things on every frame.
   const touch = useMedia('(pointer: coarse)')
   // the words drift and fade only where they open the page (wide screens); below 1024px they come after the
   // figure, a screen down, and must be fully there when you reach them
   const wide = useMedia('(min-width: 1024px)')
-  const drift = wide && !touch
+  const drift = wide && !touch && script ? { y: script.textY, opacity: script.fade } : undefined
 
   // where the figure's shards fly (the layer below), handed to the figure once it is in the page
   const [shardLayer, setShardLayer] = useState<HTMLDivElement | null>(null)
@@ -84,7 +99,7 @@ export function Hero() {
     <section
       id="top"
       ref={ref}
-      className="wm-frame wm-frame--hero relative isolate flex flex-col overflow-hidden lg:block"
+      className="hero-scroll wm-frame wm-frame--hero relative isolate flex flex-col overflow-hidden lg:block"
       style={
         {
           minHeight: 'min(100svh, 1000px)',
@@ -101,9 +116,9 @@ export function Hero() {
           each letter draws in as an outline, then fills, and the line spreads its letters to both edges of
           the page's measure. Phones: it starts just under the header, so most of it shows above his head */}
       <m.div
-        style={touch ? undefined : { y: wmY, opacity: wmFade }}
+        style={touch || !script ? undefined : { y: script.wmY, opacity: script.wmFade }}
         aria-hidden
-        className="wm-wrap pointer-events-none absolute inset-x-0 top-[68px] -z-10 select-none sm:top-[78px] lg:top-[10%]"
+        className="hero-drift-name wm-wrap pointer-events-none absolute inset-x-0 top-[68px] -z-10 select-none sm:top-[78px] lg:top-[10%]"
       >
         <GiantWord lines={wm.lines} play={wmPlay} />
       </m.div>
@@ -117,8 +132,8 @@ export function Hero() {
           (the button hangs below his feet into the words' top padding, so the figure sits above them;
           the badge, later in the DOM at the same level, stays tappable where it overlaps him). */}
       <m.div
-        style={touch ? undefined : { y: figY }}
-        className="relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[var(--fig-x)] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
+        style={touch || !script ? undefined : { y: script.figY }}
+        className="hero-drift-figure relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[var(--fig-x)] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
       >
         <m.div
           className="relative h-full"
@@ -137,8 +152,8 @@ export function Hero() {
           right under it. The column stops short of his figure (--fig-x, --fig-half) and is a container (.hero-copy): the block's one line is sized to fit it */}
       <m.div
         ref={copyRef}
-        style={drift ? { y: textY, opacity: fade } : undefined}
-        className="hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(88px,calc(100lvh-72px-clamp(320px,calc(100svh-184px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(96px,calc(100lvh-96px-clamp(360px,calc(100svh-212px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
+        style={drift}
+        className="hero-drift-words hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(88px,calc(100lvh-72px-clamp(320px,calc(100svh-184px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(96px,calc(100lvh-96px-clamp(360px,calc(100svh-212px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
       >
         {/* the hello, the red block and the intro, as wide as its widest line (the red block): the intro
             wraps under the block, edge to edge */}
@@ -228,9 +243,9 @@ export function Hero() {
           most 340px. Laptops narrower than that leave it out (About says the same); phones and tablets have it
           after the words */}
       <m.div
-        style={drift ? { y: textY, opacity: fade } : undefined}
+        style={drift}
         ref={sideRef}
-        className="hero-side relative z-10 pb-12 pl-4 pr-[calc(16px+var(--lane,0px))] pt-12 sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] lg:hidden xl:absolute xl:right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:flex xl:w-[min(340px,calc(100vw-max(0px,(100vw-1440px)/2)-40px-var(--lane,0px)-var(--fig-x)-var(--fig-half)-48px))] xl:flex-col xl:justify-between xl:p-0"
+        className="hero-drift-words hero-side relative z-10 pb-12 pl-4 pr-[calc(16px+var(--lane,0px))] pt-12 sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] lg:hidden xl:absolute xl:right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))] xl:top-[calc(10%+var(--wm-word)*0.938+var(--hello-size)*0.75+4px)] xl:z-20 xl:flex xl:w-[min(340px,calc(100vw-max(0px,(100vw-1440px)/2)-40px-var(--lane,0px)-var(--fig-x)-var(--fig-half)-48px))] xl:flex-col xl:justify-between xl:p-0"
       >
         <ol className="now-list">
           {site.hero.now.map((item, i) => (

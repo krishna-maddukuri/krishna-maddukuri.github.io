@@ -1,9 +1,18 @@
 import { useScroll, useSpring } from 'motion/react'
+import type { RefObject } from 'react'
 import * as m from 'motion/react-m'
 import { useRef } from 'react'
 import { timeline, type Milestone } from '../data/site'
 import { OrgMark } from '../components/Logo'
 import { Container, EASE, SectionHeading } from '../components/ui'
+import { CSS_SCROLL } from '../lib/scrollTimeline'
+
+/** The red line's fill from script, for browsers without CSS scroll-driven animations (elsewhere: `.tl-fill` in index.css). */
+function useScriptFill(ref: RefObject<HTMLElement | null>) {
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 70%', 'end 55%'] })
+  return useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 })
+}
+const useFill: (ref: RefObject<HTMLElement | null>) => ReturnType<typeof useScriptFill> | null = CSS_SCROLL ? () => null : useScriptFill
 
 /**
  * The "Education & experience." timeline: a centre line, big years, cards alternating sides. It runs over
@@ -11,8 +20,7 @@ import { Container, EASE, SectionHeading } from '../components/ui'
  */
 export function Experience() {
   const listRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: listRef, offset: ['start 70%', 'end 55%'] })
-  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 })
+  const progress = useFill(listRef)
 
   return (
     <section id="experience" className="fit-section relative">
@@ -31,13 +39,13 @@ export function Experience() {
 
         <div
           ref={listRef}
-          className="relative mt-12 lg:mt-[clamp(16px,3.2svh,64px)] lg:[--tl-mark:clamp(34px,4.6svh,44px)] lg:[--tl-pad:clamp(16px,2.6svh,28px)]"
+          className="tl-scroll relative mt-12 lg:mt-[clamp(16px,3.2svh,64px)] lg:[--tl-mark:clamp(34px,4.6svh,44px)] lg:[--tl-pad:clamp(16px,2.6svh,28px)]"
         >
           {/* the line: left on phones, centre on desktop */}
           <div className="absolute bottom-0 left-[7px] top-0 w-px bg-line lg:left-1/2" aria-hidden />
           <m.div
-            className="absolute bottom-0 left-[6px] top-0 w-[3px] origin-top bg-accent shadow-[0_0_0_1px_var(--accent-ring)] lg:left-1/2 lg:-translate-x-[1px]"
-            style={{ scaleY: progress }}
+            className="tl-fill absolute bottom-0 left-[6px] top-0 w-[3px] origin-top bg-accent shadow-[0_0_0_1px_var(--accent-ring)] lg:left-1/2 lg:-translate-x-[1px]"
+            style={progress ? { scaleY: progress } : undefined}
             aria-hidden
           />
 

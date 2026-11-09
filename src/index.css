@@ -1273,6 +1273,84 @@ html.lenis, html.lenis body { height: auto; }
 [data-paper-figure="still"] img { filter: drop-shadow(5cqw 1.4cqh 1.1cqh rgb(43 34 25 / 0.26)); }
 :root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
 
+/*
+  Scroll-driven: three effects follow the scroll position on the browser's own timeline, so no script runs
+  and nothing is restyled from script while the page scrolls. Browsers without it get the same effects from
+  script (lib/scrollTimeline.ts).
+  - the hero, as it leaves the top of the screen (.hero-scroll is the timeline): the giant name sinks and
+    dims, the figure rises a little, and on wide screens the words rise and fade. Not on touch screens.
+  - Experience (.tl-scroll): the red line fills from the list's top reaching 70% of the way down the screen
+    to its bottom reaching 55%.
+  - Achievements (.ach-scroll, pinned): the cards slide left by --ach-dist while the section is pinned, and
+    the line under them fills.
+*/
+@supports (animation-timeline: view()) {
+  .hero-scroll { view-timeline: --hero block; }
+  .tl-scroll { view-timeline: --tl block; }
+  .ach-scroll { view-timeline: --ach block; }
+  .tl-fill {
+    animation: tl-fill linear both;
+    animation-timeline: --tl;
+    animation-range: cover 30dvh cover calc(100% - 55dvh);
+  }
+  .ach-track {
+    animation: ach-slide linear both;
+    animation-timeline: --ach;
+    animation-range: contain 0% contain 100%;
+    will-change: transform;
+  }
+  .ach-progress {
+    animation: ach-progress linear both;
+    animation-timeline: --ach;
+    animation-range: contain 0% contain 100%;
+  }
+  @media not (pointer: coarse) {
+    .hero-drift-name {
+      animation: hero-drift-name linear both;
+      animation-timeline: --hero;
+      animation-range: exit-crossing 0% exit-crossing 100%;
+    }
+    .hero-drift-figure {
+      animation: hero-drift-figure linear both;
+      animation-timeline: --hero;
+      animation-range: exit-crossing 0% exit-crossing 100%;
+    }
+  }
+  @media (min-width: 1024px) and (not (pointer: coarse)) {
+    .hero-drift-words {
+      animation: hero-drift-words linear both;
+      animation-timeline: --hero;
+      animation-range: exit-crossing 0% exit-crossing 100%;
+    }
+  }
+}
+@keyframes hero-drift-name {
+  from { transform: translateY(0); opacity: 1; }
+  80% { opacity: 0.2; }
+  to { transform: translateY(40%); opacity: 0.2; }
+}
+@keyframes hero-drift-figure {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6%); }
+}
+@keyframes hero-drift-words {
+  from { transform: translateY(0); opacity: 1; }
+  70% { opacity: 0; }
+  to { transform: translateY(-30%); opacity: 0; }
+}
+@keyframes tl-fill {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes ach-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-1 * var(--ach-dist, 0px))); }
+}
+@keyframes ach-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 /* section headings drift a little slower than the page while they cross the screen (depth, no cost to
    scrolling: the browser runs it on its own timeline); only on wide screens and when motion is welcome */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {

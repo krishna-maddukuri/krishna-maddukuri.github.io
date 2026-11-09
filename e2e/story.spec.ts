@@ -57,6 +57,22 @@ test.describe('learning, experience and achievements', () => {
     await expect(section.getByText('Keep scrolling')).toBeVisible()
   })
 
+  test('the timeline\'s red line fills as the list scrolls past, on the browser\'s own scroll timeline', async ({ page }) => {
+    await openHome(page)
+    const fill = page.locator('#experience .tl-fill')
+    const scaleY = () => fill.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).d)
+    // empty while the list is still below the screen, full once it has gone by
+    expect(await scaleY()).toBeLessThan(0.01)
+    expect(await fill.evaluate((el) => getComputedStyle(el).animationName)).toBe('tl-fill')
+    await page.evaluate(() => {
+      const list = document.querySelector('#experience .tl-scroll')!.getBoundingClientRect()
+      window.scrollTo(0, list.bottom + window.scrollY)
+    })
+    await expect.poll(scaleY).toBeGreaterThan(0.99)
+    // and nothing writes its size from script
+    expect(await fill.evaluate((el) => (el as HTMLElement).style.transform)).toBe('')
+  })
+
   test('phones: the achievements are a swipeable row', async ({ page }) => {
     test.skip(!isPhone(page))
     await openHome(page)
