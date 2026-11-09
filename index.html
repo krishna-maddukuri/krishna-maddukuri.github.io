@@ -46,6 +46,34 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- shown only if the page's script is switched off or fails to download: who he is and how to reach him -->
+    <noscript id="boot-fallback">
+      <div style="min-height: 100vh; display: grid; place-content: center; gap: 14px; padding: 32px; background: #000; color: #f1f1f3; font: 16px/1.5 system-ui, sans-serif">
+        <div style="font: 700 clamp(2rem, 7vw, 3.4rem) / 1 system-ui, sans-serif">Krishna Koushik Maddukuri</div>
+        <div style="color: #b3b3bb">Software Engineer · Richmond, VA</div>
+        <div style="color: #b3b3bb; max-width: 46ch">The full site did not load. Loading the page again usually fixes it. You can also reach me here:</div>
+        <div>m.krishnakoushik@icloud.com</div>
+        <a href="https://www.linkedin.com/in/krishna-koushik" style="color: #f0412e">linkedin.com/in/krishna-koushik</a>
+        <a href="./Krishna_Koushik_Maddukuri_Resume.pdf" style="color: #f0412e">Resume (PDF)</a>
+      </div>
+    </noscript>
+    <script>
+      ;(function () {
+        var shown = false
+        function show() {
+          if (shown) return
+          var root = document.getElementById('root')
+          if (root && root.childNodes.length) return
+          shown = true
+          // with script on, a noscript element holds its markup as text
+          var box = document.createElement('div')
+          box.innerHTML = document.getElementById('boot-fallback').textContent
+          document.body.appendChild(box)
+        }
+        // the page's script, or a file it needs, failed to download
+        window.addEventListener('error', function (e) { if (e.target && e.target.tagName === 'SCRIPT') show() }, true)
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

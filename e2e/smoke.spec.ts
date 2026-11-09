@@ -61,6 +61,31 @@ test.describe('page load', () => {
     await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('contact')!.getBoundingClientRect().top)), { timeout: 6_000 }).toBeLessThan(20)
   })
 
+  test('a page whose code fails to download shows a way on instead of a blank screen', async ({ page }) => {
+    await page.route('**/assets/Resume-*.js', (route) => route.abort())
+    await page.goto('/#/resume')
+    // one try again by itself, then the safety net
+    const net = page.getByRole('alert')
+    await expect(net.getByRole('heading', { level: 1 })).toHaveText('This page didn’t load.', { timeout: 15_000 })
+    await expect(net.getByText('m.krishnakoushik@icloud.com')).toBeVisible()
+    await expect(net.getByRole('button', { name: 'Load it again' })).toBeVisible()
+    await expect(net.getByRole('link', { name: 'Home' })).toBeVisible()
+    await expect(page.getByRole('banner')).toBeVisible()
+  })
+
+  test('with script switched off, or the script failing to download, his name and how to reach him still show', async ({ page }) => {
+    // script off: the page carries the fallback in a noscript block
+    const html = await (await page.request.get('/')).text()
+    const block = html.slice(html.indexOf('<noscript id="boot-fallback">'), html.indexOf('</noscript>'))
+    for (const text of ['Krishna Koushik Maddukuri', 'm.krishnakoushik@icloud.com', 'linkedin.com/in/krishna-koushik', 'Resume (PDF)']) expect(block).toContain(text)
+    // script failing to download: the same block is put on the page
+    await page.route('**/assets/index-*.js', (route) => route.abort())
+    await page.goto('/')
+    await expect(page.getByText('The full site did not load.')).toBeVisible()
+    await expect(page.getByText('Krishna Koushik Maddukuri')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'linkedin.com/in/krishna-koushik' })).toBeVisible()
+  })
+
   test('the page never scrolls sideways', async ({ page }) => {
     await openHome(page)
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)

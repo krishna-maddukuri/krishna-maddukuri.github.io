@@ -2,6 +2,7 @@ import { domMax, LazyMotion, MotionConfig } from 'motion/react'
 import { lazy, Suspense, useEffect, useLayoutEffect } from 'react'
 import { Header } from './components/Header'
 import { Toaster } from './components/Toast'
+import { clearRetry, ErrorBoundary } from './components/ErrorBoundary'
 import { Navigate, Route, Router, Routes, useLocation } from './lib/router'
 import { SmoothScroll, useLenis } from './lib/scroll'
 import { Home } from './pages/Home'
@@ -52,6 +53,28 @@ function PageFallback() {
   return <main className="min-h-svh" aria-busy="true" />
 }
 
+/** The pages, inside the safety net (components/ErrorBoundary.tsx): a page that fails shows a way on, not a blank screen. */
+function Pages() {
+  const { pathname } = useLocation()
+  // once the site has been up for a while, a later failed download may be tried again by itself
+  useEffect(() => {
+    const t = setTimeout(clearRetry, 10_000)
+    return () => clearTimeout(t)
+  }, [])
+  return (
+    <ErrorBoundary resetKey={pathname}>
+      <Suspense fallback={<PageFallback />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/work/:slug" element={<CaseStudy />} />
+          <Route path="/resume" element={<Resume />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
+
 export default function App() {
   return (
     <LazyMotion features={domMax} strict>
@@ -61,14 +84,7 @@ export default function App() {
             <SkipLink />
             <ScrollReset />
             <Header />
-            <Suspense fallback={<PageFallback />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/work/:slug" element={<CaseStudy />} />
-                <Route path="/resume" element={<Resume />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
+            <Pages />
             <Footer />
             <Toaster />
           </SmoothScroll>
