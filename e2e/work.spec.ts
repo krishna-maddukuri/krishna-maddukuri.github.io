@@ -54,6 +54,9 @@ test.describe('case study', () => {
     // the "Where" cell names the company (with its mark in front)
     await expect(page.locator('dd', { hasText: 'Capital One' }).first()).toBeVisible()
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    // the section labels are in the label font (IBM Plex Mono), not the display face; "All work" is the site's key
+    expect(await page.getByRole('heading', { name: 'What I did' }).evaluate((el) => getComputedStyle(el).fontFamily)).toContain('IBM Plex Mono')
+    await expect(page.getByRole('link', { name: 'All work' })).toHaveClass(/btn-key/)
   })
 
   test('previous / next step through the projects, "All work" returns to the Work section, and a bad slug goes home', async ({ page }) => {

@@ -162,7 +162,9 @@
   --glass-press: rgb(0 0 0 / 0.07);
   --glass-lens: rgb(255 255 255 / 0.62);
   --glass-blur: 22px;
-  --scrim: rgb(0 0 0 / 0.24);
+  --scrim: rgb(0 0 0 / 0.12);
+  --menu-tint: rgb(255 255 255 / 0.5);
+  --menu-blur: 14px;
 
   /* portfolio-2's four faces */
   --ff-display: "Antonio", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
@@ -268,7 +270,9 @@
   --glass-shadow: 0 14px 36px -16px rgb(0 0 0 / 0.9), 0 2px 8px -3px rgb(0 0 0 / 0.6);
   --glass-press: rgb(255 255 255 / 0.1);
   --glass-lens: rgb(255 255 255 / 0.12);
-  --scrim: rgb(0 0 0 / 0.55);
+  --scrim: rgb(0 0 0 / 0.3);
+  --menu-tint: rgb(12 12 14 / 0.5);
+  --menu-blur: 14px;
   color-scheme: dark;
 }
 
@@ -364,9 +368,13 @@ p {
   border-radius: 4px;
 }
 
-h1, h2, h3 {
-  font-family: var(--ff-display);
-  text-wrap: balance;
+/* headings in the display face, in the base layer so a heading styled as a label (.eyebrow) or by a
+   font utility takes that font instead */
+@layer base {
+  h1, h2, h3 {
+    font-family: var(--ff-display);
+    text-wrap: balance;
+  }
 }
 
 /* the display face's optical size follows the font size automatically; numbers line up */
@@ -1023,6 +1031,12 @@ html.lenis, html.lenis body { height: auto; }
 .glass-menu .glass-lens {
   box-shadow: 0 0 0 1px var(--bar-line);
 }
+/* the phone menu is see-through like the header's glass: a lighter blur and a light tint, so the page
+   shows through it (softened), and a lighter scrim round it */
+.glass-menu {
+  --glass-blur: var(--menu-blur);
+  background-color: var(--menu-tint);
+}
 
 /* the header's glass firms up a little once the page has scrolled (no JavaScript involved) */
 @supports (animation-timeline: scroll()) {
@@ -1338,6 +1352,32 @@ html.lenis, html.lenis body { height: auto; }
   color: var(--ink);
 }
 .fam-chip:active { transform: scale(0.97); }
+/* the tools under a project (Work, the case studies): portfolio-2's plain chip, the same shape and font */
+.tool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--panel-line);
+  border-radius: 6px;
+  background: var(--key);
+  color: color-mix(in oklab, var(--ink) 84%, var(--paper));
+  font: 500 0.75rem / 1.2 var(--ff-mono);
+}
+/* the badge of a role or degree that is still going (portfolio-2's live chip): a green edge, full ink */
+.tool-chip--live {
+  border-color: rgb(62 207 110 / 0.4);
+  color: var(--ink);
+}
+/* Contact's email: IBM Plex Mono, as on portfolio-2, large and on one line: the address is 16.2 times its
+   font size wide, so its size follows the panel's width (cqw), and on wide screens the screen's height */
+.contact-email {
+  font: 600 min(2.4rem, calc(100cqw / 16.6)) / 1.1 var(--ff-mono);
+  overflow-wrap: anywhere;
+}
+@media (min-width: 1024px) {
+  .contact-email { font-size: min(4rem, 7svh, calc((100cqw - 210px) / 16.6)); }
+}
 .fam-chip[aria-pressed='true'] {
   border-color: var(--accent);
   background: var(--accent);
@@ -1384,4 +1424,82 @@ html.lenis, html.lenis body { height: auto; }
     --cols: 11;
     --rows: 5;
   }
+}
+
+/*
+  The web résumé, in the home page's UI: panels with a hairline edge and 14px corners (as About's),
+  details and skills in cells cut by hairlines (as the quick facts), the roles as cards on a line with
+  dots (as Experience; the current role's dot is red).
+*/
+.resume-panel,
+.resume-card {
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.resume-panel { padding: clamp(20px, 3vw, 36px); }
+.resume-card { padding: clamp(18px, 2.4vw, 28px); }
+.resume-lead {
+  font-size: clamp(1.05rem, 1rem + 0.3vw, 1.2rem);
+  line-height: 1.65;
+  color: color-mix(in srgb, var(--ink) 85%, transparent);
+  text-wrap: pretty;
+}
+.resume-cells {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: var(--panel-line);
+}
+.resume-cell {
+  min-width: 0;
+  padding: 16px 18px 18px;
+  background: var(--panel);
+}
+.resume-cell-value {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+@media (min-width: 640px) {
+  .resume-cells--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .resume-cell { padding: 20px 22px 22px; }
+}
+@media (min-width: 768px) {
+  /* each detail as wide as its words, so the LinkedIn address stays on one line */
+  .resume-cells--3 { grid-template-columns: repeat(3, auto); }
+}
+.resume-timeline {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding-left: 30px;
+}
+.resume-timeline::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: var(--line);
+}
+/* level with the middle of the card's logo */
+.resume-dot {
+  position: absolute;
+  left: -30px;
+  top: calc(clamp(18px, 2.4vw, 28px) + 15.5px);
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+}
+.resume-dot.is-current {
+  border-color: var(--accent-ring);
+  background: var(--accent);
 }

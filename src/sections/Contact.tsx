@@ -43,12 +43,12 @@ export function Contact() {
         />
 
         <Reveal className="mt-10 lg:mt-[clamp(16px,3svh,56px)]">
-          <div className="card-shadow rounded-[32px] border border-line bg-surface p-6 sm:p-10 lg:p-[clamp(24px,5svh,56px)]">
+          <div className="card-shadow @container rounded-[32px] border border-line bg-surface p-6 sm:p-10 lg:p-[clamp(24px,5svh,56px)]">
             <div className="eyebrow">Email</div>
             <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <span
                 ref={emailRef}
-                className="select-all font-display text-[clamp(1.2rem,5.2vw,4.4rem)] font-bold leading-none [overflow-wrap:anywhere] lg:text-[length:min(4.4rem,5.2vw,7.5svh)]"
+                className="contact-email select-all"
               >
                 {site.email}
               </span>
@@ -80,7 +80,7 @@ export function Contact() {
               </a>
               <ResumeLink className="spot group flex items-center justify-between gap-3 bg-paper px-5 py-5 transition-colors hover:bg-wash">
                 <span>
-                  <span className="eyebrow block">Résumé</span>
+                  <span className="eyebrow block">Resume</span>
                   <span className="mt-1 block text-base font-medium">Download PDF</span>
                 </span>
                 <ArrowDown className="size-4 shrink-0 transition-transform group-hover:translate-y-0.5" />
@@ -90,7 +90,7 @@ export function Contact() {
                 className="spot group flex items-center justify-between gap-3 bg-paper px-5 py-5 transition-colors hover:bg-wash"
               >
                 <span>
-                  <span className="eyebrow block">Web résumé</span>
+                  <span className="eyebrow block">Web resume</span>
                   <span className="mt-1 block text-base font-medium">Read it here</span>
                 </span>
                 <ArrowRight className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5" />

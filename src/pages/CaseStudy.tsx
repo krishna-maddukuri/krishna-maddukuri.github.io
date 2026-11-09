@@ -30,7 +30,7 @@ export function CaseStudy() {
           <Link
             to="/"
             state={{ section: 'work' }}
-            className="lift btn-fill inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium transition-colors"
+            className="lift btn-fill btn-key"
           >
             <ArrowLeft className="size-3.5" /> All work
           </Link>
@@ -130,7 +130,7 @@ export function CaseStudy() {
             <Block title="Tools & methods">
               <div className="flex flex-wrap gap-2">
                 {p.tools.map((t) => (
-                  <ToolChip key={t} name={t} className="bg-surface px-3! py-1.5! text-ink!" />
+                  <ToolChip key={t} name={t} />
                 ))}
               </div>
             </Block>

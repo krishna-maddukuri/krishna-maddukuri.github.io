@@ -91,11 +91,11 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
       <p className="mt-1.5 text-sm text-ink-soft">{ms.org}</p>
       <div className="mt-5 lg:mt-[clamp(8px,1.6svh,20px)]">
         {ms.current ? (
-          <span className="inline-flex items-center gap-2 rounded-full bg-ink px-3.5 py-1.5 text-sm font-medium text-paper">
+          <span className="tool-chip tool-chip--live">
             <span className="live-dot size-1.5 rounded-full" aria-hidden /> {ms.badge}
           </span>
         ) : (
-          <span className="inline-flex rounded-full bg-chip px-3.5 py-1.5 text-sm font-medium">{ms.badge}</span>
+          <span className="tool-chip">{ms.badge}</span>
         )}
       </div>
     </m.article>

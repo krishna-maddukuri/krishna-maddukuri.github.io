@@ -297,7 +297,7 @@ export function Header() {
                   <LinkedInMark className="size-5 rounded-[5px]" /> LinkedIn
                 </a>
                 <ResumeLink className={quick}>
-                  <ArrowDown className="size-4" /> Résumé
+                  <ArrowDown className="size-4" /> Resume
                 </ResumeLink>
               </div>
             </m.div>

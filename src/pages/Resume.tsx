@@ -4,138 +4,163 @@ import { Link } from '../lib/router'
 import { education, experience, resume, site } from '../data/site'
 import { BadgeMark, LinkedInMark, OrgMark } from '../components/Logo'
 import { ResumeLink } from '../components/ResumeLink'
-import { ArrowDown, ArrowLeft, ArrowUpRight, Container, EASE } from '../components/ui'
+import { ArrowDown, ArrowLeft, ArrowUpRight, Container, EASE, Reveal } from '../components/ui'
 
-/** The web version of the résumé. Everything on it comes from site.ts, word for word from the PDF. */
+/**
+ * The web version of the résumé, in the site's own UI: the keys at the top; his name and role, with his
+ * details in a panel cut into cells (as on the home page); then each part under a numbered label, as the
+ * home page's sections are: the summary in a panel, the skills as a panel of cells, the roles as cards on
+ * a timeline (as Experience), the degrees and certifications as cards. Everything on it comes from
+ * site.ts, word for word from the PDF.
+ */
 export function Resume() {
   return (
     <main id="main" className="pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 112px)' }}>
       <Container className="max-w-[1080px]!">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link
-            to="/"
-            className="lift btn-fill inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium transition-colors"
-          >
+          <Link to="/" className="lift btn-fill btn-key">
             <ArrowLeft className="size-3.5" /> Portfolio
           </Link>
-          <ResumeLink className="btn-solid inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper">
+          <ResumeLink className="btn-solid btn-key btn-key--primary">
             Download PDF <ArrowDown className="size-3.5" />
           </ResumeLink>
         </div>
 
-        <m.article
-          initial={{ y: 30, opacity: 0 }}
+        <m.header
+          initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
-          className="card-shadow mt-8 rounded-[32px] border border-line bg-surface p-6 sm:p-10 lg:p-14"
+          className="mt-12 sm:mt-16"
         >
-          <header className="border-b border-line pb-8">
-            <h1 className="font-display text-[clamp(2.2rem,6vw,4rem)] font-bold leading-[0.95]">
-              {site.name}
-            </h1>
-            <p className="mt-3 text-lg">
-              {resume.title} <em className="font-hand not-italic text-ink-soft">{resume.tagline}</em>
-            </p>
-            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-soft">
-              <span>{site.location}</span>
-              <span className="select-all">{site.email}</span>
-              <a href={site.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-ink">
-                <LinkedInMark className="size-4 rounded-[3px]" /> {site.linkedinLabel} <ArrowUpRight className="size-3" />
-              </a>
+          <div className="eyebrow">Resume</div>
+          <h1 className="mt-5 font-display text-[clamp(2.6rem,7vw,5.4rem)] font-bold leading-[0.95]">{site.name}</h1>
+          <p className="mt-4 text-lg">
+            {resume.title} <em className="font-hand not-italic text-ink-soft">{resume.tagline}</em>
+          </p>
+          <dl className="resume-cells resume-cells--3 mt-8">
+            <div className="resume-cell">
+              <dt className="eyebrow">Based in</dt>
+              <dd className="resume-cell-value">{site.location}</dd>
             </div>
-          </header>
+            <div className="resume-cell">
+              <dt className="eyebrow">Email</dt>
+              <dd className="resume-cell-value select-all [overflow-wrap:anywhere]">{site.email}</dd>
+            </div>
+            <div className="resume-cell">
+              <dt className="eyebrow">LinkedIn</dt>
+              <dd className="resume-cell-value">
+                <a href={site.linkedin} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-2">
+                  <LinkedInMark className="size-5 shrink-0 rounded-[4px]" />
+                  <span className="[overflow-wrap:anywhere]">{site.linkedinLabel}</span>
+                  <ArrowUpRight className="size-3.5 shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </a>
+              </dd>
+            </div>
+          </dl>
+        </m.header>
 
-          <Part title="Summary">
-            <p className="max-w-[70ch] text-base leading-relaxed">{resume.summary}</p>
-          </Part>
+        <Part index="01" title="Summary">
+          <Reveal y={20} className="resume-panel">
+            <p className="resume-lead">{resume.summary}</p>
+          </Reveal>
+        </Part>
 
-          <Part title="Skills">
-            <dl className="grid gap-x-10 gap-y-4 sm:grid-cols-2">
+        <Part index="02" title="Skills">
+          <Reveal y={20}>
+            <dl className="resume-cells resume-cells--2">
               {resume.skills.map((g) => (
-                <div key={g.label} className="min-w-0">
-                  <dt className="text-sm font-semibold">{g.label}</dt>
-                  <dd className="mt-1 text-sm text-ink-soft">{g.items}</dd>
+                <div key={g.label} className="resume-cell">
+                  <dt className="eyebrow">{g.label}</dt>
+                  <dd className="mt-2.5 text-[15px] leading-relaxed text-ink-soft">{g.items}</dd>
                 </div>
               ))}
             </dl>
-          </Part>
+          </Reveal>
+        </Part>
 
-          <Part title="Experience">
+        <Part index="03" title="Experience">
+          {/* the roles on a line, newest first; the current one's dot is red, as on the home page */}
+          <ol className="resume-timeline">
             {experience.map((job) => (
-              <Job key={`${job.role} · ${job.period}`} title={`${job.role} — ${job.org}`} org={job.org} meta={job.where} period={job.period}>
-                {job.points.length > 0 && (
-                  <ul className="flex flex-col gap-1.5 text-sm text-ink-soft">
-                    {job.points.map((p) => (
-                      <li key={p} className="flex gap-2.5">
-                        <span className="mt-[10px] h-px w-2.5 shrink-0 bg-ink-soft" aria-hidden />
-                        <span>{p}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Job>
-            ))}
-          </Part>
-
-          <Part title="Education">
-            <div className="flex flex-col gap-4">
-              {education.map((e) => (
-                <div key={e.role} className="flex flex-col justify-between gap-1 sm:flex-row sm:gap-6">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <OrgMark label={e.org} className="mt-0.5 size-9 rounded-[10px] text-[11px]" />
-                    <div className="min-w-0">
-                      <div className="font-semibold">{e.role}</div>
-                      <div className="text-sm text-ink-soft">
-                        {e.org}
-                        {e.where && `, ${e.where}`}
+              <li key={`${job.role} · ${job.period}`}>
+                <Reveal y={20} className="relative">
+                  <span className={`resume-dot ${job.current ? 'is-current' : ''}`} aria-hidden />
+                  <article className="resume-card">
+                    <div className="flex flex-col justify-between gap-x-6 gap-y-2 sm:flex-row sm:items-start">
+                      <div className="flex min-w-0 items-start gap-3.5">
+                        <OrgMark label={job.org} className="size-11 shrink-0 rounded-[13px] text-[13px]" />
+                        <div className="min-w-0">
+                          <h3 className="font-display text-[clamp(1.3rem,2.2vw,1.65rem)] font-bold leading-[1.1]">{job.role}</h3>
+                          <p className="mt-1.5 text-sm text-ink-soft">
+                            {job.org} · {job.where}
+                          </p>
+                        </div>
                       </div>
+                      <span className="tabular flex shrink-0 items-center gap-2 font-mono text-xs text-ink-soft sm:pt-1.5">
+                        {job.current && <span className="live-dot size-1.5 rounded-full" aria-hidden />}
+                        {job.period}
+                      </span>
                     </div>
-                  </div>
-                  <span className="tabular shrink-0 font-mono text-xs text-ink-soft">{e.period}</span>
-                </div>
-              ))}
-            </div>
-          </Part>
+                    {job.points.length > 0 && (
+                      <ul className="mt-5 flex flex-col gap-2.5 text-[15px] leading-relaxed">
+                        {job.points.map((p) => (
+                          <li key={p} className="flex gap-3">
+                            <span className="mt-[11px] h-px w-3.5 shrink-0 bg-ink-soft" aria-hidden />
+                            <span>{p}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </article>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+        </Part>
 
-          <Part title="Certifications" last>
-            <ul className="flex flex-col gap-2 text-base">
-              {resume.certifications.map((c) => (
-                <li key={c} className="flex items-center gap-3">
-                  <BadgeMark label={c} className="size-10 rounded-xl" />
-                  <span className="font-medium">{c}</span>
-                </li>
-              ))}
-            </ul>
-          </Part>
-        </m.article>
+        <Part index="04" title="Education">
+          <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+            {education.map((e, i) => (
+              <Reveal key={e.role} y={20} delay={i * 0.06} className="resume-card flex items-start gap-3.5">
+                <OrgMark label={e.org} className="size-11 shrink-0 rounded-[13px] text-[13px]" />
+                <div className="min-w-0">
+                  <h3 className="font-display text-[1.3rem] font-bold leading-[1.15]">{e.role}</h3>
+                  <p className="mt-1.5 text-sm text-ink-soft">
+                    {e.org}
+                    {e.where && ` · ${e.where}`}
+                  </p>
+                  <p className="tabular mt-3 font-mono text-xs text-ink-soft">{e.period}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Part>
+
+        <Part index="05" title="Certifications">
+          <div className="grid gap-3.5 sm:grid-cols-2">
+            {resume.certifications.map((c, i) => (
+              <Reveal key={c} y={20} delay={i * 0.06} className="resume-card flex items-center gap-3.5">
+                <BadgeMark label={c} className="size-12 shrink-0 rounded-xl" />
+                <h3 className="font-display text-[1.3rem] font-bold leading-[1.15]">{c}</h3>
+              </Reveal>
+            ))}
+          </div>
+        </Part>
       </Container>
     </main>
   )
 }
 
-function Part({ title, children, last = false }: { title: string; children: ReactNode; last?: boolean }) {
+/** One part of the résumé under a numbered label ("03 —— EXPERIENCE"), as the home page's sections are. */
+function Part({ index, title, children }: { index: string; title: string; children: ReactNode }) {
   return (
-    <section className={`grid gap-4 py-8 md:grid-cols-[170px_minmax(0,1fr)] md:gap-8 ${last ? 'pb-0' : 'border-b border-line'}`}>
-      <h2 className="eyebrow pt-1">{title}</h2>
-      <div className="min-w-0">{children}</div>
+    <section className="mt-[clamp(48px,7vw,88px)]">
+      <h2 className="eyebrow flex items-center gap-3">
+        <span className="accent-index tabular">{index}</span>
+        <span className="h-px w-10 bg-ink-soft/40" aria-hidden />
+        <span>{title}</span>
+      </h2>
+      <div className="mt-6">{children}</div>
     </section>
-  )
-}
-
-function Job({ title, org, meta, period, children }: { title: string; org: string; meta: string; period: string; children: ReactNode }) {
-  return (
-    <div className="mb-8 last:mb-0">
-      <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-start sm:gap-6">
-        <div className="flex min-w-0 items-start gap-3">
-          <OrgMark label={org} className="mt-0.5 size-10 rounded-xl text-[12px]" />
-          <div className="min-w-0">
-            <div className="text-lg font-semibold tracking-[-0.01em]">{title}</div>
-            <div className="text-sm text-ink-soft">{meta}</div>
-          </div>
-        </div>
-        <span className="tabular shrink-0 font-mono text-xs text-ink-soft">{period}</span>
-      </div>
-      {children && <div className="mt-4">{children}</div>}
-    </div>
   )
 }

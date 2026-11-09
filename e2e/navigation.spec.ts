@@ -36,6 +36,14 @@ test.describe('navigation', () => {
     const menu = page.getByRole('dialog', { name: 'Menu' })
     await expect(menu).toBeVisible()
     await expect(menu.getByRole('button', { name: 'Skills' })).toBeVisible()
+    // the sheet is see-through glass like the header's: a half-clear tint and a light blur
+    const glass = await menu.evaluate((el) => {
+      const s = getComputedStyle(el)
+      return { alpha: Number(s.backgroundColor.match(/[\d.]+(?=\))/)?.[0] ?? 1), blur: parseFloat(s.backdropFilter.match(/blur\(([\d.]+)px\)/)?.[1] ?? '0') }
+    })
+    expect(glass.alpha).toBeLessThanOrEqual(0.6)
+    expect(glass.blur).toBeGreaterThan(0)
+    expect(glass.blur).toBeLessThanOrEqual(16)
     await expect(menu.getByText('m.krishnakoushik@icloud.com')).toBeVisible()
     await expect(menu.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/)
 

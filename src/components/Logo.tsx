@@ -69,7 +69,7 @@ export function toolLogo(name: string): Logo | undefined {
 export function ToolChip({ name, className = '' }: { name: string; className?: string }) {
   const logo = toolLogo(name)
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 font-mono text-xs text-ink-soft ${className}`}>
+    <span className={`tool-chip ${className}`}>
       {logo && <Plate logo={{ ...logo, fit: 0.8 }} className="size-4 rounded-[4px]" />}
       {name}
     </span>

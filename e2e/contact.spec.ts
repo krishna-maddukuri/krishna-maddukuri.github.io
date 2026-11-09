@@ -22,9 +22,12 @@ test.describe('contact and footer', () => {
     const contact = page.locator('#contact')
     await expect(contact.getByRole('link', { name: /LinkedIn/ })).toHaveAttribute('href', 'https://www.linkedin.com/in/krishna-koushik')
     await expect(contact.getByRole('link', { name: /Download Krishna's resume/ })).toHaveAttribute('download', /Resume\.pdf$/)
-    await expect(contact.getByRole('link', { name: /Web résumé/ })).toHaveAttribute('href', '#/resume')
+    await expect(contact.getByRole('link', { name: /Web resume/ })).toHaveAttribute('href', '#/resume')
     await expect(contact.getByText('Richmond, VA')).toBeVisible()
     await expect(contact.getByText('Based in')).toBeVisible()
+    // "Resume" with no accents, as on the keys; the email in the label font (IBM Plex Mono), as on portfolio-2
+    await expect(contact).not.toContainText(/résumé/i)
+    expect(await contact.getByText('m.krishnakoushik@icloud.com').evaluate((el) => getComputedStyle(el).fontFamily)).toContain('IBM Plex Mono')
   })
 
   test('the footer has the year, the links and the big surname', async ({ page }) => {
@@ -50,6 +53,12 @@ test.describe('web résumé', () => {
     await expect(page.getByText('Bank of America', { exact: false }).first()).toBeVisible()
     await expect(page.getByText('Capital One', { exact: false }).first()).toBeVisible()
     await expect(page.getByRole('link', { name: /Download Krishna's resume/ }).first()).toHaveAttribute('download', /Resume\.pdf$/)
+    // in the site's UI: numbered labels in the label font, the details as cells, the current role's dot in red
+    const summary = page.getByRole('heading', { level: 2, name: /Summary/ })
+    await expect(summary).toContainText('01')
+    expect(await summary.evaluate((el) => getComputedStyle(el).fontFamily)).toContain('IBM Plex Mono')
+    await expect(page.locator('.resume-cells').first()).toContainText('Richmond, VA')
+    await expect(page.locator('.resume-dot.is-current')).toHaveCount(1)
     await page.getByRole('link', { name: 'Portfolio' }).click()
     await expect(page.locator('#top')).toBeVisible()
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
