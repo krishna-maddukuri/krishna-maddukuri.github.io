@@ -1274,6 +1274,17 @@ html.lenis, html.lenis body { height: auto; }
 :root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
 
 /*
+  While the page opens, the sections still far below the screen are skipped (no layout, no paint) and filled
+  in during idle moments (lib/deferSections.ts adds and removes .defer-sections and marks each section
+  .is-warm). Work is left out: it measures its open project to set its height. 900px stands in for a skipped
+  section's height for those first moments.
+*/
+html.defer-sections .fit-section:not(.is-warm):not(#work) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+/*
   Scroll-driven: three effects follow the scroll position on the browser's own timeline, so no script runs
   and nothing is restyled from script while the page scrolls. Browsers without it get the same effects from
   script (lib/scrollTimeline.ts).

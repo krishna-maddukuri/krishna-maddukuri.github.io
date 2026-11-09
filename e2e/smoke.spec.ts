@@ -42,6 +42,25 @@ test.describe('page load', () => {
     expect(JSON.parse(ld ?? '{}')).toMatchObject({ '@type': 'Person', name: 'Krishna Koushik Maddukuri' })
   })
 
+  test('sections below the screen are skipped while the page opens, then all filled in; a jump fills them in at once', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    const state = () =>
+      page.evaluate(() => ({
+        deferring: document.documentElement.classList.contains('defer-sections'),
+        contact: getComputedStyle(document.getElementById('contact')!).contentVisibility,
+        work: getComputedStyle(document.getElementById('work')!).contentVisibility,
+      }))
+    const first = await state()
+    // Work is never skipped (it measures itself); Contact is, until it is filled in
+    expect(first.work).toBe('visible')
+    if (first.deferring) expect(first.contact).toBe('auto')
+    // the tape's jump to Contact fills everything in before it measures where Contact is
+    await page.getByRole('button', { name: /Go to contact/ }).click()
+    expect(await state()).toEqual({ deferring: false, contact: 'visible', work: 'visible' })
+    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('contact')!.getBoundingClientRect().top)), { timeout: 6_000 }).toBeLessThan(20)
+  })
+
   test('the page never scrolls sideways', async ({ page }) => {
     await openHome(page)
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)

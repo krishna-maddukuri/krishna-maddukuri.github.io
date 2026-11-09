@@ -1,4 +1,5 @@
 import Lenis from 'lenis'
+import { warmSections } from './deferSections'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 
 const LenisContext = createContext<Lenis | null>(null)
@@ -46,6 +47,8 @@ export function useScrollTo() {
   const lenis = useLenis()
   return useCallback(
     (id: string, opts: { immediate?: boolean; onComplete?: () => void } = {}) => {
+      // every section at its real height before measuring where the target is
+      warmSections()
       const target: HTMLElement | number = id === 'top' ? 0 : document.getElementById(id) ?? 0
       if (lenis) {
         // Lenis learns the page's height from a debounced resize observer; right after a page

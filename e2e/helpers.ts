@@ -8,6 +8,8 @@ export async function openHome(page: Page, path = '/') {
   // the hero's entrance is over once the red tape has faded in
   const tape = page.getByRole('button', { name: /Go to contact/ })
   await expect.poll(() => tape.evaluate((el) => getComputedStyle(el).opacity), { timeout: 8_000 }).toBe('1')
+  // and every section is laid out (the ones below the screen are filled in during idle moments after load)
+  await expect(page.locator('html.defer-sections')).toHaveCount(0, { timeout: 10_000 })
 }
 
 /** Scroll through the whole page so every "reveal on view" block has revealed, then go back to the top. */
