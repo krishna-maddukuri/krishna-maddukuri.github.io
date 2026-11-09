@@ -459,12 +459,13 @@ html.lenis, html.lenis body { height: auto; }
   .card-sway[data-paused] { animation-play-state: paused; }
 
   /* the lanyard strap: a long strip with his name printed down it */
-  /* the ID card's lanyard: red tape with the words set like the page's tape (white on the paper, black in the dark) */
+  /* the ID card's lanyard: plain tape in the ink (black on the paper, white in the dark), its words set like the
+     page's tape, so the card's red title bar is the one red at the top of the card */
   .lanyard-strap {
     width: 20px;
     overflow: hidden;
-    background: var(--brand-red);
-    color: var(--role-ink);
+    background: var(--ink);
+    color: color-mix(in oklab, var(--paper) 75%, transparent);
     font: 600 11px / 20px var(--ff-display);
     letter-spacing: 0.1em;
     text-transform: uppercase;
