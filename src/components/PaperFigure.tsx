@@ -46,13 +46,13 @@ const WAVE = 1100 // when the page comes home, a ripple runs down him from head 
 const RED = [240 / 255, 65 / 255, 46 / 255] as const
 
 /**
- * The page's light round him, in fractions of his box. Black page: an ellipse of warm light behind his
- * chest, 1.15 box-widths and 0.62 box-heights across each way from 42% down, 11.5% at its middle and
- * falling off smoothly, 1 − (3r² − 2r³), to nothing at its rim. Paper page: his outline in a warm dark at
- * 26%, moved 5% of his width right and 1.4% of his height down, blurred by 1.1% of his height. (index.css
- * has the same two for the still picture.)
+ * The page's light round him, in fractions of his height. Black page: a soft halo that follows his outline
+ * and stays close to him, his outline in warm light at 20%, blurred by 1.8% of his height (it fades out
+ * about 4% of his height from his edge). Paper page: his outline in a warm dark at 26%, moved 5% of his
+ * width right and 1.4% of his height down, blurred by 1.1% of his height. (index.css has the same two for
+ * the still picture.)
  */
-const GLOW = { rx: 1.15, ry: 0.62, cy: 0.42, a: 0.115 }
+const GLOW = { a: 0.2, blur: 0.018 }
 const SHADOW = { dx: 0.05, dy: 0.014, blur: 0.011 }
 
 type MeshData = { w: number; h: number; p: number[]; z: number[]; t: number[] }
@@ -171,18 +171,16 @@ void main() {
 
 const AURA_FRAG = /* glsl */ `#version 300 es
 precision highp float;
-uniform sampler2D u_shade; // his outline, blurred (the red channel)
+uniform sampler2D u_shade; // his outline, blurred: for the shadow (red) and, more, for the glow (green)
 uniform float u_mode;      // 0: the glow, 1: the shadow
 uniform float u_amount;    // 0..1
 in vec2 v_q;
 out vec4 o;
 void main() {
   if (u_mode < 0.5) {
-    // warm light, strongest behind his chest, falling off without a corner anywhere (so no ring shows) to
-    // nothing at the ellipse's rim, which it meets flat (so no edge shows either)
-    float r = min(length(v_q * 2.0 - 1.0), 1.0);
-    float a = ${GLOW.a.toFixed(3)} * (1.0 - r * r * (3.0 - 2.0 * r)) * u_amount;
-    // On the black page this light uses only the screen's lowest 30 of 256 steps, so rounded off it would
+    // warm light hugging his outline, fading smoothly away from it (a Gaussian has no corner, so no ring)
+    float a = ${GLOW.a.toFixed(3)} * texture(u_shade, v_q).g * u_amount;
+    // On the black page this light uses only the screen's lowest 50 of 256 steps, so rounded off it would
     // show as rings, each step a band (an OLED shows every one). Instead each pixel rounds up or down by its
     // place in a fine, even pattern (interleaved gradient noise), and the steps blend into a smooth fall-off.
     // (The light is rounded as a whole, so every pixel keeps the same warm white: no coloured specks.)
@@ -332,7 +330,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       gl.bindTexture(gl.TEXTURE_2D, gl.createTexture())
       gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, shade.w, shade.h, 0, gl.RED, gl.UNSIGNED_BYTE, shade.data)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG8, shade.w, shade.h, 0, gl.RG, gl.UNSIGNED_BYTE, shade.data)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -641,7 +639,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
           if (glowA > 0.002) {
             gl.uniform1f(AU.mode, 0)
             gl.uniform1f(AU.amount, glowA)
-            gl.uniform4f(AU.rect, x + fw * (0.5 - GLOW.rx), y + fh * (GLOW.cy - GLOW.ry), fw * GLOW.rx * 2, fh * GLOW.ry * 2)
+            gl.uniform4f(AU.rect, x - shade.px * fw, y - shade.py * fh, fw * (1 + 2 * shade.px), fh * (1 + 2 * shade.py))
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
           }
           gl.enable(gl.DEPTH_TEST)
@@ -821,20 +819,24 @@ function buildGeometry(mesh: MeshData) {
 }
 
 /**
- * His shadow on the paper page: the cut-out's outline at a fifth of its size, blurred (three box blurs each
- * way, about a Gaussian of SHADOW.blur of his height), with room round it for the blur. `px` and `py` are
- * that room, as fractions of his width and height.
+ * His outline at a fifth of its size, blurred twice (three box blurs each way, about a Gaussian): by
+ * SHADOW.blur of his height for the shadow (red) and by GLOW.blur for the glow (green), with room round it
+ * for the wider blur. `px` and `py` are that room, as fractions of his width and height.
  */
 function shadowOf(pic: HTMLImageElement) {
   const S = 0.2
   const fw = Math.round(TEX_W * S)
   const fh = Math.round(TEX_H * S)
-  const sigma = SHADOW.blur * fh
-  const r = Math.max(1, Math.round((Math.sqrt(4 * sigma * sigma + 1) - 1) / 2))
-  const pad = 3 * r + 2
+  const radius = (blur: number) => {
+    const sigma = blur * fh
+    return Math.max(1, Math.round((Math.sqrt(4 * sigma * sigma + 1) - 1) / 2))
+  }
+  const rs = radius(SHADOW.blur)
+  const rg = radius(GLOW.blur)
+  const pad = 3 * Math.max(rs, rg) + 2
   const w = fw + pad * 2
   const h = fh + pad * 2
-  const data = new Uint8Array(w * h)
+  const data = new Uint8Array(w * h * 2)
   const out = { w, h, data, px: pad / fw, py: pad / fh }
   const c = document.createElement('canvas')
   c.width = w
@@ -844,31 +846,39 @@ function shadowOf(pic: HTMLImageElement) {
   g.imageSmoothingQuality = 'high'
   g.drawImage(pic, pad, pad, fw, fh)
   const src = g.getImageData(0, 0, w, h).data
-  let a = new Float32Array(w * h)
-  let b = new Float32Array(w * h)
-  for (let i = 0; i < w * h; i++) a[i] = src[i * 4 + 3]
-  const n = 2 * r + 1
-  // one box blur along rows (step 1) or columns (step w), from a into b
-  const box = (len: number, lines: number, step: number, line: number) => {
-    for (let l = 0; l < lines; l++) {
-      const o = l * line
-      let sum = 0
-      for (let i = 0; i <= r && i < len; i++) sum += a[o + i * step]
-      for (let i = 0; i < len; i++) {
-        b[o + i * step] = sum / n
-        if (i + r + 1 < len) sum += a[o + (i + r + 1) * step]
-        if (i - r >= 0) sum -= a[o + (i - r) * step]
+  const blurred = (r: number) => {
+    let a = new Float32Array(w * h)
+    let b = new Float32Array(w * h)
+    for (let i = 0; i < w * h; i++) a[i] = src[i * 4 + 3]
+    const n = 2 * r + 1
+    // one box blur along rows (step 1) or columns (step w), from a into b
+    const box = (len: number, lines: number, step: number, line: number) => {
+      for (let l = 0; l < lines; l++) {
+        const o = l * line
+        let sum = 0
+        for (let i = 0; i <= r && i < len; i++) sum += a[o + i * step]
+        for (let i = 0; i < len; i++) {
+          b[o + i * step] = sum / n
+          if (i + r + 1 < len) sum += a[o + (i + r + 1) * step]
+          if (i - r >= 0) sum -= a[o + (i - r) * step]
+        }
       }
+      const t = a
+      a = b
+      b = t
     }
-    const t = a
-    a = b
-    b = t
+    for (let pass = 0; pass < 3; pass++) {
+      box(w, h, 1, w)
+      box(h, w, w, 1)
+    }
+    return a
   }
-  for (let pass = 0; pass < 3; pass++) {
-    box(w, h, 1, w)
-    box(h, w, w, 1)
+  const shadow = blurred(rs)
+  const glow = blurred(rg)
+  for (let i = 0; i < w * h; i++) {
+    data[i * 2] = Math.min(255, Math.round(shadow[i]))
+    data[i * 2 + 1] = Math.min(255, Math.round(glow[i]))
   }
-  for (let i = 0; i < w * h; i++) data[i] = Math.min(255, Math.round(a[i]))
   return out
 }
 

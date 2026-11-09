@@ -1085,32 +1085,13 @@ html.lenis, html.lenis body { height: auto; }
 .figure-pill:active { scale: 0.96; }
 
 /* the page's light round him, for the still picture of him (motion reduced, or no WebGL); the moving figure
-   draws both itself (PaperFigure.tsx), the glow dithered pixel by pixel. Black page: a soft glow behind his
-   chest, so his black clothes never sink into the page, falling off as 1 − (3r² − 2r³) (sampled every 10%,
-   so the fall-off has no corners). Paper page: his paper shadow, a little down and to the right, as if the
-   cut-out stands just in front of the page. (drop-shadow's third length is the blur's standard deviation, as
-   in blur().) */
-:root {
-  --figure-glow: radial-gradient(closest-side, rgb(255 246 236 / 0.115), rgb(255 246 236 / 0.1118) 10%,
-    rgb(255 246 236 / 0.103) 20%, rgb(255 246 236 / 0.0902) 30%, rgb(255 246 236 / 0.0745) 40%,
-    rgb(255 246 236 / 0.0575) 50%, rgb(255 246 236 / 0.0405) 60%, rgb(255 246 236 / 0.0248) 70%,
-    rgb(255 246 236 / 0.012) 80%, rgb(255 246 236 / 0.0032) 90%, rgb(255 246 236 / 0) 100%);
-}
+   draws both itself (PaperFigure.tsx), the glow dithered pixel by pixel. Black page: a soft halo that
+   follows his outline and stays close to him, so his black clothes never sink into the page. Paper page:
+   his paper shadow, a little down and to the right, as if the cut-out stands just in front of the page.
+   (drop-shadow's third length is the blur's standard deviation, as in blur().) */
 [data-paper-figure="still"] { isolation: isolate; container-type: size; }
 [data-paper-figure="still"] img { filter: drop-shadow(5cqw 1.4cqh 1.1cqh rgb(43 34 25 / 0.26)); }
-:root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
-:root[data-mode="dark"] [data-paper-figure="still"]::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  left: 50%;
-  top: 42%;
-  width: 230%;
-  height: 124%;
-  translate: -50% -50%;
-  pointer-events: none;
-  background: var(--figure-glow);
-}
+:root[data-mode="dark"] [data-paper-figure="still"] img { filter: drop-shadow(0 0 1.8cqh rgb(255 246 236 / 0.2)); }
 
 /* section headings drift a little slower than the page while they cross the screen (depth, no cost to
    scrolling: the browser runs it on its own timeline); only on wide screens and when motion is welcome */

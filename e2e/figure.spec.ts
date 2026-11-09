@@ -70,11 +70,11 @@ async function at(page: Page, fx: number, fy: number) {
     [fx, fy],
   )
 }
-/** The glow: a point beside his head, inside the glow's ellipse and clear of him. */
-const glow = (page: Page) => at(page, 0.1, 0.15)
+/** The glow: a point just outside his left cuff (at his box's edge, 42% down him), in the halo round him. */
+const glow = (page: Page) => at(page, 0, 0.42)
 /**
- * The glow along the row 42% down him (its middle), one canvas pixel at a time, from 0.15 of his width left
- * of his box outwards to 0.8 of it, past the glow's rim (0.65): the alpha of each pixel.
+ * The glow along the row 42% down him (his cuffs), one canvas pixel at a time, from his box's left edge,
+ * just outside his cuff, outwards to 0.3 of his width beyond it, well past the halo: the alpha of each pixel.
  */
 async function glowRow(page: Page) {
   return page.evaluate(() => {
@@ -88,8 +88,8 @@ async function glowRow(page: Page) {
     const ctx = probe.getContext('2d')!
     ctx.drawImage(canvas, 0, 0)
     const y = Math.round((box.top - cr.top + 0.42 * box.height) * s)
-    const from = Math.round((box.left - cr.left - 0.15 * box.width) * s)
-    const to = Math.round((box.left - cr.left - 0.8 * box.width) * s)
+    const from = Math.round((box.left - cr.left) * s)
+    const to = Math.max(0, Math.round((box.left - cr.left - 0.3 * box.width) * s))
     const d = ctx.getImageData(to, y, from - to, 1).data
     const alpha: number[] = []
     for (let i = d.length - 1; i > 0; i -= 4) alpha.push(d[i])
@@ -301,28 +301,26 @@ test.describe('paper figure', () => {
     expect(await shadow(page)).toBeLessThan(3)
   })
 
-  test('the glow fades out smoothly, dithered, with no rings and no edge', async ({ page }) => {
-    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'wide screens, where the whole glow is on the canvas')
+  test('the glow hugs him and fades out smoothly, dithered, with no rings and no edge', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'wide screens, where the whole halo is on the canvas')
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
     const row = await glowRow(page)
-    expect(row.length).toBeGreaterThan(100)
-    // from a faint light beside him to nothing past the rim
+    expect(row.length).toBeGreaterThan(40)
+    // a faint light right beside him, and nothing a little way off: the halo stays close to him
     const mean = (a: number[]) => a.reduce((t, v) => t + v, 0) / a.length
-    expect(mean(row.slice(0, 8))).toBeGreaterThan(6)
-    expect(row.slice(-8).every((v) => v === 0)).toBe(true)
-    // dithered: neighbouring pixels keep stepping up and down between two levels, where plain rounding
-    // would step down once per level and give rings
+    expect(mean(row.slice(0, 4))).toBeGreaterThan(6)
+    expect(row.slice(Math.round(row.length / 2)).every((v) => v === 0)).toBe(true)
+    // dithered: where it fades, neighbouring pixels step up and down between two levels, where plain
+    // rounding would step down once per level and give rings
     let turns = 0
     for (let i = 1; i < row.length - 1; i++) if ((row[i] - row[i - 1]) * (row[i + 1] - row[i]) < 0) turns++
-    expect(turns).toBeGreaterThan(12)
-    // and smooth: averaged over 15 pixels it only ever falls, a little at a time
-    const avg = row.slice(0, row.length - 14).map((_, i) => mean(row.slice(i, i + 15)))
-    for (let i = 1; i < avg.length; i++) {
-      expect(avg[i] - avg[i - 1]).toBeLessThan(0.5)
-      expect(avg[i - 1] - avg[i]).toBeLessThan(0.6)
-    }
+    expect(turns).toBeGreaterThan(2)
+    // and smooth: no jump between neighbours, and averaged over 7 pixels it only ever falls
+    for (let i = 1; i < row.length; i++) expect(Math.abs(row[i] - row[i - 1])).toBeLessThan(4)
+    const avg = row.slice(0, row.length - 6).map((_, i) => mean(row.slice(i, i + 7)))
+    for (let i = 1; i < avg.length; i++) expect(avg[i] - avg[i - 1]).toBeLessThan(0.45)
   })
 
   test('on the paper page his shadow falls on the page instead', async ({ page }) => {
@@ -353,13 +351,13 @@ test.describe('paper figure', () => {
     await expect(img).toBeVisible()
     expect(await img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true)
     expect(await page.locator('#top canvas').count()).toBe(0)
-    // the same light round him, done in CSS: the glow on the black page …
-    expect(await figure.evaluate((el) => getComputedStyle(el, '::before').backgroundImage)).toContain('radial-gradient')
-    expect(await img.evaluate((el) => getComputedStyle(el).filter)).toBe('none')
-    // … and his shadow on the paper page
+    // the same light round him, done in CSS: the warm halo on the black page …
+    const filter = () => img.evaluate((el) => getComputedStyle(el).filter)
+    expect(await filter()).toContain('drop-shadow')
+    expect(await filter()).toContain('rgba(255, 246, 236')
+    // … and his dark paper shadow on the paper page
     await page.getByRole('button', { name: 'Switch to light theme' }).click()
-    await expect.poll(() => img.evaluate((el) => getComputedStyle(el).filter)).toContain('drop-shadow')
-    expect(await figure.evaluate((el) => getComputedStyle(el, '::before').content)).toBe('none')
+    await expect.poll(filter).toContain('rgba(43, 34, 25')
   })
 
   test('falls back to the still picture without WebGL', async ({ page }) => {
