@@ -8,7 +8,8 @@ import { useMedia } from '../hooks/useMedia'
 import { Container, EASE, SectionHeading } from '../components/ui'
 
 const familyLabel = Object.fromEntries(families.map((f) => [f.id, f.label])) as Record<FamilyId, string>
-const COLS = 8
+/** Columns on wide screens (the entrance wave runs across them); see `.skills-body` in index.css. */
+const COLS = 11
 /** The lightest family is drawn as outlined tiles rather than filled ones. */
 const OUTLINE: FamilyId = families[families.length - 1].id
 
@@ -52,21 +53,14 @@ export function Skills() {
           sub={`${hover ? 'Hover' : 'Tap'} a tile to see what it is, or pick a family to light it up.`}
         />
 
-        <div className="mt-9 flex flex-wrap gap-2.5 lg:mt-[clamp(12px,2.4svh,36px)]" role="group" aria-label="Light up a family">
+        {/* the families, as portfolio-2's chips (`.fam-chip`): 6px corners, a hairline edge, IBM Plex Mono */}
+        <div className="mt-9 flex flex-wrap gap-1.5 lg:mt-[clamp(12px,2.4svh,36px)]" role="group" aria-label="Light up a family">
           {families.map((f) => {
             const on = family === f.id
             return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => pick(f.id)}
-                aria-pressed={on}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-[background-color,color,transform] duration-200 ease-out active:scale-95 ${
-                  on ? 'btn-solid bg-ink text-paper' : 'bg-chip text-ink hover:bg-line'
-                }`}
-              >
+              <button key={f.id} type="button" onClick={() => pick(f.id)} aria-pressed={on} className="fam-chip">
                 <span
-                  className="size-3 rounded-[3px] border border-black/10"
+                  className="size-2.5 rounded-[2px] border border-black/10"
                   style={{ background: f.id === OUTLINE ? `var(--fam-${f.id}-swatch)` : `var(--fam-${f.id})` }}
                   aria-hidden
                 />
@@ -76,8 +70,9 @@ export function Skills() {
           })}
         </div>
 
-        <div className="mt-8 grid items-center gap-6 lg:mt-[clamp(12px,2.4svh,32px)] lg:grid-cols-[minmax(0,1fr)_minmax(250px,300px)] lg:gap-10 xl:gap-14">
-          <div ref={tableRef} className="skills-table grid grid-cols-5 gap-1.5 min-[520px]:grid-cols-8 sm:gap-2.5">
+        {/* on wide screens the table is as wide as its square tiles allow and the inspector takes the rest */}
+        <div className="skills-body mt-8 grid items-center gap-6 lg:mt-[clamp(12px,2.4svh,32px)] lg:items-stretch lg:gap-10">
+          <div ref={tableRef} className="skills-table grid grid-cols-5 gap-1.5 self-start min-[520px]:grid-cols-8 sm:gap-2.5">
             {elements.map((el, i) => (
               <Tile
                 key={el.sym}

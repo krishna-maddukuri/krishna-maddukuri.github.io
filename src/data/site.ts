@@ -132,8 +132,10 @@ const rawElements: Omit<Element, 'n'>[] = [
   { sym: 'Hb', name: 'Hibernate & JPA', family: 'back', note: 'Object-relational mapping between Java services and relational data.' },
   { sym: 'Ms', name: 'Microservices', family: 'back', note: 'Distributed, cloud-native services for the Enterprise Credit Bureau Reporting Service.' },
   { sym: 'Ra', name: 'REST APIs', family: 'back', note: 'Secure, role-based APIs so teams consume curated data without direct database access.' },
+  { sym: 'Sa', name: 'SOAP', family: 'back', note: 'XML web services with WSDL contracts, alongside REST.' },
   { sym: 'Oa', name: 'OAuth2', family: 'back', note: 'OAuth2-protected REST APIs that strengthened security and compliance.' },
   { sym: 'Nd', name: 'Node.js', family: 'back', note: 'Back-end work in the MERN ecosystem during the Infosys internship.' },
+  { sym: 'Lq', name: 'Liquibase', family: 'back', note: 'Versioned database schema changes, applied the same way in every environment.' },
   // Cloud & AWS
   { sym: 'Ec', name: 'AWS ECS', family: 'cloud', note: 'Containerized the NGA Group application on ECS, part of a 70% cut in deployment time.' },
   { sym: 'Fg', name: 'AWS Fargate', family: 'cloud', note: 'Containerized services at Capital One, with containers 60% smaller.' },
@@ -146,6 +148,7 @@ const rawElements: Omit<Element, 'n'>[] = [
   { sym: 'Cw', name: 'CloudWatch', family: 'cloud', note: 'Metrics and logs for services running on AWS.' },
   { sym: 'Dk', name: 'Docker', family: 'cloud', note: 'Containers for ECS at NGA Group and Fargate at Capital One, where they got 60% smaller.' },
   { sym: 'K8', name: 'Kubernetes', family: 'cloud', note: 'Container orchestration.' },
+  { sym: 'Os', name: 'OpenShift', family: 'cloud', note: "Red Hat's Kubernetes platform for deploying and running containers." },
   // Data & Messaging
   { sym: 'Kf', name: 'Apache Kafka', family: 'data', note: 'High-throughput event pipelines at Capital One and NGA Group.' },
   { sym: 'Pg', name: 'PostgreSQL', family: 'data', note: 'The relational store behind event-driven reporting workflows.' },
@@ -163,6 +166,7 @@ const rawElements: Omit<Element, 'n'>[] = [
   { sym: 'Ju', name: 'JUnit', family: 'test', note: 'Automated test suites that reduced production defects.' },
   { sym: 'Mo', name: 'Mockito', family: 'test', note: 'Mocks for fast, isolated unit tests.' },
   { sym: 'Cu', name: 'Cucumber', family: 'test', note: 'Behavior-driven, automated test suites.' },
+  { sym: 'Wm', name: 'WireMock', family: 'test', note: "Stubbed HTTP services, so integration tests don't depend on live APIs." },
   { sym: 'Td', name: 'TDD', family: 'test', note: 'Test-driven development: tests first, then the code.' },
   // Observability
   { sym: 'Sp', name: 'Splunk', family: 'obs', note: 'Dashboards and alerting that sped up incident response.' },
@@ -175,7 +179,7 @@ const rawElements: Omit<Element, 'n'>[] = [
   { sym: 'Ng', name: 'Angular', family: 'front', note: 'Component-based front ends.' },
 ]
 
-/** Numbered in reading order across an 8-column table. */
+/** Numbered in reading order across the table (11 columns on wide screens). */
 export const elements: Element[] = rawElements.map((el, i) => ({ ...el, n: i + 1 }))
 
 /* -------------------------------------------------------------- projects -- */

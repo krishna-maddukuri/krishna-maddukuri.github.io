@@ -2,14 +2,32 @@ import { expect, test } from '@playwright/test'
 import { isPhone, jumpTo, openHome } from './helpers'
 
 test.describe('skills', () => {
-  test('shows all 48 elements and eight family filters', async ({ page }) => {
+  test('shows all 52 elements and eight family filters', async ({ page }) => {
     await openHome(page)
     await jumpTo(page, 'skills')
     const skills = page.locator('#skills')
     await expect(skills.getByRole('heading', { level: 2 })).toContainText('The periodic table')
     const tiles = skills.getByRole('button', { name: /\(.*\)$/ })
-    await expect(tiles).toHaveCount(48)
+    await expect(tiles).toHaveCount(52)
+    for (const name of ['SOAP (Backend & Frameworks)', 'Liquibase (Backend & Frameworks)', 'OpenShift (Cloud & AWS)', 'WireMock (Testing & Quality)'])
+      await expect(skills.getByRole('button', { name, exact: true })).toHaveCount(1)
     await expect(skills.getByRole('group', { name: 'Light up a family' }).getByRole('button')).toHaveCount(8)
+  })
+
+  test('the tiles are square and the family selectors are chips in the mono font, as on portfolio-2', async ({ page }) => {
+    await openHome(page)
+    await jumpTo(page, 'skills')
+    const skills = page.locator('#skills')
+    for (const name of ['Java (Languages)', 'WireMock (Testing & Quality)']) {
+      const box = (await skills.getByRole('button', { name, exact: true }).boundingBox())!
+      expect(Math.abs(box.width - box.height)).toBeLessThan(1)
+    }
+    const chip = skills.getByRole('group', { name: 'Light up a family' }).getByRole('button').first()
+    const style = await chip.evaluate((el) => {
+      const s = getComputedStyle(el)
+      return { radius: s.borderTopLeftRadius, font: s.fontFamily, size: s.fontSize }
+    })
+    expect(style).toEqual({ radius: '6px', font: expect.stringContaining('IBM Plex Mono'), size: '12px' })
   })
 
   test('picking a family dims the other tiles and the inspector shows one of its elements', async ({ page }) => {
