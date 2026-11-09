@@ -325,8 +325,8 @@ const useSvgId = () => 'card' + useId().replace(/[^\w-]/g, '')
 /**
  * The front. Dark mode: a black card. Light mode: a white one. In both: the red title bar with
  * the monogram (black tile, red letters), his portrait with a contact chip on its left and a
- * barcode on its right, a holographic seal over the photo's corner, a woven line pattern and a
- * line of microtext, his name and the company details, and a faint ghost of the photo.
+ * barcode on its right, a woven line pattern and a line of microtext, his name and the company
+ * details, and a faint ghost of the photo.
  */
 function CardFront() {
   const fields = [
@@ -374,7 +374,6 @@ function CardFront() {
           maskImage: 'linear-gradient(180deg, #000 72%, transparent)',
         }}
       />
-      <Seal style={{ left: u(60), top: u(226), width: u(38) }} />
       <Barcode seed={about.card.idNo + site.name} style={{ right: u(16), top: u(100), width: u(34), height: u(150) }} />
 
       <div className="absolute font-display font-bold uppercase leading-none" style={{ left: u(18), top: u(318), fontSize: u(16), letterSpacing: '0.02em' }}>
@@ -554,26 +553,6 @@ function Chip({ style }: { style: CSSProperties }) {
       <rect x="0.5" y="0.5" width="33" height="25" rx="5" fill={`url(#${id})`} stroke="#7d5f25" strokeWidth="0.8" />
       <path d="M0.5 9H10.5M0.5 17H10.5M23.5 9H33.5M23.5 17H33.5M10.5 0.5V25.5M23.5 0.5V25.5M10.5 13H23.5" fill="none" stroke="#7d5f25" strokeWidth="0.8" />
     </svg>
-  )
-}
-
-/** The holographic seal over the photo's corner: a round iridescent sticker with the monogram pressed in. */
-function Seal({ style }: { style: CSSProperties }) {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute grid aspect-square place-items-center rounded-full opacity-[0.92] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.55),0_1px_3px_rgb(0_0_0/0.3)]"
-      style={{
-        ...style,
-        background:
-          'linear-gradient(135deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 50%), conic-gradient(from 40deg, #d9d3ff, #c9f1e8, #f7e6b9, #f6c9de, #d9d3ff)',
-      }}
-    >
-      <span className="absolute inset-[10.5%] rounded-full border-[0.75px] border-dashed border-[rgb(22_4_3/0.28)]" />
-      <svg viewBox="0 0 64 64" className="relative block w-[47%]">
-        <path className="fill-[rgb(22_4_3/0.38)]" d={MONOGRAM_PATH} />
-      </svg>
-    </span>
   )
 }
 
