@@ -1109,15 +1109,6 @@ html.lenis, html.lenis body { height: auto; }
   color: var(--paper);
   box-shadow: 0 4px 0 color-mix(in srgb, var(--ink) 62%, var(--paper));
 }
-/* the red key (About's Résumé, as on portfolio-2): the monogram's red with its deep red label, on a darker
-   red edge; on hover a brighter red rises in it */
-.btn-key--red {
-  border-color: var(--brand-red);
-  background: var(--brand-red);
-  color: #160403;
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--brand-red) 62%, #000);
-}
-.btn-key--red.btn-solid::before { background: #ff6450; }
 
 /*
   About: the heading and his story in a panel on the left, the hanging ID card on the right, the quick
@@ -1125,19 +1116,21 @@ html.lenis, html.lenis body { height: auto; }
   portfolio-2's: a hairline edge, 14px corners, the story in its lead size with bright bold key words,
   the motto on one line (its size follows the panel's width, so it never wraps), then the keys. The
   facts are a second panel cut into cells by hairlines: six across on wide screens, three, then two.
+  On wide screens the section is sized by the screen's height (svh) as well as its width, so all of it,
+  heading to facts, fits on one screen (checked from 1280 × 720 to 2560 × 1440).
 */
+.about-section {
+  padding-block: clamp(56px, 8vw, 112px);
+}
 .about-grid {
   display: grid;
   align-items: start;
   row-gap: clamp(28px, 4vw, 40px);
   grid-template-areas: 'head' 'panel' 'card' 'facts';
 }
-@media (min-width: 1024px) {
-  .about-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
-    grid-template-areas: 'head card' 'panel card' 'facts facts';
-    column-gap: clamp(40px, 4.4vw, 72px);
-  }
+.about-title {
+  margin-top: 20px;
+  font-size: clamp(2.4rem, 5.4vw, 4.9rem);
 }
 .about-panel {
   container-type: inline-size;
@@ -1173,28 +1166,73 @@ html.lenis, html.lenis body { height: auto; }
   line-height: 1.15;
   white-space: nowrap;
 }
+.about-actions {
+  margin-top: clamp(22px, 3vw, 32px);
+}
 .about-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
+  margin-top: 16px;
   overflow: hidden;
   border: 1px solid var(--panel-line);
   border-radius: 14px;
   background: var(--panel-line);
-}
-@media (min-width: 640px) {
-  .about-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-@media (min-width: 1280px) {
-  .about-facts { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 .about-fact {
   min-width: 0;
   padding: 14px 16px 16px;
   background: var(--panel);
 }
+.about-fact-value {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.about-fact-note {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.4;
+}
 @media (min-width: 640px) {
+  .about-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .about-fact { padding: 18px 20px 20px; }
+  .about-fact-value { font-size: 17px; }
+  .about-fact-note { font-size: 14px; }
+}
+@media (min-width: 1024px) {
+  .about-section {
+    padding-top: clamp(70px, 9svh, 112px);
+    padding-bottom: clamp(16px, 2.5svh, 64px);
+  }
+  .about-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+    grid-template-areas: 'head card' 'panel card' 'facts facts';
+    column-gap: clamp(40px, 4.4vw, 72px);
+    row-gap: clamp(12px, 2.2svh, 32px);
+  }
+  .about-title {
+    margin-top: clamp(8px, 1.5svh, 20px);
+    font-size: min(4.9rem, 5.4vw, 7svh);
+  }
+  .about-panel { padding: clamp(18px, 3svh, 38px); }
+  .about-lead { font-size: max(1rem, min(1.3rem, 1rem + 0.5vw, 2.3svh)); line-height: 1.5; }
+  .about-more { margin-top: clamp(8px, 1.4svh, 14px); font-size: max(0.9rem, min(1rem, 2svh)); }
+  .about-quote {
+    margin-top: clamp(12px, 2.4svh, 32px);
+    font-size: min(2.1rem, 4.2svh, calc((100cqw - 24px) / 16.2));
+  }
+  .about-actions { margin-top: clamp(12px, 2.4svh, 32px); }
+  .about-facts { margin-top: clamp(8px, 1.5svh, 16px); }
+  .about-fact { padding: clamp(10px, 1.5svh, 18px) 16px clamp(11px, 1.6svh, 20px); }
+  .about-fact-value { margin-top: clamp(6px, 1svh, 10px); font-size: max(14px, min(16px, 2svh)); }
+  .about-fact-note { font-size: max(12px, min(13.5px, 1.65svh)); }
+}
+/* six across: each column as wide as its words, so every fact stays on one line */
+@media (min-width: 1280px) {
+  .about-facts { grid-template-columns: repeat(6, auto); }
 }
 
 /* the label that rides beside the pointer over the paper figure (mouse), and the button under his

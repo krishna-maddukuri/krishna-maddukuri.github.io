@@ -19,7 +19,8 @@ import { MONOGRAM_PATH } from './monogram'
 
 const CLIP = 36 // the metal clip's top sits this far above the card's top edge (it grips the top 8px)
 const STRAP = 20 // strap width
-const HANG = 118 // the strap's length at rest, from the hook down to the clip
+const HANG = 118 // the strap's length at rest, from the hook down to the clip...
+const HANG_WIDE = 60 // ...shorter on wide screens, where the About section fits on one screen
 const HOOK = 30 // the wall hook's size
 const HOLD_MS = 200 // phones: press and hold this long to pick the card up...
 const SLOP = 8 // ...without moving more than this (moving more is a scroll)
@@ -40,6 +41,7 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
   const wide = useMedia('(min-width: 1024px)')
   const touch = useMedia('(pointer: coarse)')
   const controls = useDragControls()
+  const hang = wide ? HANG_WIDE : HANG
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -72,7 +74,7 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
       anchorX.set(c.left - s.left + c.width / 2)
       restTop.set(top)
       // the hook sits a strap's length above the clip
-      anchorY.set(Math.max(0, top - CLIP - HANG))
+      anchorY.set(Math.max(0, top - CLIP - hang))
       // The card can be dragged anywhere inside the section. These are fixed numbers on purpose:
       // limits tied to the section element make the drag library stop the card mid-swing
       // whenever the window resizes, which on iPhone happens as soon as you scroll.
@@ -94,7 +96,7 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
     ro.observe(section)
     document.fonts?.ready.then(measure).catch(() => {})
     return () => ro.disconnect()
-  }, [sectionRef, wide, anchorX, anchorY, restTop])
+  }, [sectionRef, wide, hang, anchorX, anchorY, restTop])
 
   // Swing in when the section scrolls into view, then sway gently (in CSS, so it
   // costs nothing while you scroll). The sway pauses off-screen and while held.
@@ -168,8 +170,8 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
       <Strap anchorX={anchorX} anchorY={anchorY} angle={strapAngle} length={strapLength} reach={reach} visible={reach > 0} />
       <Hook anchorX={anchorX} anchorY={anchorY} visible={reach > 0} />
 
-      <div className="relative flex flex-col items-center" style={{ paddingTop: HANG + CLIP + (wide ? 8 : 20) }}>
-        <div ref={slotRef} className="relative w-[min(280px,76vw)]">
+      <div className="relative flex flex-col items-center" style={{ paddingTop: hang + CLIP + (wide ? 8 : 20) }}>
+        <div ref={slotRef} className="relative w-[min(280px,76vw)] lg:w-[min(280px,30svh)]">
           <m.div
             ref={cardRef}
             role="button"
@@ -231,7 +233,7 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
             </div>
           </m.div>
         </div>
-        <p className="eyebrow mt-6 text-center">
+        <p className="eyebrow mt-6 text-center lg:mt-[clamp(8px,1.6svh,24px)]">
           {touch ? 'Hold to pick it up · tap to flip' : 'Drag the card · tap to flip'}
         </p>
       </div>

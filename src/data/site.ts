@@ -71,15 +71,15 @@ export const about = {
    */
   lead: "I started at **Infosys** in 2020, first as an intern and then building React front ends and CI/CD. After a master's in computer science at **George\u00a0Mason**, I built release pipelines and monitoring at **NGA\u00a0Group** and credit bureau reporting at **Capital\u00a0One**. Today I'm a Full Stack Software Engineer at **Bank\u00a0of\u00a0America**, in Wealth Management Technology.",
   more: "Most of my work is the road from commit to production: zero-downtime releases on AWS, CI/CD pipelines, and the monitoring that catches problems early. Alongside it, I'm studying for a doctorate in technology management at Westcliff University.",
-  /** The quick facts under the panel: a label, the fact, and a line under it (Based in also shows his local time). */
+  /** The quick facts under the panel: a label, the fact, and (most of them) a line under it. */
   facts: [
-    { k: 'Based in', v: 'Richmond, VA', note: 'Eastern Time', clock: true },
+    { k: 'Based in', v: 'Richmond, VA' },
     { k: 'Experience', v: '6+ years', note: 'Building software since 2020' },
     { k: 'Studied', v: 'M.S., Computer Science', note: 'George Mason University, 2023' },
-    { k: 'Studying', v: 'DBA, Technology Management', note: 'Westcliff University, expected 2029' },
-    { k: 'Certified', v: 'AWS Developer – Associate', note: 'and AWS Cloud Practitioner' },
-    { k: 'Stack', v: 'Java, Spring Boot, Kafka', note: 'AWS, Angular and React' },
-  ],
+    { k: 'Studying', v: 'DBA, Technology Management', note: 'Westcliff University, expected 2030' },
+    { k: 'Certified', v: 'AWS Associate Developer', note: 'and AWS Cloud Practitioner' },
+    { k: 'Stack', v: 'Cloud-native Java', note: 'Full stack' },
+  ] as { k: string; v: string; note?: string }[],
   quote: 'From the first commit to production.',
   card: {
     title: 'Associate',
@@ -430,7 +430,7 @@ export const projects: Project[] = [
 export const learning = {
   sub: 'A doctorate in progress, two AWS certifications and two computer science degrees.',
   items: [
-    { title: 'DBA, Technology Management', from: 'Westcliff University · Jul 2026 – Aug 2029 (expected)' },
+    { title: 'DBA, Technology Management', from: 'Westcliff University · Jul 2026 – 2030 (expected)' },
     { title: 'AWS Certified Developer', from: 'Amazon Web Services · Certification' },
     { title: 'AWS Certified Cloud Practitioner', from: 'Amazon Web Services · Certification' },
     { title: 'M.S., Computer Science', from: 'George Mason University · Fairfax, VA · 2023' },
@@ -504,7 +504,7 @@ export const timeline: Milestone[] = [
     kind: 'Education',
     title: 'DBA, Technology Management',
     org: 'Westcliff University',
-    period: 'Jul 2026 – Aug 2029 (expected)',
+    period: 'Jul 2026 – 2030 (expected)',
     badge: 'In progress',
     current: true,
   },
@@ -619,7 +619,7 @@ export const experience: Role[] = [
 
 export const education: Role[] = [
   {
-    period: 'Jul 2026 – Aug 2029 (expected)',
+    period: 'Jul 2026 – 2030 (expected)',
     role: 'Doctorate in Business Administration (DBA), Technology Management',
     org: 'Westcliff University',
     where: '',
