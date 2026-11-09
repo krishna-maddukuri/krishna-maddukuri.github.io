@@ -70,21 +70,30 @@ async function at(page: Page, fx: number, fy: number) {
     [fx, fy],
   )
 }
-/** The glow (the browser's own gradient, a div under the canvas): how much shows, where, and how big, with his box. */
-async function glow(page: Page) {
+/** The glow: a point beside his head, inside the glow's ellipse and clear of him. */
+const glow = (page: Page) => at(page, 0.1, 0.15)
+/**
+ * The glow along the row 42% down him (its middle), one canvas pixel at a time, from 0.15 of his width left
+ * of his box outwards to 0.8 of it, past the glow's rim (0.65): the alpha of each pixel.
+ */
+async function glowRow(page: Page) {
   return page.evaluate(() => {
-    const el = document.querySelector<HTMLElement>('#top [data-shard-layer] .figure-glow')!
-    const g = el.getBoundingClientRect()
-    const b = document.querySelector<HTMLElement>('#top [data-paper-figure]')!.getBoundingClientRect()
-    const cs = getComputedStyle(el)
-    return {
-      opacity: Number(cs.opacity),
-      bg: cs.backgroundImage,
-      dx: g.left + g.width / 2 - (b.left + b.width / 2),
-      cy: (g.top + g.height / 2 - b.top) / b.height,
-      w: g.width / b.width,
-      h: g.height / b.height,
-    }
+    const canvas = document.querySelector<HTMLCanvasElement>('#top [data-shard-layer] canvas')!
+    const box = document.querySelector<HTMLElement>('#top [data-paper-figure]')!.getBoundingClientRect()
+    const cr = canvas.getBoundingClientRect()
+    const s = canvas.width / cr.width
+    const probe = document.createElement('canvas')
+    probe.width = canvas.width
+    probe.height = canvas.height
+    const ctx = probe.getContext('2d')!
+    ctx.drawImage(canvas, 0, 0)
+    const y = Math.round((box.top - cr.top + 0.42 * box.height) * s)
+    const from = Math.round((box.left - cr.left - 0.15 * box.width) * s)
+    const to = Math.round((box.left - cr.left - 0.8 * box.width) * s)
+    const d = ctx.getImageData(to, y, from - to, 1).data
+    const alpha: number[] = []
+    for (let i = d.length - 1; i > 0; i -= 4) alpha.push(d[i])
+    return alpha
   })
 }
 /** The shadow: the darkest paint just right of his arm (the shadow falls a little right and down). */
@@ -283,19 +292,37 @@ test.describe('paper figure', () => {
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
-    // the browser's own gradient under the shards, centred on him: 2.3 of his widths across, 1.24 of his
-    // heights tall, its middle 42% down him
     const g = await glow(page)
-    expect(g.opacity).toBeGreaterThan(0.95)
-    expect(g.bg).toContain('radial-gradient')
-    expect(Math.abs(g.dx)).toBeLessThan(2)
-    expect(g.w).toBeCloseTo(2.3, 1)
-    expect(g.h).toBeCloseTo(1.24, 1)
-    expect(g.cy).toBeCloseTo(0.42, 1)
-    // (and nothing of it in the canvas, which has neither glow nor shadow on this page: at most the faint
-    // anti-aliased edge of his sleeve where the shadow would fall)
-    expect((await at(page, 0.1, 0.15)).a).toBeLessThan(3)
+    // faint warm light: well under the paint the tests above look for (alpha 40)
+    expect(g.a).toBeGreaterThan(4)
+    expect(g.a).toBeLessThan(32)
+    expect(g.r).toBeGreaterThan(200)
+    // no shadow on this page (at most the faint anti-aliased edge of his sleeve where it would fall)
     expect(await shadow(page)).toBeLessThan(3)
+  })
+
+  test('the glow fades out smoothly, dithered, with no rings and no edge', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'wide screens, where the whole glow is on the canvas')
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    const row = await glowRow(page)
+    expect(row.length).toBeGreaterThan(100)
+    // from a faint light beside him to nothing past the rim
+    const mean = (a: number[]) => a.reduce((t, v) => t + v, 0) / a.length
+    expect(mean(row.slice(0, 8))).toBeGreaterThan(6)
+    expect(row.slice(-8).every((v) => v === 0)).toBe(true)
+    // dithered: neighbouring pixels keep stepping up and down between two levels, where plain rounding
+    // would step down once per level and give rings
+    let turns = 0
+    for (let i = 1; i < row.length - 1; i++) if ((row[i] - row[i - 1]) * (row[i + 1] - row[i]) < 0) turns++
+    expect(turns).toBeGreaterThan(12)
+    // and smooth: averaged over 15 pixels it only ever falls, a little at a time
+    const avg = row.slice(0, row.length - 14).map((_, i) => mean(row.slice(i, i + 15)))
+    for (let i = 1; i < avg.length; i++) {
+      expect(avg[i] - avg[i - 1]).toBeLessThan(0.5)
+      expect(avg[i - 1] - avg[i]).toBeLessThan(0.6)
+    }
   })
 
   test('on the paper page his shadow falls on the page instead', async ({ page }) => {
@@ -304,16 +331,16 @@ test.describe('paper figure', () => {
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
     expect(await shadow(page)).toBeGreaterThan(15)
-    expect((await glow(page)).opacity).toBeLessThan(0.01)
+    expect((await glow(page)).a).toBeLessThan(3)
   })
 
   test('switching the theme swaps the glow for the shadow', async ({ page }) => {
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
-    expect((await glow(page)).opacity).toBeGreaterThan(0.95)
+    expect((await glow(page)).a).toBeGreaterThan(4)
     await page.getByRole('button', { name: 'Switch to light theme' }).click()
-    await expect.poll(async () => (await glow(page)).opacity, { timeout: 5_000 }).toBeLessThan(0.01)
+    await expect.poll(async () => (await glow(page)).a, { timeout: 5_000 }).toBeLessThan(3)
     await expect.poll(() => shadow(page), { timeout: 5_000 }).toBeGreaterThan(15)
   })
 

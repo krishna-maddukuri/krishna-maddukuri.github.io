@@ -18,11 +18,11 @@ import { onHome } from '../lib/home'
  *
  * The shards are drawn on a canvas as wide as the hero and as tall as its first screen, which the hero
  * keeps behind its words and over the giant name (`layer`, its [data-shard-layer]); the figure's own box,
- * where he stands, takes the clicks and holds the still picture. WebGL2: his shadow, then the shards in one
- * draw call; everything per shard happens in the vertex shader. The glow is the browser's own gradient (a
- * div under the canvas, kept in place each frame), as smooth on a 4K OLED as on any screen. Without WebGL,
- * or with "reduce motion" on, the plain cut-out is shown, with the same glow and shadow done in CSS
- * (index.css).
+ * where he stands, takes the clicks and holds the still picture. WebGL2: the page's light, then the shards
+ * in one draw call; everything per shard happens in the vertex shader. The canvas has exactly as many
+ * pixels as the screen gives it, so the glow, which is dithered pixel by pixel, reaches the screen as
+ * drawn: smooth on a 4K OLED, with no rings. Without WebGL, or with "reduce motion" on, the plain cut-out
+ * is shown, with the same glow and shadow done in CSS (index.css).
  */
 
 /** Texture pixels: the cut-out's size (the picture upscaled 4x). */
@@ -47,11 +47,12 @@ const RED = [240 / 255, 65 / 255, 46 / 255] as const
 
 /**
  * The page's light round him, in fractions of his box. Black page: an ellipse of warm light behind his
- * chest, 1.15 box-widths and 0.62 box-heights across each way from 42% down (its gradient is .figure-glow in
- * index.css). Paper page: his outline in a warm dark at 26%, moved 5% of his width right and 1.4% of his
- * height down, blurred by 1.1% of his height. (index.css has the same two for the still picture.)
+ * chest, 1.15 box-widths and 0.62 box-heights across each way from 42% down, 11.5% at its middle and
+ * falling off smoothly, 1 − (3r² − 2r³), to nothing at its rim. Paper page: his outline in a warm dark at
+ * 26%, moved 5% of his width right and 1.4% of his height down, blurred by 1.1% of his height. (index.css
+ * has the same two for the still picture.)
  */
-const GLOW = { rx: 1.15, ry: 0.62, cy: 0.42 }
+const GLOW = { rx: 1.15, ry: 0.62, cy: 0.42, a: 0.115 }
 const SHADOW = { dx: 0.05, dy: 0.014, blur: 0.011 }
 
 type MeshData = { w: number; h: number; p: number[]; z: number[]; t: number[] }
@@ -134,7 +135,7 @@ void main() {
 }`
 
 const FRAG = /* glsl */ `#version 300 es
-precision mediump float;
+precision highp float; // (the picture is 3830 pixels tall: a phone's half-precision would blur its places)
 uniform sampler2D u_tex;
 uniform vec3 u_red;
 uniform float u_alpha;
@@ -143,7 +144,9 @@ in vec3 v_n;
 in float v_shade;
 out vec4 o;
 void main() {
-  vec4 c = texture(u_tex, v_uv, -0.4); // premultiplied; a touch below the mip the size calls for keeps the creases crisp
+  // premultiplied; three quarters of a step below the mip his size calls for, so the folds stay crisp on a
+  // 4K screen (he is drawn at about 0.4 of the picture's size there)
+  vec4 c = texture(u_tex, v_uv, -0.75);
   if (c.a < 0.02) discard; // (the clear paper round his edges must not hide the shards behind it)
   if (gl_FrontFacing) {
     o = vec4(min(c.rgb * v_shade, vec3(c.a)), c.a) * u_alpha;
@@ -169,12 +172,27 @@ void main() {
 const AURA_FRAG = /* glsl */ `#version 300 es
 precision highp float;
 uniform sampler2D u_shade; // his outline, blurred (the red channel)
+uniform float u_mode;      // 0: the glow, 1: the shadow
 uniform float u_amount;    // 0..1
 in vec2 v_q;
 out vec4 o;
 void main() {
-  float a = texture(u_shade, v_q).r * 0.26 * u_amount;
-  o = vec4(vec3(0.169, 0.133, 0.098) * a, a);
+  if (u_mode < 0.5) {
+    // warm light, strongest behind his chest, falling off without a corner anywhere (so no ring shows) to
+    // nothing at the ellipse's rim, which it meets flat (so no edge shows either)
+    float r = min(length(v_q * 2.0 - 1.0), 1.0);
+    float a = ${GLOW.a.toFixed(3)} * (1.0 - r * r * (3.0 - 2.0 * r)) * u_amount;
+    // On the black page this light uses only the screen's lowest 30 of 256 steps, so rounded off it would
+    // show as rings, each step a band (an OLED shows every one). Instead each pixel rounds up or down by its
+    // place in a fine, even pattern (interleaved gradient noise), and the steps blend into a smooth fall-off.
+    // (The light is rounded as a whole, so every pixel keeps the same warm white: no coloured specks.)
+    float d = fract(52.9829189 * fract(dot(floor(gl_FragCoord.xy), vec2(0.06711056, 0.00583715))));
+    float q = floor(a * 255.0 + d) / 255.0;
+    o = vec4(vec3(1.0, 0.965, 0.925) * q, q);
+  } else {
+    float a = texture(u_shade, v_q).r * 0.26 * u_amount;
+    o = vec4(vec3(0.169, 0.133, 0.098) * a, a);
+  }
 }`
 
 export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | null; className?: string }) {
@@ -184,7 +202,6 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
   const [state, setState] = useState<State>('loading')
   const toggleRef = useRef<() => void>(() => {})
   const labelRef = useRef<HTMLDivElement>(null)
-  const glowRef = useRef<HTMLDivElement>(null)
   const hovered = useRef(false)
   const { image } = site.hero
 
@@ -325,6 +342,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       const AU = {
         view: auraLoc('u_view'),
         rect: auraLoc('u_rect'),
+        mode: auraLoc('u_mode'),
         amount: auraLoc('u_amount'),
       }
       gl.useProgram(aura)
@@ -333,7 +351,6 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       // how much of each shows: the glow on the black page, the shadow on the paper page (eased when the theme
       // switches; set straight away on the first frame)
       const lit = { glow: -1, shadow: -1 }
-      let glowLast: string[] = []
 
       // --- size: the canvas is as wide as the hero and runs from its top past his feet, to the bottom of
       // the screen at least (on wide screens that is the whole hero; on phones and tablets the first screen,
@@ -341,6 +358,10 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       // sliding away doesn't make it start over.
       let view = { w: 1, h: 1 }
       let sizedFor = 0
+      // the canvas's size in the screen's own pixels, as the browser lays it out (where it says so): with
+      // exactly that many, the drawing reaches the screen one to one, never stretched, and the glow's dither
+      // lands on whole pixels
+      let device: { w: number; h: number } | null = null
       const resize = () => {
         const w = section.clientWidth
         const sr = section.getBoundingClientRect()
@@ -352,9 +373,14 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         view = { w, h }
         canvas.style.height = `${h}px`
         // (test runners draw WebGL in software: one pixel per CSS pixel is plenty there)
-        const dpr = navigator.webdriver ? 1 : Math.min(window.devicePixelRatio || 1, 3, Math.sqrt(MAX_PIXELS / (w * h)))
-        const pw = Math.round(w * dpr)
-        const ph = Math.round(h * dpr)
+        const full = Math.min(window.devicePixelRatio || 1, 3)
+        const dpr = navigator.webdriver ? 1 : Math.min(full, Math.sqrt(MAX_PIXELS / (w * h)))
+        let pw = Math.round(w * dpr)
+        let ph = Math.round(h * dpr)
+        if (device && dpr === full && !navigator.webdriver && Math.abs(device.w - pw) <= 2 && Math.abs(device.h - ph) <= 2) {
+          pw = device.w
+          ph = device.h
+        }
         if (canvas.width !== pw || canvas.height !== ph) {
           canvas.width = pw
           canvas.height = ph
@@ -365,6 +391,17 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       const ro = new ResizeObserver(resize)
       ro.observe(section)
       ro.observe(box)
+      const exact = new ResizeObserver((entries) => {
+        const size = entries[0]?.devicePixelContentBoxSize?.[0]
+        if (!size) return
+        device = { w: size.inlineSize, h: size.blockSize }
+        resize()
+      })
+      try {
+        exact.observe(canvas, { box: 'device-pixel-content-box' })
+      } catch {
+        // (a browser that can't say keeps the rounded size above)
+      }
 
       // where he stands on the canvas right now (the hero moves him: his entrance, and the scroll on wide screens)
       const place = () => {
@@ -587,34 +624,26 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         const fade = Math.min(1, (now - born) / FADE_IN)
         const glowA = lit.glow * fade
         const shadowA = lit.shadow * (1 - k) * fade
-        const fw = TEX_W * s
-        const fh = TEX_H * s
-        // (the glow: the div under the canvas, moved with him; only what changed is written)
-        const glowEl = glowRef.current
-        if (glowEl) {
-          const next = [
-            `translate(${(x + fw * (0.5 - GLOW.rx)).toFixed(1)}px, ${(y + fh * (GLOW.cy - GLOW.ry)).toFixed(1)}px)`,
-            `${(fw * GLOW.rx * 2).toFixed(1)}px`,
-            `${(fh * GLOW.ry * 2).toFixed(1)}px`,
-            glowA < 0.002 ? '0' : glowA.toFixed(3),
-          ]
-          if (next.some((v, i) => v !== glowLast[i])) {
-            glowEl.style.transform = next[0]
-            glowEl.style.width = next[1]
-            glowEl.style.height = next[2]
-            glowEl.style.opacity = next[3]
-            glowLast = next
-          }
-        }
-        if (shadowA > 0.002) {
+        if (glowA > 0.002 || shadowA > 0.002) {
+          const fw = TEX_W * s
+          const fh = TEX_H * s
           gl.useProgram(aura)
           gl.bindVertexArray(auraVao)
           gl.disable(gl.DEPTH_TEST)
           gl.depthMask(false)
           gl.uniform2f(AU.view, view.w, view.h)
-          gl.uniform1f(AU.amount, shadowA)
-          gl.uniform4f(AU.rect, x + (SHADOW.dx - shade.px) * fw, y + (SHADOW.dy - shade.py) * fh, fw * (1 + 2 * shade.px), fh * (1 + 2 * shade.py))
-          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          if (shadowA > 0.002) {
+            gl.uniform1f(AU.mode, 1)
+            gl.uniform1f(AU.amount, shadowA)
+            gl.uniform4f(AU.rect, x + (SHADOW.dx - shade.px) * fw, y + (SHADOW.dy - shade.py) * fh, fw * (1 + 2 * shade.px), fh * (1 + 2 * shade.py))
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          }
+          if (glowA > 0.002) {
+            gl.uniform1f(AU.mode, 0)
+            gl.uniform1f(AU.amount, glowA)
+            gl.uniform4f(AU.rect, x + fw * (0.5 - GLOW.rx), y + fh * (GLOW.cy - GLOW.ry), fw * GLOW.rx * 2, fh * GLOW.ry * 2)
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          }
           gl.enable(gl.DEPTH_TEST)
           gl.depthMask(true)
           gl.useProgram(prog)
@@ -649,6 +678,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       cleanup = () => {
         clearTimeout(holdTimer)
         ro.disconnect()
+        exact.disconnect()
         io.disconnect()
         window.removeEventListener('pointermove', onMove)
         document.removeEventListener('mouseleave', onLeave)
@@ -687,10 +717,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         <>
           {layer &&
             createPortal(
-              <>
-                <div ref={glowRef} aria-hidden className="figure-glow" />
-                <canvas ref={canvasRef} role="img" aria-label={site.name} className="pointer-events-none block w-full" />
-              </>,
+              <canvas ref={canvasRef} role="img" aria-label={site.name} className="pointer-events-none block w-full" />,
               layer,
             )}
           <button
