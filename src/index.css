@@ -1378,6 +1378,23 @@ html.lenis, html.lenis body { height: auto; }
   color: #160403;
   font-weight: 600;
 }
+/* a tile lifts under the pointer and gives when pressed, in CSS (the browser animates it without script);
+   the entrance wave (--wave, set per tile) delays only its colours */
+.skills-tile {
+  transition:
+    background-color 0.5s var(--wave, 0s),
+    color 0.5s var(--wave, 0s),
+    opacity 0.5s,
+    box-shadow 0.5s,
+    translate 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    scale 0.14s ease-out;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .skills-tile:hover { translate: 0 -4px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skills-tile:active { scale: 0.96; }
+}
 @media (min-width: 1024px) {
   .skills-body {
     --cols: 9;

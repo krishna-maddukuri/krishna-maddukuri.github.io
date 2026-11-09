@@ -1,6 +1,6 @@
 import { AnimatePresence, useInView } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { memo, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { elements, families, type Element, type FamilyId } from '../data/site'
 import { skillLogos } from '../data/logos'
 import { Plate } from '../components/Logo'
@@ -82,7 +82,7 @@ export function Skills() {
                 dim={family !== null && el.family !== family}
                 active={focus?.sym === el.sym}
                 hover={hover}
-                onFocus={() => setFocus(el)}
+                onFocus={setFocus}
               />
             ))}
           </div>
@@ -93,7 +93,12 @@ export function Skills() {
   )
 }
 
-function Tile({
+/**
+ * One element. It is memoised and is handed the same `onFocus` every time, so pointing at a tile redraws
+ * only the two tiles whose ring changes (the one left and the one entered), not all of them. Its lift
+ * under the pointer and its press are plain CSS (`.skills-tile`), so they cost no script at all.
+ */
+const Tile = memo(function Tile({
   el,
   lit,
   delay,
@@ -108,32 +113,31 @@ function Tile({
   dim: boolean
   active: boolean
   hover: boolean
-  onFocus: () => void
+  onFocus: (el: Element) => void
 }) {
-  const style: CSSProperties = {
+  const show = () => onFocus(el)
+  const style: CSSProperties & { '--wave': string } = {
     background: lit ? `var(--fam-${el.family})` : 'var(--wash)',
     color: lit ? `var(--fam-${el.family}-fg)` : 'var(--ink-soft)',
-    transitionDelay: `${delay}s`,
+    // the entrance wave delays only the tile's colours (see `.skills-tile`), never its lift under the pointer
+    '--wave': `${delay}s`,
     // the picked tile is ringed in its brand's colour
     outline: active ? `2px solid ${skillLogos[el.sym]?.color ?? 'var(--ink)'}` : undefined,
     outlineOffset: active ? 2 : undefined,
   }
   return (
-    <m.button
+    <button
       type="button"
       // pointing at a tile shows it only where there is a real pointer: on a touch screen a tap does, and the
       // page scrolling under a resting finger or cursor never swaps the inspector (a new note can change its
       // height and move everything below it, mid-scroll)
-      onMouseEnter={hover ? onFocus : undefined}
-      onFocus={onFocus}
-      onClick={onFocus}
+      onMouseEnter={hover ? show : undefined}
+      onFocus={show}
+      onClick={show}
       aria-label={`${el.name} (${familyLabel[el.family]})`}
       aria-pressed={active}
-      whileHover={{ y: -4 }}
-      whileTap={{ scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       style={style}
-      className={`skills-tile relative aspect-square min-w-0 rounded-[12px] text-left shadow-sm transition-[background-color,color,opacity,box-shadow] duration-500 hover:shadow-md sm:rounded-[14px] ${
+      className={`skills-tile relative aspect-square min-w-0 rounded-[12px] text-left shadow-sm hover:shadow-md sm:rounded-[14px] ${
         dim ? 'opacity-[0.18]' : 'opacity-100'
       } ${el.family === OUTLINE ? 'hover:bg-wash!' : ''}`}
     >
@@ -146,9 +150,9 @@ function Tile({
       <span className="skills-name absolute inset-x-2 bottom-1.5 hidden truncate text-[10.5px] font-medium sm:block sm:inset-x-2.5 sm:bottom-2 lg:text-[11.5px]">
         {el.name}
       </span>
-    </m.button>
+    </button>
   )
-}
+})
 
 /**
  * What the picked tile is. On phones it's a glass pane that sticks under the header,
