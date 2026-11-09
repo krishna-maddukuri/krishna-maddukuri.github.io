@@ -119,8 +119,8 @@ export function orgFor(label: string): Org | undefined {
 export type Badge = { key: string; name: string; short: string; match: string[]; file?: string }
 
 export const badges: Badge[] = [
-  { key: 'aws-developer-associate', name: 'AWS Certified Developer', short: 'DVA', match: ['Developer'], file: 'logos/badges/aws-certified-developer-associate.png' },
-  { key: 'aws-cloud-practitioner', name: 'AWS Certified Cloud Practitioner', short: 'CLF', match: ['Cloud Practitioner'], file: 'logos/badges/aws-certified-cloud-practitioner.png' },
+  { key: 'aws-developer-associate', name: 'AWS Certified Developer', short: 'DVA', match: ['Developer'], file: 'logos/badges/aws-certified-developer-associate.webp' },
+  { key: 'aws-cloud-practitioner', name: 'AWS Certified Cloud Practitioner', short: 'CLF', match: ['Cloud Practitioner'], file: 'logos/badges/aws-certified-cloud-practitioner.webp' },
 ]
 
 export function badgeFor(label: string): Badge | undefined {
