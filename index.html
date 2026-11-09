@@ -19,12 +19,13 @@
     <link rel="icon" type="image/png" sizes="96x96" href="./favicon.png?v=km3" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=km3" />
     <meta name="apple-mobile-web-app-title" content="Krishna" />
-    <!-- the two fonts on screen first, and the hero photo (the largest thing on the first screen) -->
+    <!-- the fonts the first screen is set in, fetched early. The page's script comes before everything else
+         (nothing shows until it has run), so the hero photo is fetched early but at a low priority, behind
+         it, and the handwriting font (three words on the first screen) is left to load when it is used -->
     <link rel="preload" href="./fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="./fonts/ibm-plex-mono-latin-500.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="./fonts/antonio-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="./fonts/sedgwick-ave-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="./avatar/krishna-origami.webp" as="image" type="image/webp" fetchpriority="high" />
+    <link rel="preload" href="./avatar/krishna-origami.webp" as="image" type="image/webp" fetchpriority="low" />
     <link rel="preload" href="./avatar/krishna-origami.json" as="fetch" crossorigin />
     <script type="application/ld+json">
       {

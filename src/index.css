@@ -35,7 +35,9 @@
   font-family: "Sedgwick Ave";
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
+  /* not preloaded (it gives way to the page's script): its words wait for it, for up to three seconds,
+     instead of showing in another font and changing */
+  font-display: block;
   src: url("/fonts/sedgwick-ave-latin.woff2") format("woff2");
 }
 /* Antonio, portfolio-2's display face: headings, the giant words and the monogram */
