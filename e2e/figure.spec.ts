@@ -70,32 +70,8 @@ async function at(page: Page, fx: number, fy: number) {
     [fx, fy],
   )
 }
-/** The glow: a point just outside his left cuff (at his box's edge, 42% down him), in the halo round him. */
-const glow = (page: Page) => at(page, 0, 0.42)
-/**
- * The glow along the row 42% down him (his cuffs), one canvas pixel at a time, from his box's left edge,
- * just outside his cuff, outwards to 0.3 of his width beyond it, well past the halo: the alpha of each pixel.
- */
-async function glowRow(page: Page) {
-  return page.evaluate(() => {
-    const canvas = document.querySelector<HTMLCanvasElement>('#top [data-shard-layer] canvas')!
-    const box = document.querySelector<HTMLElement>('#top [data-paper-figure]')!.getBoundingClientRect()
-    const cr = canvas.getBoundingClientRect()
-    const s = canvas.width / cr.width
-    const probe = document.createElement('canvas')
-    probe.width = canvas.width
-    probe.height = canvas.height
-    const ctx = probe.getContext('2d')!
-    ctx.drawImage(canvas, 0, 0)
-    const y = Math.round((box.top - cr.top + 0.42 * box.height) * s)
-    const from = Math.round((box.left - cr.left) * s)
-    const to = Math.max(0, Math.round((box.left - cr.left - 0.3 * box.width) * s))
-    const d = ctx.getImageData(to, y, from - to, 1).data
-    const alpha: number[] = []
-    for (let i = d.length - 1; i > 0; i -= 4) alpha.push(d[i])
-    return alpha
-  })
-}
+/** Just outside his left cuff (his box's edge, 42% down him): the page beside him, where nothing is drawn. */
+const beside = (page: Page) => at(page, 0, 0.42)
 /** The shadow: the darkest paint just right of his arm (the shadow falls a little right and down). */
 async function shadow(page: Page) {
   let most = 0
@@ -288,39 +264,16 @@ test.describe('paper figure', () => {
     expect(gum).toBe(true)
   })
 
-  test('on the black page a soft glow behind him keeps his black clothes off the page', async ({ page }) => {
+  test('on the black page nothing is drawn round him: the page stays true black', async ({ page }) => {
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
-    const g = await glow(page)
-    // faint warm light: well under the paint the tests above look for (alpha 40)
-    expect(g.a).toBeGreaterThan(4)
-    expect(g.a).toBeLessThan(32)
-    expect(g.r).toBeGreaterThan(200)
-    // no shadow on this page (at most the faint anti-aliased edge of his sleeve where it would fall)
+    // no light beside him, above his head or past his other arm (at most a faint anti-aliased edge)
+    expect((await beside(page)).a).toBeLessThan(3)
+    expect((await at(page, 0.5, -0.04)).a).toBeLessThan(3)
+    expect((await at(page, 1.04, 0.42)).a).toBeLessThan(3)
+    // and no shadow on this page
     expect(await shadow(page)).toBeLessThan(3)
-  })
-
-  test('the glow hugs him and fades out smoothly, dithered, with no rings and no edge', async ({ page }) => {
-    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'wide screens, where the whole halo is on the canvas')
-    await openHome(page)
-    const figure = page.locator('#top [data-paper-figure]')
-    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
-    const row = await glowRow(page)
-    expect(row.length).toBeGreaterThan(40)
-    // a faint light right beside him, and nothing a little way off: the halo stays close to him
-    const mean = (a: number[]) => a.reduce((t, v) => t + v, 0) / a.length
-    expect(mean(row.slice(0, 4))).toBeGreaterThan(6)
-    expect(row.slice(Math.round(row.length / 2)).every((v) => v === 0)).toBe(true)
-    // dithered: where it fades, neighbouring pixels step up and down between two levels, where plain
-    // rounding would step down once per level and give rings
-    let turns = 0
-    for (let i = 1; i < row.length - 1; i++) if ((row[i] - row[i - 1]) * (row[i + 1] - row[i]) < 0) turns++
-    expect(turns).toBeGreaterThan(2)
-    // and smooth: no jump between neighbours, and averaged over 7 pixels it only ever falls
-    for (let i = 1; i < row.length; i++) expect(Math.abs(row[i] - row[i - 1])).toBeLessThan(4)
-    const avg = row.slice(0, row.length - 6).map((_, i) => mean(row.slice(i, i + 7)))
-    for (let i = 1; i < avg.length; i++) expect(avg[i] - avg[i - 1]).toBeLessThan(0.45)
   })
 
   test('on the paper page his shadow falls on the page instead', async ({ page }) => {
@@ -329,17 +282,18 @@ test.describe('paper figure', () => {
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
     expect(await shadow(page)).toBeGreaterThan(15)
-    expect((await glow(page)).a).toBeLessThan(3)
+    expect((await beside(page)).a).toBeLessThan(3)
   })
 
-  test('switching the theme swaps the glow for the shadow', async ({ page }) => {
+  test('switching the theme brings his shadow in and takes it away again', async ({ page }) => {
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
-    expect((await glow(page)).a).toBeGreaterThan(4)
+    expect(await shadow(page)).toBeLessThan(3)
     await page.getByRole('button', { name: 'Switch to light theme' }).click()
-    await expect.poll(async () => (await glow(page)).a, { timeout: 5_000 }).toBeLessThan(3)
     await expect.poll(() => shadow(page), { timeout: 5_000 }).toBeGreaterThan(15)
+    await page.getByRole('button', { name: 'Switch to dark theme' }).click()
+    await expect.poll(() => shadow(page), { timeout: 5_000 }).toBeLessThan(3)
   })
 
   test('shows the still picture when motion is reduced', async ({ page }) => {
@@ -351,10 +305,9 @@ test.describe('paper figure', () => {
     await expect(img).toBeVisible()
     expect(await img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true)
     expect(await page.locator('#top canvas').count()).toBe(0)
-    // the same light round him, done in CSS: the warm halo on the black page …
+    // the same as the moving figure, done in CSS: nothing round him on the black page …
     const filter = () => img.evaluate((el) => getComputedStyle(el).filter)
-    expect(await filter()).toContain('drop-shadow')
-    expect(await filter()).toContain('rgba(255, 246, 236')
+    expect(await filter()).toBe('none')
     // … and his dark paper shadow on the paper page
     await page.getByRole('button', { name: 'Switch to light theme' }).click()
     await expect.poll(filter).toContain('rgba(43, 34, 25')
