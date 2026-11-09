@@ -316,17 +316,14 @@ const u = (n: number) => `${+(n / 3).toFixed(4)}cqw`
 const words = site.name.split(' ')
 const nameLines = [words.slice(0, -1).join(' '), words[words.length - 1]]
 
-/** The microtext: his name and number over and over, too small to read without a lens. */
-const micro = `${site.name} · ${about.card.idNo} · `.toUpperCase().repeat(4)
-
 /** SVG ids must be unique on the page and plain enough for url(#…). */
 const useSvgId = () => 'card' + useId().replace(/[^\w-]/g, '')
 
 /**
  * The front. Dark mode: a black card. Light mode: a white one. In both: the red title bar with
  * the monogram (black tile, red letters), his portrait with a contact chip on its left and a
- * barcode on its right, a woven line pattern and a line of microtext, his name and the company
- * details, and a faint ghost of the photo.
+ * barcode on its right, a woven line pattern, his name and the company details, and a faint ghost
+ * of the photo.
  */
 function CardFront() {
   const fields = [
@@ -357,7 +354,6 @@ function CardFront() {
           {about.card.idNo}
         </span>
       </div>
-      <Micro style={{ insetInline: 0, top: u(53), textAlign: 'center', color: 'var(--badge-soft)' }} />
 
       <Chip style={{ left: u(22), top: u(122), width: u(34) }} />
       <img
@@ -488,7 +484,6 @@ function CardBack() {
           {site.openTo}
         </span>
       </div>
-      <Micro style={{ left: u(22), right: u(22), bottom: u(6), color: 'var(--badge-back-soft)' }} />
     </div>
   )
 }
@@ -523,18 +518,6 @@ function Weave({ height, style }: { height: number; style: CSSProperties }) {
       </defs>
       <rect width="300" height={height} fill={`url(#${id})`} />
     </svg>
-  )
-}
-
-function Micro({ style }: { style: CSSProperties }) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute overflow-hidden whitespace-nowrap font-semibold opacity-75"
-      style={{ height: u(5), fontSize: u(3.8), lineHeight: u(5), letterSpacing: '0.08em', ...style }}
-    >
-      {micro}
-    </div>
   )
 }
 
