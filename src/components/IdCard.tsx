@@ -337,7 +337,7 @@ function CardFront() {
   return (
     <div
       data-face="front"
-      className="@container backface-hidden absolute inset-0 overflow-hidden rounded-[18px] border border-[var(--badge-edge)] bg-[var(--badge)] text-[var(--badge-ink)] shadow-[0_26px_50px_-28px_rgb(40_28_16/0.45)]"
+      className="@container backface-hidden absolute inset-0 overflow-hidden rounded-[18px] border border-[var(--badge-edge)] bg-[var(--badge)] text-[var(--badge-ink)] shadow-[var(--badge-shadow)]"
     >
       <Weave height={430} style={{ top: u(50), height: u(430), color: 'var(--badge-weave)' }} />
 
@@ -424,7 +424,7 @@ function CardBack() {
   return (
     <div
       data-face="back"
-      className="@container backface-hidden absolute inset-0 overflow-hidden rounded-[18px] bg-[var(--badge-back)] text-[var(--badge-back-ink)] shadow-[0_26px_50px_-28px_rgb(40_28_16/0.5)]"
+      className="@container backface-hidden absolute inset-0 overflow-hidden rounded-[18px] bg-[var(--badge-back)] text-[var(--badge-back-ink)] shadow-[var(--badge-shadow)]"
       style={{ transform: 'rotateY(180deg)' }}
     >
       <Weave height={480} style={{ top: 0, height: u(480), color: 'var(--badge-back-weave)' }} />

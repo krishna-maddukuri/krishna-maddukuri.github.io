@@ -76,6 +76,9 @@
   --badge-back-pill: rgb(255 255 255 / 0.1);
   --badge-back-pill-ink: #ffffff;
   --badge-qr-edge: transparent;
+  /* the card's shadow, on the paper only: in the dark any shadow lighter than black would show on an OLED
+     screen as a dim glow round the card, so there it has none and the page stays true black */
+  --badge-shadow: 0 26px 50px -28px rgb(40 28 16 / 0.45);
   --line: #e2e0d8;
   --wash: #ebe9e2;
   --chip: #ece7dc;
@@ -203,6 +206,7 @@
   --badge-back-pill: #000000;
   --badge-back-pill-ink: #ffffff;
   --badge-qr-edge: #e2e0d8;
+  --badge-shadow: none;
   --line: #27272b;
   --wash: #121214;
   --chip: #1b1b1f;
