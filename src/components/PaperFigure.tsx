@@ -49,6 +49,7 @@ const RED = [240 / 255, 65 / 255, 46 / 255] as const
  * his height down, blurred by 1.1% of his height. (index.css has the same for the still picture.)
  */
 const SHADOW = { dx: 0.05, dy: 0.014, blur: 0.011 }
+const SHADOW_SRC = 'avatar/krishna-shadow.webp'
 
 type MeshData = { w: number; h: number; p: number[]; z: number[]; t: number[] }
 type State = 'loading' | 'building' | 'ready' | 'scattered' | 'fallback'
@@ -307,12 +308,30 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       gl.enableVertexAttribArray(cornerLoc)
       gl.vertexAttribPointer(cornerLoc, 2, gl.FLOAT, false, 0, 0)
       gl.bindVertexArray(shardVao)
-      const shade = shadowOf(pic)
+      // the shadow's shape is a small picture made ahead of time (SHADOW_SRC), so nothing is worked out here
+      // at startup; until it has loaded the texture is one clear texel (no shadow)
+      const shade = shadowBox()
+      const shadeTex = gl.createTexture()
       gl.activeTexture(gl.TEXTURE1)
-      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture())
+      gl.bindTexture(gl.TEXTURE_2D, shadeTex)
       gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, shade.w, shade.h, 0, gl.RED, gl.UNSIGNED_BYTE, shade.data)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, 1, 1, 0, gl.RED, gl.UNSIGNED_BYTE, new Uint8Array(1))
+      const shadePic = new Image()
+      shadePic.decoding = 'async'
+      shadePic.src = SHADOW_SRC
+      shadePic
+        .decode()
+        .then(() => {
+          if (disposed || shadePic.naturalWidth !== shade.w || shadePic.naturalHeight !== shade.h) return
+          gl.activeTexture(gl.TEXTURE1)
+          gl.bindTexture(gl.TEXTURE_2D, shadeTex)
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
+          gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE)
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, gl.RED, gl.UNSIGNED_BYTE, shadePic)
+          gl.activeTexture(gl.TEXTURE0)
+        })
+        .catch(() => {})
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -787,55 +806,19 @@ function buildGeometry(mesh: MeshData) {
 }
 
 /**
- * His shadow on the paper page: the cut-out's outline at a fifth of its size, blurred (three box blurs each
- * way, about a Gaussian of SHADOW.blur of his height), with room round it for the blur. `px` and `py` are
- * that room, as fractions of his width and height.
+ * His shadow on the paper page is a picture made ahead of time (public/avatar/krishna-shadow.webp): the
+ * cut-out's outline at a fifth of its size, blurred (three box blurs each way, about a Gaussian of SHADOW.blur
+ * of his height), with room round it for the blur. This is that picture's size; `px` and `py` are the room,
+ * as fractions of his width and height. A new cut-out or a new SHADOW.blur needs the picture made again.
  */
-function shadowOf(pic: HTMLImageElement) {
+function shadowBox() {
   const S = 0.2
   const fw = Math.round(TEX_W * S)
   const fh = Math.round(TEX_H * S)
   const sigma = SHADOW.blur * fh
   const r = Math.max(1, Math.round((Math.sqrt(4 * sigma * sigma + 1) - 1) / 2))
   const pad = 3 * r + 2
-  const w = fw + pad * 2
-  const h = fh + pad * 2
-  const data = new Uint8Array(w * h)
-  const out = { w, h, data, px: pad / fw, py: pad / fh }
-  const c = document.createElement('canvas')
-  c.width = w
-  c.height = h
-  const g = c.getContext('2d', { willReadFrequently: true })
-  if (!g) return out
-  g.imageSmoothingQuality = 'high'
-  g.drawImage(pic, pad, pad, fw, fh)
-  const src = g.getImageData(0, 0, w, h).data
-  let a = new Float32Array(w * h)
-  let b = new Float32Array(w * h)
-  for (let i = 0; i < w * h; i++) a[i] = src[i * 4 + 3]
-  const n = 2 * r + 1
-  // one box blur along rows (step 1) or columns (step w), from a into b
-  const box = (len: number, lines: number, step: number, line: number) => {
-    for (let l = 0; l < lines; l++) {
-      const o = l * line
-      let sum = 0
-      for (let i = 0; i <= r && i < len; i++) sum += a[o + i * step]
-      for (let i = 0; i < len; i++) {
-        b[o + i * step] = sum / n
-        if (i + r + 1 < len) sum += a[o + (i + r + 1) * step]
-        if (i - r >= 0) sum -= a[o + (i - r) * step]
-      }
-    }
-    const t = a
-    a = b
-    b = t
-  }
-  for (let pass = 0; pass < 3; pass++) {
-    box(w, h, 1, w)
-    box(h, w, w, 1)
-  }
-  for (let i = 0; i < w * h; i++) data[i] = Math.min(255, Math.round(a[i]))
-  return out
+  return { w: fw + pad * 2, h: fh + pad * 2, px: pad / fw, py: pad / fh }
 }
 
 function program(gl: WebGL2RenderingContext, vs: string, fs: string) {
