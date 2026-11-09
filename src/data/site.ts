@@ -65,15 +65,20 @@ export const navItems = [
 
 export const about = {
   hello: 'Krishna.',
-  lead: 'Senior Software Engineer with 6+ years designing, building and operating large-scale **distributed systems** and cloud-native microservices in financial services. I build secure, compliant, high-throughput data platforms with **Java, Spring Boot, Apache Kafka and AWS**.',
-  more: 'I work across microservices, event-driven pipelines, REST APIs, CI/CD and production observability.',
+  /**
+   * His path, in the About panel (the hero already says what he builds, so this says where he has been).
+   * Words **marked like this** are bright and bold, as in the hero.
+   */
+  lead: "I started at **Infosys** in 2020, first as an intern and then building React front ends and CI/CD. After a master's in computer science at **George\u00a0Mason**, I built release pipelines and monitoring at **NGA\u00a0Group** and credit bureau reporting at **Capital\u00a0One**. Today I'm a Full Stack Software Engineer at **Bank\u00a0of\u00a0America**, in Wealth Management Technology.",
+  more: "Most of my work is the road from commit to production: zero-downtime releases on AWS, CI/CD pipelines, and the monitoring that catches problems early. Alongside it, I'm studying for a doctorate in technology management at Westcliff University.",
+  /** The quick facts under the panel: a label, the fact, and a line under it (Based in also shows his local time). */
   facts: [
-    { k: 'Based in', v: 'Richmond, VA' },
-    { k: 'Role', v: 'Full Stack Software Engineer · Bank of America' },
-    { k: 'Experience', v: '6+ years · financial services' },
-    { k: 'Studied', v: 'M.S. Computer Science, George Mason' },
-    { k: 'Certified', v: 'AWS Developer' },
-    { k: 'Focus', v: 'Java · Kafka · AWS' },
+    { k: 'Based in', v: 'Richmond, VA', note: 'Eastern Time', clock: true },
+    { k: 'Experience', v: '6+ years', note: 'Building software since 2020' },
+    { k: 'Studied', v: 'M.S., Computer Science', note: 'George Mason University, 2023' },
+    { k: 'Studying', v: 'DBA, Technology Management', note: 'Westcliff University, expected 2029' },
+    { k: 'Certified', v: 'AWS Developer – Associate', note: 'and AWS Cloud Practitioner' },
+    { k: 'Stack', v: 'Java, Spring Boot, Kafka', note: 'AWS, Angular and React' },
   ],
   quote: 'From the first commit to production.',
   card: {

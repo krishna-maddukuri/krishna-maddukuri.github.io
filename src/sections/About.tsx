@@ -1,77 +1,89 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { about, site } from '../data/site'
 import { IdCard } from '../components/IdCard'
 import { LinkedInMark } from '../components/Logo'
 import { ResumeLink } from '../components/ResumeLink'
 import { Accent, ArrowDown, ArrowUpRight, Container, Eyebrow, Reveal, Rich } from '../components/ui'
 
-/** About: the hanging ID card on the left, "Hi, I'm …" in the middle, quick facts on the right. */
+/**
+ * About: "Hi, I'm Krishna." on one line; his path in a panel (as on portfolio-2) with the motto on
+ * one line and the Résumé and LinkedIn keys; the quick facts under it; the hanging ID card on the
+ * right. On phones: the heading, the panel, the card, then the facts.
+ */
 export function About() {
   const sectionRef = useRef<HTMLElement>(null)
 
   return (
     <section id="about" ref={sectionRef} className="relative py-[clamp(56px,8vw,112px)]">
       <Container>
-        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.84fr)_minmax(0,0.98fr)] lg:gap-10 xl:gap-14">
-          {/* hello (first on phones; the left column on wide screens) */}
-          <div className="relative z-10 min-w-0">
+        <div className="about-grid">
+          <div className="relative z-10 min-w-0 [grid-area:head]">
             <Eyebrow index="01" label="About" />
             <Reveal>
-              <h2 className="mt-5 font-display text-[clamp(2.8rem,5.4vw,4.9rem)] font-bold leading-[0.95]">
+              <h2 className="mt-5 whitespace-nowrap font-display text-[clamp(2.4rem,5.4vw,4.9rem)] font-bold leading-[0.95]">
                 Hi, I&rsquo;m <Accent>{about.hello}</Accent>
               </h2>
             </Reveal>
-            <Reveal delay={0.05}>
-              <p className="mt-7 max-w-[52ch] text-lg leading-[1.55] text-ink/85">
+          </div>
+
+          <Reveal delay={0.05} className="relative z-10 min-w-0 [grid-area:panel]">
+            <div className="about-panel">
+              <p className="about-lead">
                 <Rich text={about.lead} />
               </p>
-            </Reveal>
-            <Reveal delay={0.1}>
-              <p className="mt-4 max-w-[52ch] text-base text-ink-soft">{about.more}</p>
-            </Reveal>
-            <Reveal delay={0.15}>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <ResumeLink className="btn-solid btn-key">
+              <p className="about-more">{about.more}</p>
+              {/* the motto, in his own hand beside a red rule, on one line */}
+              <p className="about-quote">
+                <span className="accent-tail">&ldquo;{about.quote}&rdquo;</span>
+              </p>
+              <div className="mt-[clamp(22px,3vw,32px)] flex flex-wrap items-center gap-3">
+                <ResumeLink className="btn-solid btn-key btn-key--red">
                   Résumé <ArrowDown className="size-4" />
                 </ResumeLink>
-                <a
-                  href={site.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="lift btn-fill btn-key"
-                >
+                <a href={site.linkedin} target="_blank" rel="noreferrer" className="lift btn-fill btn-key">
                   <LinkedInMark className="size-5 rounded-[5px]" />
                   LinkedIn <ArrowUpRight className="size-3.5" />
                 </a>
               </div>
-            </Reveal>
-          </div>
+            </div>
+          </Reveal>
 
-          {/* the lanyard card: the middle column on wide screens (its strap is drawn across the whole section) */}
-          <div className="min-w-0">
+          {/* the lanyard card: the right column on wide screens (its strap is drawn across the whole section) */}
+          <div className="min-w-0 [grid-area:card]">
             <IdCard sectionRef={sectionRef} />
           </div>
 
-          {/* right: quick facts */}
-          <div className="relative z-10 min-w-0 lg:pt-2">
+          <div className="relative z-10 min-w-0 [grid-area:facts]">
             <div className="eyebrow">Quick facts</div>
-            <dl className="mt-4">
+            <dl className="about-facts mt-4">
               {about.facts.map((f, i) => (
-                <Reveal key={f.k} delay={0.05 * i} y={12} className="flex items-baseline justify-between gap-6 border-b border-line py-3.5">
-                  <dt className="shrink-0 text-sm text-ink-soft">{f.k}</dt>
-                  <dd className="text-right text-sm font-medium">{f.v}</dd>
+                <Reveal key={f.k} delay={0.04 * i} y={12} className="about-fact">
+                  <dt className="eyebrow">{f.k}</dt>
+                  <dd className="mt-2.5 text-[15px] font-semibold leading-snug sm:text-[17px]">{f.v}</dd>
+                  <dd className="mt-1 text-[13px] text-ink-soft sm:text-sm">{f.clock ? <LocalTime note={f.note} /> : f.note}</dd>
                 </Reveal>
               ))}
             </dl>
-            <Reveal delay={0.2}>
-              {/* the motto, in his own hand beside a red rule, as on portfolio-2 */}
-              <p className="mt-8 border-l-[3px] border-[var(--accent)] py-1 pl-[18px] text-[clamp(1.5rem,1.2rem+1.3vw,2.1rem)] leading-[1.15]">
-                <span className="accent-tail">&ldquo;{about.quote}&rdquo;</span>
-              </p>
-            </Reveal>
           </div>
         </div>
       </Container>
     </section>
+  )
+}
+
+const clockFormat = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' })
+const clockNow = () => clockFormat.format(new Date())
+
+/** His local time in Richmond, kept to the minute: "12:51 AM · Eastern Time". */
+function LocalTime({ note }: { note: string }) {
+  const [now, setNow] = useState(clockNow)
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(clockNow()), 15_000)
+    return () => window.clearInterval(id)
+  }, [])
+  return (
+    <>
+      <span className="tabular">{now}</span> · {note}
+    </>
   )
 }

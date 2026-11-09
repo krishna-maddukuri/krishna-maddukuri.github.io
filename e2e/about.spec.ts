@@ -13,10 +13,16 @@ test.describe('about', () => {
     await expect(about.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', 'https://www.linkedin.com/in/krishna-koushik')
     // the LinkedIn button carries the LinkedIn mark; the key words of the lead are in the accent colour (red)
     await expect(about.getByRole('link', { name: 'LinkedIn' }).locator('img')).toHaveAttribute('src', /linkedin\.svg$/)
-    const strong = about.locator('p strong').first()
-    await expect(strong).toContainText('distributed systems')
-    // (a new visit opens in dark mode, where they are the monogram's red; on the paper they are a step deeper)
-    expect(await strong.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(240, 65, 46)')
+    // his path sits in a panel; its key words are bright and bold, as in the hero (a new visit opens in dark mode)
+    const strong = about.locator('.about-panel strong').first()
+    await expect(strong).toContainText('Infosys')
+    expect(await strong.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(241, 241, 243)')
+    // "Hi, I'm Krishna." is one line, and so is the motto, at every width
+    const lines = (el: Element) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)
+    expect(await about.getByRole('heading', { level: 2 }).evaluate(lines)).toBeLessThan(1.5)
+    const quote = about.locator('.about-quote')
+    await expect(quote).toContainText('From the first commit to production.')
+    expect(await quote.evaluate((el) => el.scrollWidth <= el.clientWidth + 1 && el.firstElementChild!.getClientRects().length === 1)).toBe(true)
   })
 
   test('the ID card flips on click and on Enter, and shows the contact details on its back', async ({ page }) => {
