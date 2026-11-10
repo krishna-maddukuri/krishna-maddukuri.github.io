@@ -118,14 +118,14 @@ export function homeSweep(hero: HTMLElement) {
       fill: 'backwards',
     })
   }
-  // the intro, typed again behind its red caret (a little faster than when the page opens)
+  // the intro, typed again behind its red caret (in about a second, to land with the rest)
   const letters = hero.querySelectorAll<HTMLElement>('.lede-ch')
   const typed = letters.length ? after(letters[0]) : 0
   const caret = [{ boxShadow: `2px 0 0 ${red}` }, { boxShadow: `2px 0 0 ${red}` }]
   letters.forEach((letter, i) => {
-    const delay = typed + (Number(letter.style.getPropertyValue('--c')) || i) * 11
+    const delay = typed + (Number(letter.style.getPropertyValue('--c')) || i) * 5
     letter.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1, delay, fill: 'backwards' })
-    letter.animate(caret, i === letters.length - 1 ? { duration: 700, delay } : { duration: 12, delay })
+    letter.animate(caret, i === letters.length - 1 ? { duration: 700, delay } : { duration: 5, delay })
   })
   for (const count of hero.querySelectorAll<HTMLElement>('.count')) {
     const value = Number(count.style.getPropertyValue('--to'))
