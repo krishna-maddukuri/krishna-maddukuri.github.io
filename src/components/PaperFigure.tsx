@@ -15,8 +15,8 @@ import { onHome } from '../lib/home'
  * While they are out, a ring travels through them every couple of seconds (each shard it passes is nudged
  * outward, swells and turns over), and with a mouse the shards part around the pointer, the rings start
  * from wherever the pointer is, and the shards stay out for as long as the pointer keeps moving over the
- * first screen: they come home two seconds after it stops, on a second click, or when the page is scrolled
- * on. Left alone (and on phones) it is the same couple of seconds out as ever.
+ * first screen: they come home two seconds after it stops, on a second click anywhere on the page, or when
+ * the page is scrolled on. Left alone (and on phones) it is the same couple of seconds out as ever.
  *
  * On the paper page he casts his paper shadow, a little down and to the right, as if the cut-out stands
  * just in front of the page (it fades while his pieces are out). On the black page there is no light round
@@ -137,9 +137,9 @@ void main() {
   float wide = max(u_view.x, u_view.y);
   vec2 from = pos.xy - u_poke.xy;
   float pd = length(from);
-  float part = 1.0 - smoothstep(0.0, 0.13 * wide, pd);
+  float part = 1.0 - smoothstep(0.0, 0.065 * wide, pd);
   part *= part * u_poke.z * k;
-  pos.xy += (pd > 0.5 ? from / pd : vec2(0.0, -1.0)) * part * 0.1 * wide;
+  pos.xy += (pd > 0.5 ? from / pd : vec2(0.0, -1.0)) * part * 0.045 * wide;
   // and rings travel out through them: as one passes, a shard is nudged outward, swells and turns over
   float ring = 0.0;
   for (int i = 0; i < ${RINGS}; i++) {
@@ -580,6 +580,15 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         }
       }
       window.addEventListener('scroll', onScroll, { passive: true })
+      // a click anywhere while they are out brings him home too (a click where he stood is the button's own,
+      // and whatever was clicked still does its own job)
+      const onAnyClick = (e: MouseEvent) => {
+        if ((phase !== 'out' && phase !== 'hold') || box.contains(e.target as Node)) return
+        if ((e.target as Element | null)?.closest?.('.figure-pill')) return
+        gather(performance.now())
+        schedule()
+      }
+      window.addEventListener('click', onAnyClick)
       const onLeave = () => {
         mouse.in = false
         hovered.current = false
@@ -760,6 +769,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         io.disconnect()
         window.removeEventListener('pointermove', onMove)
         window.removeEventListener('scroll', onScroll)
+        window.removeEventListener('click', onAnyClick)
         document.removeEventListener('mouseleave', onLeave)
         window.removeEventListener('blur', onLeave)
         offHome()

@@ -191,6 +191,18 @@ test.describe('paper figure', () => {
     await expect.poll(async () => (await paint(page)).inside, { timeout: 5_000 }).toBeGreaterThan(whole * 0.985)
   })
 
+  test('while his shards are out, a click anywhere else on the page brings him back', async ({ page }) => {
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    await page.getByRole('button', { name: /^Scatter/ }).first().click()
+    await expect(figure).toHaveAttribute('data-paper-figure', 'scattered')
+    // a bare patch of the hero, well away from where he stood
+    const size = page.viewportSize()!
+    await page.mouse.click(size.width * 0.08, size.height * 0.5)
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 1_500 })
+  })
+
   test('phones: the button under his feet scatters him and "Keep together" brings him back', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) >= 1024, 'phones and tablets only')
     await openHome(page)
