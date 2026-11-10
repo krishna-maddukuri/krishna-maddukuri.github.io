@@ -1,10 +1,11 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react'
 import { Link } from '../lib/router'
 import { projects, type Project } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { ProjectVisual } from '../visuals/LazyProjectVisual'
+import { preloadCaseStudy } from '../pages/LazyCaseStudy'
 import { ToolChip } from '../components/Logo'
 import { ArrowRight, Container, EASE, Plus, Reveal, SectionHeading } from '../components/ui'
 
@@ -104,6 +105,16 @@ function watchResize(on: () => void) {
   window.addEventListener('resize', on)
   return () => window.removeEventListener('resize', on)
 }
+/**
+ * "Read case study" changes page as one animated step: this names the open project's title and drawing, so
+ * the browser moves them from here to where they are on the case study page (.vt-title, .vt-visual there).
+ */
+function shareWithCaseStudy(e: MouseEvent<HTMLAnchorElement>) {
+  const scope = e.currentTarget.closest('[data-vt-scope]')
+  scope?.querySelector<HTMLElement>('[data-vt="title"]')?.style.setProperty('view-transition-name', 'project-title')
+  scope?.querySelector<HTMLElement>('[data-vt="visual"]')?.style.setProperty('view-transition-name', 'project-visual')
+}
+
 /** A closed panel's width and the gap between panels (px; basis-[64px] and gap-3 below). */
 const CLOSED_WIDTH = 64
 const GAP = 12
@@ -159,6 +170,7 @@ function Panel({
         {open && (
           <m.div
             key={p.slug}
+            data-vt-scope
             className="absolute inset-y-0 left-0 grid w-full grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-8 p-[clamp(18px,3.2svh,32px)] 2xl:gap-10 2xl:p-[clamp(24px,3.8svh,40px)]"
             style={width ? { width } : undefined}
             initial={{ opacity: 0 }}
@@ -167,6 +179,7 @@ function Panel({
           >
             <PanelBody project={p} index={index} onMeasure={onMeasure} />
             <m.div
+              data-vt="visual"
               className="flex min-h-0 items-center"
               initial={{ y: 24, scale: 0.97 }}
               animate={{ y: 0, scale: 1 }}
@@ -218,7 +231,7 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
           <span className="h-px w-6 bg-line" aria-hidden />
           <span className="min-w-0 leading-snug">{p.eyebrow}</span>
         </div>
-        <h3 className="mt-[clamp(10px,2svh,20px)] font-display text-[length:min(2.9rem,3vw,4.8svh)] font-bold leading-[0.98]">
+        <h3 data-vt="title" className="mt-[clamp(10px,2svh,20px)] font-display text-[length:min(2.9rem,3vw,4.8svh)] font-bold leading-[0.98]">
           {p.title}{' '}
           <em className="accent-tail">{p.accent}</em>
         </h3>
@@ -240,6 +253,9 @@ function PanelBody({ project: p, index, onMeasure }: { project: Project; index: 
         </div>
         <Link
           to={`/work/${p.slug}`}
+          transition
+          prepare={preloadCaseStudy}
+          onClick={shareWithCaseStudy}
           className="btn-solid btn-key group mt-[clamp(8px,1.6svh,20px)]"
         >
           Read case study <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -278,11 +294,13 @@ function Row({ project: p, index, open, onToggle }: { project: Project; index: n
             exit={{ height: 0 }}
             transition={{ duration: 0.5, ease: EASE }}
           >
-            <div className="grid gap-6 px-5 pb-6 md:grid-cols-2 md:items-start md:gap-8 md:px-6 md:pb-8">
-              <ProjectVisual kind={p.visual} className="aspect-[4/3] w-full" />
+            <div data-vt-scope className="grid gap-6 px-5 pb-6 md:grid-cols-2 md:items-start md:gap-8 md:px-6 md:pb-8">
+              <div data-vt="visual">
+                <ProjectVisual kind={p.visual} className="aspect-[4/3] w-full" />
+              </div>
               <div className="flex min-w-0 flex-col gap-5">
               <div className="eyebrow">{p.eyebrow}</div>
-              <h3 className="-mt-2 font-display text-[1.9rem] font-bold leading-none">
+              <h3 data-vt="title" className="-mt-2 font-display text-[1.9rem] font-bold leading-none">
                 {p.title}{' '}
                 <em className="accent-tail">{p.accent}</em>
               </h3>
@@ -302,6 +320,9 @@ function Row({ project: p, index, open, onToggle }: { project: Project; index: n
               </div>
               <Link
                 to={`/work/${p.slug}`}
+                transition
+                prepare={preloadCaseStudy}
+                onClick={shareWithCaseStudy}
                 className="btn-solid btn-key group w-fit"
               >
                 Read case study <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

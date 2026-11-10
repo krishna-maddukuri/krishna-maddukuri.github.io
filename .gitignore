@@ -5,6 +5,7 @@ Thumbs.db
 *.log
 *.local
 .env*
+!.env.example
 
 # Original full-size photos stay off GitHub (this repo is public).
 source-media/

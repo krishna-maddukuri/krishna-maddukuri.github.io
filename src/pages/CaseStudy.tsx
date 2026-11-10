@@ -1,12 +1,17 @@
-import type { ReactNode } from 'react'
+import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { Link, Navigate, useParams } from '../lib/router'
 import { projects } from '../data/site'
 import { ProjectVisual } from '../visuals/LazyProjectVisual'
 import { OrgMark, ToolChip } from '../components/Logo'
 import { ArrowLeft, ArrowRight, Check, Container, enter, Reveal } from '../components/ui'
 
+// the pipeline to play with, on its one case study: its code loads with that page only
+const PipelineDemo = lazy(() => import('../visuals/PipelineDemo').then((m) => ({ default: m.PipelineDemo })))
+
 export function CaseStudy() {
   const { slug } = useParams()
+  // opened by the animated change of page (Work's "Read case study"): that case study's own entrances stay off
+  const [arrived] = useState(() => (typeof document !== 'undefined' && document.documentElement.classList.contains('vt-page') ? slug : null))
   const idx = projects.findIndex((p) => p.slug === slug)
   if (idx < 0) return <Navigate to="/" replace />
 
@@ -23,7 +28,7 @@ export function CaseStudy() {
   ]
 
   return (
-    <main id="main" key={p.slug} className="pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 112px)' }}>
+    <main id="main" key={p.slug} data-arrived={arrived === p.slug ? '' : undefined} className="pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 112px)' }}>
       <Container>
         <div className="flex items-center justify-between gap-4">
           <Link
@@ -44,7 +49,7 @@ export function CaseStudy() {
           <OrgMark label={p.org} className="size-5 rounded-md text-[8px]" />
           <span>{p.eyebrow}</span>
         </div>
-        <h1 className="enter mt-5 font-display text-[clamp(2.8rem,8vw,7.4rem)] font-bold leading-[0.92]" style={enter(0, 40, 0.9)}>
+        <h1 className="vt-title enter mt-5 font-display text-[clamp(2.8rem,8vw,7.4rem)] font-bold leading-[0.92]" style={enter(0, 40, 0.9)}>
           {p.title}{' '}
           <em className="accent-tail">{p.accent}</em>
         </h1>
@@ -71,7 +76,7 @@ export function CaseStudy() {
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <div className="enter" style={enter(0.25, 40, 1, 0.98)}>
+            <div className="vt-visual enter" style={enter(0.25, 40, 1, 0.98)}>
               <ProjectVisual kind={p.visual} className="aspect-[4/3] w-full" />
             </div>
             {p.metrics.length > 0 && (
@@ -121,6 +126,22 @@ export function CaseStudy() {
             </Block>
           </div>
         </div>
+
+        {p.slug === 'event-driven-pipelines' && (
+          <section className="mt-24" aria-labelledby="pd-title">
+            <div className="eyebrow">Hands on</div>
+            <h2 id="pd-title" className="mt-4 font-display text-[clamp(2rem,4.6vw,3.6rem)] font-bold leading-[0.98]">
+              Send events through <em className="accent-tail">a pipeline.</em>
+            </h2>
+            <p className="mt-4 max-w-[62ch] text-md text-ink-soft">
+              A small working model of how a pipeline like this behaves, running in your browser: not the production system. Send
+              events, then stop a consumer in the middle of one and see why every event still ends up stored exactly once.
+            </p>
+            <Suspense fallback={<div className="pd pd--loading" aria-hidden />}>
+              <PipelineDemo />
+            </Suspense>
+          </section>
+        )}
 
         <div className="mt-24 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
           <Link

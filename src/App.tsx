@@ -3,14 +3,15 @@ import { lazy, Suspense, useEffect, useLayoutEffect } from 'react'
 import { Header } from './components/Header'
 import { Toaster } from './components/Toast'
 import { clearRetry, ErrorBoundary } from './components/ErrorBoundary'
+import { countPage } from './lib/analytics'
 import { pageTitle } from './lib/pageTitle'
 import { Navigate, Route, Router, Routes, useLocation } from './lib/router'
 import { SmoothScroll, useLenis } from './lib/scroll'
 import { Home } from './pages/Home'
+import { CaseStudy } from './pages/LazyCaseStudy'
 import { Footer } from './sections/Contact'
 
 // The two inner pages load only when someone opens them.
-const CaseStudy = lazy(() => import('./pages/CaseStudy').then((m) => ({ default: m.CaseStudy })))
 const Resume = lazy(() => import('./pages/Resume').then((m) => ({ default: m.Resume })))
 
 
@@ -60,6 +61,7 @@ function Pages() {
   // the tab names the page you are on (a pre-built page already carries its title)
   useEffect(() => {
     document.title = pageTitle(pathname)
+    countPage(pathname)
   }, [pathname])
   // once the site has been up for a while, a later failed download may be tried again by itself
   useEffect(() => {

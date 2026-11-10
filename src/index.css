@@ -1044,15 +1044,37 @@ html.lenis, html.lenis body { height: auto; }
   to { background-color: var(--glass-settled); }
 }
 
-/* the theme switch: the new theme spreads out from the button as a growing circle */
-::view-transition-old(root),
-::view-transition-new(root) {
+/* the theme switch (html.vt-theme while it runs): the new theme spreads out from the button as a growing circle */
+html.vt-theme::view-transition-old(root),
+html.vt-theme::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-::view-transition-new(root) {
+html.vt-theme::view-transition-new(root) {
   animation: theme-reveal 0.55s var(--ease-std);
 }
+
+/*
+  Into a case study (html.vt-page while it runs; lib/router.tsx, Work's "Read case study"): the project's
+  title and drawing travel from the Work section to their places on the case study page, growing as they go,
+  while the rest of the old page fades out and the new one fades in under them. The names are given only
+  during the change, so nothing else (the theme's circle) treats those pieces apart; and the page's own
+  entrances stand down (CaseStudy.tsx marks itself data-arrived), since the browser is already bringing
+  everything in.
+*/
+html.vt-page .vt-title { view-transition-name: project-title; }
+html.vt-page .vt-visual { view-transition-name: project-visual; }
+/* a page that arrived this way keeps its entrances off for good (they would replay once the change is over) */
+[data-arrived] .enter { animation: none; }
+html.vt-page::view-transition-old(root) { animation: vt-fade-out 0.22s ease both; }
+html.vt-page::view-transition-new(root) { animation: vt-fade-in 0.45s ease 0.12s both; }
+html.vt-page::view-transition-group(project-title),
+html.vt-page::view-transition-group(project-visual) {
+  animation-duration: 0.6s;
+  animation-timing-function: var(--ease-out);
+}
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
 @keyframes theme-reveal {
   from { clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 50%)); }
   to { clip-path: circle(var(--theme-r, 150vmax) at var(--theme-x, 50%) var(--theme-y, 50%)); }
@@ -1298,6 +1320,102 @@ html.lenis, html.lenis body { height: auto; }
 }
 @media (pointer: coarse) and (prefers-reduced-motion: reduce) {
   .skills-table { transition: none; }
+}
+
+/*
+  The pipeline to play with (visuals/PipelineDemo.tsx), on the Event-Driven Pipelines case study: a panel
+  with its controls, the topic's three partitions as rows of small squares (one per event: bright while it
+  waits, red while it is being processed, faint once stored and confirmed), the two consumers, the database's
+  counts, and a line saying what just happened.
+*/
+.pd {
+  margin-top: 28px;
+  padding: clamp(16px, 2.6vw, 28px);
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.pd--loading { min-height: 420px; }
+.pd-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.pd-stage {
+  display: grid;
+  gap: 24px;
+  margin-top: 22px;
+}
+@media (min-width: 900px) {
+  .pd-stage { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 32px; }
+}
+.pd-col { min-width: 0; }
+.pd-parts, .pd-consumers { display: grid; gap: 8px; margin-top: 12px; }
+.pd-part {
+  display: grid;
+  grid-template-columns: 2.2em minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+}
+.pd-part-name { font: 600 12px var(--ff-mono); color: var(--ink-soft); }
+.pd-log { display: flex; gap: 4px; min-height: 22px; overflow: hidden; }
+.pd-ev {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  font: 600 10px/1 var(--ff-mono);
+  vertical-align: middle;
+  transition: background-color 0.25s, color 0.25s, opacity 0.25s;
+}
+.pd-ev[data-state='wait'] { background: var(--ink); color: var(--paper); }
+.pd-ev[data-state='now'] { background: var(--accent); color: #160403; }
+.pd-ev[data-state='done'] { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--ink-soft); }
+.pd-part-meta { grid-column: 2; font: 500 11px var(--ff-mono); color: var(--ink-soft); }
+.pd-key { margin-top: 12px; font-size: 13px; line-height: 1.9; color: var(--ink-soft); }
+.pd-key .pd-ev { width: 12px; height: 12px; border-radius: 3px; margin: 0 2px 0 8px; }
+.pd-key .pd-ev:first-child { margin-left: 0; }
+.pd-consumer {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+  transition: opacity 0.3s;
+}
+.pd-consumer[data-up='false'] { opacity: 0.55; }
+.pd-consumer-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.pd-consumer-name .live-dot, .pd-off-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.pd-off-dot { background: var(--ink-soft); }
+.pd-consumer-state { font-size: 14px; color: var(--ink-soft); }
+.pd-consumer-parts { font: 500 11px var(--ff-mono); color: var(--ink-soft); }
+.pd-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+  background: var(--panel-line);
+}
+.pd-stats > div { padding: 10px 12px; background: var(--panel); }
+.pd-stats dt { font: 500 10.5px var(--ff-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.pd-stats dd { margin-top: 4px; font: 700 1.5rem/1 var(--ff-display); }
+@media (max-width: 480px) {
+  .pd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.pd-note {
+  margin-top: 18px;
+  min-height: 3em;
+  padding-left: 14px;
+  border-left: 3px solid var(--accent);
+  font-size: 15px;
+  line-height: 1.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pd-ev, .pd-consumer { transition: none; }
 }
 
 /* small text links (the footer's, the resume's LinkedIn) are a finger-sized target on touch screens */

@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import App from './App'
+import { installAnalytics } from './lib/analytics'
 import { deferSections } from './lib/deferSections'
 import { readPath } from './lib/router'
 import { installSpotlight } from './lib/spotlight'
@@ -11,6 +12,7 @@ applyStoredTheme()
 installPrintTheme()
 installSpotlight()
 deferSections()
+installAnalytics()
 
 const root = document.getElementById('root')!
 const app = (

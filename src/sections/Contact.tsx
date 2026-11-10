@@ -1,6 +1,6 @@
 import { useInView } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from '../lib/router'
 import { site } from '../data/site'
 import { useScrollTo } from '../lib/scroll'
@@ -110,6 +110,42 @@ export function Contact() {
   )
 }
 
+/**
+ * How this visit's page actually loaded, measured by the visitor's own browser: when it first showed
+ * something, when everything had arrived, and how much was sent over the network (nothing, if the browser
+ * had it all saved). Filled in once the page has loaded; the line keeps its place meanwhile.
+ */
+function LoadLine() {
+  const [text, setText] = useState('')
+  useEffect(() => {
+    let timer = 0
+    const read = () => {
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+      if (!nav || nav.loadEventEnd <= 0) return
+      const seconds = (ms: number) => `${(ms / 1000).toFixed(ms < 9950 ? 2 : 1)}s`
+      const paint = performance.getEntriesByName('first-contentful-paint')[0]?.startTime
+      const sent = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).reduce((sum, r) => sum + (r.transferSize || 0), nav.transferSize || 0)
+      const parts = [paint ? `First paint ${seconds(paint)}` : '', `Loaded in ${seconds(nav.loadEventEnd)}`, sent > 1024 ? `${Math.round(sent / 1024)} KB sent` : 'From your browser’s cache']
+      setText(parts.filter(Boolean).join(' · '))
+    }
+    const soon = () => {
+      // just after the load event, so its own end time is known
+      timer = window.setTimeout(read, 50)
+    }
+    if (document.readyState === 'complete') soon()
+    else window.addEventListener('load', soon, { once: true })
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('load', soon)
+    }
+  }, [])
+  return (
+    <p className="load-line tabular mt-4 min-h-[1.5em] font-mono text-xs text-ink-soft" aria-live="off">
+      {text && <span title="Measured by your browser on this visit">{text}</span>}
+    </p>
+  )
+}
+
 /** The footer's word: his surname, set like the giant name over the hero. */
 const fw = giantWord([site.name.split(' ').slice(-1)[0]])
 
@@ -139,6 +175,7 @@ export function Footer() {
             </button>
           </span>
         </div>
+        <LoadLine />
       </Container>
       {/* the surname, as wide as the page's measure, in the style of the giant name over the hero */}
       <m.div

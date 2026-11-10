@@ -74,4 +74,39 @@ test.describe('case study', () => {
     await expect(page.locator('#top')).toBeVisible()
     await expect(page).toHaveURL(/:4173\/$/)
   })
+
+  test('"Read case study" changes page as one step and leaves nothing behind', async ({ page }) => {
+    await openHome(page)
+    await jumpTo(page, 'work')
+    const link = page.locator('#work').getByRole('link', { name: 'Read case study' }).first()
+    await link.scrollIntoViewIfNeeded()
+    await link.click()
+    await expect(page).toHaveURL(/\/work\/[a-z-]+\/$/)
+    const h1 = page.getByRole('heading', { level: 1 })
+    await expect(h1).toBeVisible()
+    // the page is at its top, fully shown, and the transition's marks are gone
+    await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains('vt-page'))).toBe(false)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    expect(await h1.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+  })
+
+  test('the pipeline to play with stores every event once, even when a consumer stops mid-event', async ({ page }) => {
+    await page.goto('/work/event-driven-pipelines/')
+    const demo = page.locator('.pd')
+    await demo.scrollIntoViewIfNeeded()
+    const stat = async (name: string) => Number(await demo.locator('.pd-stats div', { hasText: name }).locator('dd').innerText())
+    expect(await stat('Sent')).toBe(await stat('Stored'))
+    await demo.getByRole('button', { name: 'Send 12' }).click()
+    await expect.poll(() => stat('Waiting')).toBeGreaterThan(0)
+    // stop the second consumer while it is in the middle of an event
+    await expect(demo.locator('.pd-consumer').nth(1)).toContainText(/Storing|Confirming/, { timeout: 5_000 })
+    await demo.getByRole('button', { name: 'Stop consumer 2' }).click()
+    await expect(demo.getByRole('status')).toContainText('gets that event again')
+    // the other consumer takes over; everything ends up stored once, and the copy was skipped
+    await expect.poll(() => stat('Waiting'), { timeout: 30_000 }).toBe(0)
+    expect(await stat('Stored')).toBe(await stat('Sent'))
+    expect(await stat('Copies skipped')).toBeGreaterThanOrEqual(1)
+    // the page is ready-made with the demo in it
+    expect(await (await page.request.get('/work/event-driven-pipelines/')).text()).toContain('pd-stage')
+  })
 })

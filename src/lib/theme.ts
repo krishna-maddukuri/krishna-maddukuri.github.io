@@ -94,7 +94,7 @@ export function useTheme() {
     } catch {
       /* storage can be blocked; the toggle still works for this visit */
     }
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void> } }
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> } }
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!doc.startViewTransition || reduce || !origin) {
       apply()
@@ -105,7 +105,9 @@ export function useTheme() {
     root.style.setProperty('--theme-x', `${origin.x}px`)
     root.style.setProperty('--theme-y', `${origin.y}px`)
     root.style.setProperty('--theme-r', `${r}px`)
-    doc.startViewTransition(apply)
+    // .vt-theme picks the circle (index.css); a page change has its own transition (.vt-page, lib/router.tsx)
+    root.classList.add('vt-theme')
+    doc.startViewTransition(apply).finished.finally(() => root.classList.remove('vt-theme'))
   }
 
   return { theme, toggle }

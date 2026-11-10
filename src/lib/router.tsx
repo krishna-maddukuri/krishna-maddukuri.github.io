@@ -5,6 +5,7 @@
  * any static host with no server rewrites; an address with no page falls to the host's 404.html, which is
  * this same app, and lands on the home page.
  */
+import { flushSync } from 'react-dom'
 import {
   createContext,
   startTransition,
@@ -20,7 +21,8 @@ import {
 } from 'react'
 
 export type Location = { pathname: string; state: unknown }
-export type NavigateOptions = { replace?: boolean; state?: unknown }
+/** `transition`: change page as one animated step (the browser's view transition), where the browser can. */
+export type NavigateOptions = { replace?: boolean; state?: unknown; transition?: boolean }
 export type NavigateFn = (to: string, opts?: NavigateOptions) => void
 
 const RouterContext = createContext<{ location: Location; navigate: NavigateFn } | null>(null)
@@ -63,7 +65,15 @@ export function Router({ children, path }: { children: ReactNode; path?: string 
     const entry = { usr: opts.state ?? null }
     if (opts.replace) window.history.replaceState(entry, '', url)
     else window.history.pushState(entry, '', url)
-    startTransition(() => setLocation({ pathname: path, state: opts.state ?? null }))
+    const next = { pathname: path, state: opts.state ?? null }
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } }
+    if (opts.transition && doc.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // the old page is pictured, the new one drawn at once (flushSync), and the browser animates between
+      // the two: what the pages share (.vt-* names in index.css) moves from its old place to its new one
+      const root = document.documentElement
+      root.classList.add('vt-page')
+      doc.startViewTransition(() => flushSync(() => setLocation(next))).finished.finally(() => root.classList.remove('vt-page'))
+    } else startTransition(() => setLocation(next))
   }, [])
 
   const value = useMemo(() => ({ location, navigate }), [location, navigate])
@@ -122,16 +132,34 @@ export function Navigate({ to, replace = false, state }: { to: string; replace?:
   return null
 }
 
-type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { to: string; state?: unknown }
+type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
+  to: string
+  state?: unknown
+  /** Animate the change of page; `prepare` is awaited first (the next page's code, so it can be drawn at once). */
+  transition?: boolean
+  prepare?: () => Promise<unknown>
+}
 
 /** An ordinary link (works in a new tab, middle click, "copy link") that navigates in place on a plain click. */
-export function Link({ to, state, onClick, children, ...rest }: LinkProps) {
+export function Link({ to, state, transition, prepare, onClick, children, ...rest }: LinkProps) {
   const navigate = useNavigate()
   const handle = (e: MouseEvent<HTMLAnchorElement>) => {
     onClick?.(e)
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || rest.target === '_blank') return
     e.preventDefault()
-    navigate(to, { state })
+    if (!transition) return navigate(to, { state })
+    // wait for the next page's code, but not for long: then go without the animation
+    let gone = false
+    const go = (animated: boolean) => {
+      if (gone) return
+      gone = true
+      navigate(to, { state, transition: animated })
+    }
+    const late = setTimeout(() => go(false), 1200)
+    Promise.resolve(prepare?.()).then(
+      () => (clearTimeout(late), go(true)),
+      () => (clearTimeout(late), go(false)),
+    )
   }
   return (
     <a href={href(to)} onClick={handle} {...rest}>
