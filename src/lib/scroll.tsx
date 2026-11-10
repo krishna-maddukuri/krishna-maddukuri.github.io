@@ -54,7 +54,7 @@ export function useLenis() {
 export function useScrollTo() {
   const lenis = useLenis()
   return useCallback(
-    (id: string, opts: { immediate?: boolean; onComplete?: () => void } = {}) => {
+    (id: string, opts: { immediate?: boolean; duration?: number; onComplete?: () => void } = {}) => {
       // every section at its real height before measuring where the target is
       warmSections()
       const target: HTMLElement | number = id === 'top' ? 0 : document.getElementById(id) ?? 0
@@ -64,7 +64,7 @@ export function useScrollTo() {
         lenis.resize()
         lenis.scrollTo(target, {
           offset: 0,
-          duration: 1.4,
+          duration: opts.duration ?? 1.4,
           immediate: opts.immediate,
           force: true,
           easing: (t: number) => 1 - Math.pow(1 - t, 4),
