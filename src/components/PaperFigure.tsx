@@ -49,7 +49,7 @@ const PLAY_ON = 2000 // out there, a moving mouse keeps them out; this long afte
 const RING_EVERY = 2200 // out there, a ring sets off through them this often,
 const RING_LIFE = 3600 // and has left the screen after this long
 const RINGS = 3 // (so no more than this many are ever travelling)
-const WAVE = 1600 // when the page comes home, his shards turn over once in a wave from head to feet: all of it, this long
+const WAVE = 1600 // when the page comes home, his shards turn over once in a wave from head to feet (no red: in this turn the back of the paper carries the picture too): all of it, this long
 
 /** The back of the paper: the brand red (#f0412e, the same in both modes). */
 const RED = [240 / 255, 65 / 255, 46 / 255] as const
@@ -118,8 +118,8 @@ void main() {
   home += vec3(dir * push * 18.0 * U * s, push * 30.0 * U * s);
   local = turn(local * (1.0 + 0.05 * push), Z, push * 0.06 * sg);
 
-  // home: each shard turns over once about its own upright, the head first and the feet last, so a band
-  // of the paper's red back travels down him
+  // home: each shard turns over once about its own upright, the head first and the feet last, so a wave
+  // travels down him (the fragment shader paints the picture on the back for this turn: u_back)
   float flip = u_wave < 0.0 ? 0.0 : 2.0 * PI * ease((u_wave - c.y / TH * 0.7) / 0.5);
   vec3 UP = vec3(0.0, 1.0, 0.0);
   local = turn(local, UP, flip);
@@ -174,6 +174,7 @@ precision highp float; // (the picture is 3830 pixels tall: a phone's half-preci
 uniform sampler2D u_tex;
 uniform vec3 u_red;
 uniform float u_alpha;
+uniform float u_back; // 1 while the card wave turns him over: the back of the paper shows the picture, not red
 in vec2 v_uv;
 in vec3 v_n;
 in float v_shade;
@@ -186,9 +187,10 @@ void main() {
   if (gl_FrontFacing) {
     o = vec4(min(c.rgb * v_shade, vec3(c.a)), c.a) * u_alpha;
   } else {
-    // the back of the paper: plain red, lit by how it faces the light
+    // the back of the paper: plain red, lit by how it faces the light (or, in the card wave, the picture again)
     float lit = 0.58 + 0.52 * abs(dot(normalize(v_n), normalize(vec3(-0.4, -0.55, 0.73))));
-    o = vec4(min(u_red * lit, vec3(1.0)) * c.a, c.a) * u_alpha;
+    vec4 red = vec4(min(u_red * lit, vec3(1.0)) * c.a, c.a);
+    o = mix(red, vec4(min(c.rgb * v_shade, vec3(c.a)), c.a), u_back) * u_alpha;
   }
 }`
 
@@ -331,6 +333,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         breath: loc('u_breath'),
         ptr: loc('u_ptr'),
         wave: loc('u_wave'),
+        back: loc('u_back'),
         poke: loc('u_poke'),
         rings: loc('u_rings'),
         alpha: loc('u_alpha'),
@@ -707,6 +710,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         gl.uniform1f(U.breath, Math.sin(now / 1900))
         gl.uniform3f(U.ptr, ptr.x, ptr.y, ptr.k)
         gl.uniform1f(U.wave, turning)
+        gl.uniform1f(U.back, turning >= 0 && k < 0.02 ? 1 : 0)
         // out there: the pointer's hold on the shards follows the mouse while it is over the canvas,
         const over = mouse.in && tx >= 0 && tx <= cr.width && ty >= 0 && ty <= cr.height
         if (poke.k < 0.001) {

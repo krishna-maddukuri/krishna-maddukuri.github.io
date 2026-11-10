@@ -170,6 +170,27 @@ test.describe('paper figure', () => {
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 3_000 })
   })
 
+  test('pressing the name turns his shards over in a wave that shows no red', async ({ page }) => {
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    const whole = (await paint(page)).inside
+    await page.getByRole('button', { name: /back to top/ }).first().click()
+    // through the wave (it sets off 0.3s after the press and takes about 1.2s): shards on edge leave gaps in
+    // him, and none of them is ever red
+    let least = whole
+    let red = 0
+    for (let n = 0; n < 9; n++) {
+      await page.waitForTimeout(150)
+      const p = await paint(page)
+      least = Math.min(least, p.inside)
+      red = Math.max(red, p.red)
+    }
+    expect(least).toBeLessThan(whole * 0.97)
+    expect(red).toBeLessThan(20)
+    await expect.poll(async () => (await paint(page)).inside, { timeout: 5_000 }).toBeGreaterThan(whole * 0.985)
+  })
+
   test('phones: the button under his feet scatters him and "Keep together" brings him back', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) >= 1024, 'phones and tablets only')
     await openHome(page)
