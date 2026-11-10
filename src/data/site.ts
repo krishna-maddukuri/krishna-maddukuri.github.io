@@ -202,6 +202,12 @@ export type Project = {
   metrics: { value: string; label: string }[]
   tools: string[]
   visual: VisualKind
+  /**
+   * How the system fits together, as on its case study page: the stages in order, each with the tools named on
+   * that page, and what sits beside the flow (what checks it, watches it or ships it). Only what the case
+   * study itself says; details of internal systems are left out.
+   */
+  architecture: { flow: { label: string; title: string; detail: string; tools?: string[] }[]; aside?: { label: string; items: string[] } }
 }
 
 export const projects: Project[] = [
@@ -241,6 +247,15 @@ export const projects: Project[] = [
     ],
     tools: ['Java', 'Spring Boot', 'Spring Batch', 'OAuth2', 'JUnit', 'Cucumber'],
     visual: 'pipeline',
+    architecture: {
+      flow: [
+        { label: 'Segments', title: 'Four lines of business', detail: 'U.S., Canada, Small Business and Commercial.' },
+        { label: 'Services', title: 'Spring Boot microservices', detail: 'Scalable and secure, behind OAuth2-protected REST APIs.', tools: ['Java', 'Spring Boot', 'OAuth2'] },
+        { label: 'Batch', title: 'Metro2 file generation', detail: 'Spring Batch with a paginated reader: 7 hours down to 4.', tools: ['Spring Batch'] },
+        { label: 'Bureaus', title: 'Four credit bureaus', detail: 'Equifax, Experian, TransUnion and LexisNexis.' },
+      ],
+      aside: { label: 'Checked by', items: ['JUnit', 'Cucumber'] },
+    },
   },
   {
     slug: 'event-driven-pipelines',
@@ -269,6 +284,15 @@ export const projects: Project[] = [
     metrics: [],
     tools: ['Apache Kafka', 'Spring Kafka', 'PostgreSQL', 'AWS RDS', 'Splunk', 'New Relic'],
     visual: 'stream',
+    architecture: {
+      flow: [
+        { label: 'Producers', title: 'Reporting services', detail: 'Publish events as sensitive financial workflows move along.' },
+        { label: 'Stream', title: 'Kafka topics', detail: 'High-throughput and fault-tolerant.', tools: ['Apache Kafka'] },
+        { label: 'Consumers', title: 'Spring Kafka services', detail: 'Process every event exactly once.', tools: ['Spring Kafka'] },
+        { label: 'Store', title: 'PostgreSQL on RDS', detail: 'Where the processed data lands.', tools: ['PostgreSQL', 'AWS RDS'] },
+      ],
+      aside: { label: 'Watched by', items: ['Splunk', 'New Relic'] },
+    },
   },
   {
     slug: 'cloud-delivery',
@@ -298,6 +322,15 @@ export const projects: Project[] = [
     metrics: [{ value: '60%', label: 'smaller containers' }],
     tools: ['AWS Fargate', 'CloudFormation', 'Step Functions', 'Docker', 'Jenkins', 'SonarQube'],
     visual: 'deploy',
+    architecture: {
+      flow: [
+        { label: 'Build', title: 'Jenkins pipeline', detail: 'Every change is built and must pass the SonarQube quality gate.', tools: ['Jenkins', 'SonarQube'] },
+        { label: 'Package', title: 'Container image', detail: '60% smaller than before.', tools: ['Docker'] },
+        { label: 'Provision', title: 'CloudFormation stacks', detail: 'The infrastructure is described as code.', tools: ['CloudFormation'] },
+        { label: 'Run', title: 'Services on Fargate', detail: 'Released blue-green, with zero downtime.', tools: ['AWS Fargate'] },
+      ],
+      aside: { label: 'Works with', items: ['SNS', 'S3', 'RDS', 'Step Functions'] },
+    },
   },
   {
     slug: 'unified-reporting',
@@ -330,6 +363,15 @@ export const projects: Project[] = [
     metrics: [],
     tools: ['Java', 'Spring Boot', 'REST APIs', 'Apache Kafka', 'DynamoDB'],
     visual: 'unify',
+    architecture: {
+      flow: [
+        { label: 'Sources', title: 'Disparate data sources', detail: 'Once reconciled by hand.' },
+        { label: 'Ingest', title: 'Kafka pipeline', detail: 'Updates arrive in near real time and scale with upstream volume.', tools: ['Apache Kafka', 'DynamoDB'] },
+        { label: 'Service', title: 'Spring Boot service', detail: 'Unifies the sources into one standardized reporting model.', tools: ['Java', 'Spring Boot'] },
+        { label: 'Access', title: 'Role-based REST APIs', detail: 'Curated datasets, with no direct database access.', tools: ['REST APIs'] },
+        { label: 'Consumers', title: 'Downstream teams', detail: 'Analytics and reporting.' },
+      ],
+    },
   },
   {
     slug: 'release-and-monitoring',
@@ -361,6 +403,14 @@ export const projects: Project[] = [
     ],
     tools: ['AWS ECS', 'Docker', 'Jenkins', 'Spring Actuator', 'Prometheus', 'ELK Stack'],
     visual: 'monitor',
+    architecture: {
+      flow: [
+        { label: 'Build', title: 'Jenkins pipelines', detail: 'Automated build and release: deployment time down 70%.', tools: ['Jenkins'] },
+        { label: 'Package', title: 'Container image', detail: 'The reporting application, containerized.', tools: ['Docker'] },
+        { label: 'Run', title: 'Application on ECS', detail: 'Exposes its health and metrics through Spring Actuator.', tools: ['AWS ECS', 'Spring Actuator'] },
+        { label: 'Observe', title: 'Metrics and logs', detail: 'Issues are detected 50% sooner.', tools: ['Prometheus', 'ELK Stack'] },
+      ],
+    },
   },
   {
     slug: 'react-front-ends',
@@ -395,6 +445,15 @@ export const projects: Project[] = [
     ],
     tools: ['React', 'Redux', 'Spring MVC', 'REST APIs', 'Bitbucket', 'AWS'],
     visual: 'components',
+    architecture: {
+      flow: [
+        { label: 'Interface', title: 'React components', detail: 'Modular and reusable across four applications: forms, routing, events.', tools: ['React'] },
+        { label: 'State', title: 'Redux store', detail: 'One place for state, with asynchronous data fetching.', tools: ['Redux'] },
+        { label: 'Contract', title: 'RESTful APIs', detail: 'How the client and the servers talk.', tools: ['REST APIs'] },
+        { label: 'Back end', title: 'Spring MVC services', detail: 'The data behind the screens.', tools: ['Spring MVC'] },
+      ],
+      aside: { label: 'Shipped by', items: ['Bitbucket', 'AWS'] },
+    },
   },
   {
     slug: 'internship-projects',
@@ -426,6 +485,15 @@ export const projects: Project[] = [
     ],
     tools: ['MERN', 'Jenkins', 'Bash', 'Groovy', 'Agile', 'JIRA'],
     visual: 'sprint',
+    architecture: {
+      flow: [
+        { label: 'Front end', title: 'React', detail: 'The interface of each project.' },
+        { label: 'Server', title: 'Express on Node.js', detail: 'The APIs behind it.' },
+        { label: 'Data', title: 'MongoDB', detail: 'Where each project keeps its data.' },
+        { label: 'Pipeline', title: 'Jenkins builds', detail: 'Deployment scripts in Bash and Groovy: stability up 40%.', tools: ['Jenkins', 'Bash', 'Groovy'] },
+      ],
+      aside: { label: 'Planned in', items: ['Agile', 'JIRA'] },
+    },
   },
 ]
 

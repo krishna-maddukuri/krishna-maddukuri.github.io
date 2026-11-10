@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, Navigate, useParams } from '../lib/router'
 import { projects } from '../data/site'
 import { ProjectVisual } from '../visuals/LazyProjectVisual'
@@ -126,6 +126,43 @@ export function CaseStudy() {
             </Block>
           </div>
         </div>
+
+        {/* how the system fits together: the stages in order, left to right (top to bottom on phones) */}
+        <section className="mt-24" aria-labelledby="arch-title">
+          <div className="eyebrow">Architecture</div>
+          <h2 id="arch-title" className="mt-4 font-display text-[clamp(2rem,4.6vw,3.6rem)] font-bold leading-[0.98]">
+            How it <em className="accent-tail">fits together.</em>
+          </h2>
+          <Reveal y={20}>
+            <ol className="arch" style={{ '--arch-n': p.architecture.flow.length } as CSSProperties}>
+              {p.architecture.flow.map((stage, i) => (
+                <li key={stage.label} className="arch-stage">
+                  <span className="eyebrow">
+                    <span className="accent-index tabular">{num(i)}</span> {stage.label}
+                  </span>
+                  <span className="arch-title">{stage.title}</span>
+                  <span className="arch-detail">{stage.detail}</span>
+                  {stage.tools && (
+                    <span className="arch-tools">
+                      {stage.tools.map((t) => (
+                        <ToolChip key={t} name={t} />
+                      ))}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
+            {p.architecture.aside && (
+              <p className="arch-aside">
+                <span className="eyebrow">{p.architecture.aside.label}</span>
+                {p.architecture.aside.items.map((t) => (
+                  <ToolChip key={t} name={t} />
+                ))}
+              </p>
+            )}
+            <p className="mt-4 text-sm text-ink-soft">Simplified: the parts named on this page and the order they work in.</p>
+          </Reveal>
+        </section>
 
         {p.slug === 'event-driven-pipelines' && (
           <section className="mt-24" aria-labelledby="pd-title">

@@ -1323,6 +1323,64 @@ html.vt-page::view-transition-group(project-visual) {
 }
 
 /*
+  A case study's architecture: its stages as cards in a row, an arrow from each to the next (a column with
+  arrows pointing down on narrow screens), and under them what sits beside the flow.
+*/
+.arch {
+  display: grid;
+  gap: 34px;
+  margin-top: 28px;
+}
+.arch-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 18px 18px 20px;
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+/* the arrow to the next stage: a line with a head, in the gap after the card */
+.arch-stage:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  width: 12px;
+  height: 22px;
+  translate: -50% 0;
+  background: var(--ink-soft);
+  clip-path: polygon(42% 0, 58% 0, 58% 62%, 100% 62%, 50% 100%, 0 62%, 42% 62%);
+}
+@media (min-width: 900px) {
+  .arch { grid-template-columns: repeat(var(--arch-n, 4), minmax(0, 1fr)); }
+  .arch-stage:not(:last-child)::after {
+    left: calc(100% + 6px);
+    top: 50%;
+    width: 22px;
+    height: 12px;
+    translate: 0 -50%;
+    clip-path: polygon(0 42%, 62% 42%, 62% 0, 100% 50%, 62% 100%, 62% 58%, 0 58%);
+  }
+}
+.arch-title { font: 700 clamp(1.25rem, 1.7vw, 1.55rem) / 1.1 var(--ff-display); }
+.arch-detail { font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+.arch-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 6px; }
+.arch-aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: 1px dashed var(--panel-line);
+  border-radius: 14px;
+}
+.arch-aside .eyebrow { margin-right: 6px; }
+
+/*
   The pipeline to play with (visuals/PipelineDemo.tsx), on the Event-Driven Pipelines case study: a panel
   with its controls, the topic's three partitions as rows of small squares (one per event: bright while it
   waits, red while it is being processed, faint once stored and confirmed), the two consumers, the database's

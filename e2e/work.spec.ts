@@ -109,4 +109,22 @@ test.describe('case study', () => {
     // the page is ready-made with the demo in it
     expect(await (await page.request.get('/work/event-driven-pipelines/')).text()).toContain('pd-stage')
   })
+
+  test('every case study shows how its system fits together', async ({ page }) => {
+    for (const [slug, stages, first, beside] of [
+      ['credit-bureau-reporting', 4, 'Four lines of business', 'Checked by'],
+      ['unified-reporting', 5, 'Disparate data sources', null],
+      ['cloud-delivery', 4, 'Jenkins pipeline', 'Works with'],
+    ] as const) {
+      await page.goto(`/work/${slug}/`)
+      const arch = page.getByRole('region', { name: 'How it fits together.' })
+      await arch.scrollIntoViewIfNeeded()
+      await expect(arch.locator('.arch-stage')).toHaveCount(stages)
+      await expect(arch.locator('.arch-stage').first()).toContainText(first)
+      if (beside) await expect(arch.locator('.arch-aside')).toContainText(beside)
+      else await expect(arch.locator('.arch-aside')).toHaveCount(0)
+      // nothing sticks out sideways
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
+    }
+  })
 })
