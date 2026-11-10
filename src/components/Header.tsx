@@ -74,9 +74,10 @@ export function Header() {
   useEffect(() => setOpen(false), [location.pathname])
 
   // Home: back to the top, and the hero's answer (at once if the page is already there). From further
-  // down, the page comes up a little faster than other jumps and the hero answers as soon as most of the
-  // first screen is back in view, not when the scroll has eased to a complete stop: its last stretch is
-  // slow, and waiting for it made the press feel late. From another page it is simply the way back.
+  // down, the page comes up faster than other jumps (0.7s) and the hero answers the moment the page has
+  // arrived: within a few pixels of the top, where the scroll's long ease-out is no longer visible. The
+  // two never overlap (the hero answering while the page was still moving looked rough), and nothing
+  // waits on the invisible tail of the scroll. From another page it is simply the way back.
   const goHome = () => {
     setPressed((n) => n + 1)
     if (!isHome) {
@@ -96,10 +97,10 @@ export function Header() {
       announceHome()
     }
     const near = () => {
-      if (window.scrollY < window.innerHeight * 0.3) tell()
+      if (window.scrollY < 4) tell()
     }
     window.addEventListener('scroll', near, { passive: true })
-    scrollTo('top', { duration: 1, onComplete: tell })
+    scrollTo('top', { duration: 0.7, onComplete: tell })
   }
 
   const copyEmail = async () => {

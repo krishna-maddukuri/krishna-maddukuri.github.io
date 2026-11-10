@@ -101,44 +101,48 @@ export function homeSweep(hero: HTMLElement) {
       fill: 'backwards',
     })
   })
-  // everything else comes in again as the blade reaches it, the lower pieces a touch later
-  const top = hero.getBoundingClientRect().top
-  const tall = Math.min(hero.offsetHeight, window.innerHeight) || 1
-  const after = (el: Element) => {
-    const box = el.getBoundingClientRect()
-    return reaches(box.left) + Math.max(0, Math.min(1, (box.top - top) / tall)) * 350
-  }
-  for (const el of hero.querySelectorAll<HTMLElement>('.enter')) {
-    if (el.querySelector('[data-paper-figure]')) continue // he answers on his own
-    const y = getComputedStyle(el).getPropertyValue('--enter-y').trim() || '14px'
-    el.animate([{ opacity: 0, transform: `translateY(${y})` }, { opacity: 1, transform: 'translateY(0)' }], {
-      duration: 700,
-      delay: after(el),
-      easing: EASE_OUT,
-      fill: 'backwards',
-    })
-  }
-  // the intro, typed again behind its red caret (in about a second, to land with the rest)
-  const letters = hero.querySelectorAll<HTMLElement>('.lede-ch')
-  const typed = letters.length ? after(letters[0]) : 0
-  const caret = [{ boxShadow: `2px 0 0 ${red}` }, { boxShadow: `2px 0 0 ${red}` }]
-  letters.forEach((letter, i) => {
-    const delay = typed + (Number(letter.style.getPropertyValue('--c')) || i) * 5
-    letter.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1, delay, fill: 'backwards' })
-    letter.animate(caret, i === letters.length - 1 ? { duration: 700, delay } : { duration: 5, delay })
-  })
-  for (const count of hero.querySelectorAll<HTMLElement>('.count')) {
-    const value = Number(count.style.getPropertyValue('--to'))
-    if (!Number.isFinite(value)) continue
-    try {
-      count.animate([{ '--count': 0 }, { '--count': value }], {
-        duration: 1100,
-        delay: after(count) + 100,
-        easing: 'cubic-bezier(0.33, 1, 0.68, 1)',
+  // everything else is set off a frame later, so the press never has to start several hundred small
+  // animations in the one frame the blade starts in
+  requestAnimationFrame(() => {
+    // everything else comes in again as the blade reaches it, the lower pieces a touch later
+    const top = hero.getBoundingClientRect().top
+    const tall = Math.min(hero.offsetHeight, window.innerHeight) || 1
+    const after = (el: Element) => {
+      const box = el.getBoundingClientRect()
+      return reaches(box.left) + Math.max(0, Math.min(1, (box.top - top) / tall)) * 350
+    }
+    for (const el of hero.querySelectorAll<HTMLElement>('.enter')) {
+      if (el.querySelector('[data-paper-figure]')) continue // he answers on his own
+      const y = getComputedStyle(el).getPropertyValue('--enter-y').trim() || '14px'
+      el.animate([{ opacity: 0, transform: `translateY(${y})` }, { opacity: 1, transform: 'translateY(0)' }], {
+        duration: 700,
+        delay: after(el),
+        easing: EASE_OUT,
         fill: 'backwards',
       })
-    } catch {
-      // a browser that cannot animate the counter leaves the number as it is
     }
-  }
+    // the intro, typed again behind its red caret (in about a second, to land with the rest)
+    const letters = hero.querySelectorAll<HTMLElement>('.lede-ch')
+    const typed = letters.length ? after(letters[0]) : 0
+    const caret = [{ boxShadow: `2px 0 0 ${red}` }, { boxShadow: `2px 0 0 ${red}` }]
+    letters.forEach((letter, i) => {
+      const delay = typed + (Number(letter.style.getPropertyValue('--c')) || i) * 5
+      letter.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1, delay, fill: 'backwards' })
+      letter.animate(caret, i === letters.length - 1 ? { duration: 700, delay } : { duration: 5, delay })
+    })
+    for (const count of hero.querySelectorAll<HTMLElement>('.count')) {
+      const value = Number(count.style.getPropertyValue('--to'))
+      if (!Number.isFinite(value)) continue
+      try {
+        count.animate([{ '--count': 0 }, { '--count': value }], {
+          duration: 1100,
+          delay: after(count) + 100,
+          easing: 'cubic-bezier(0.33, 1, 0.68, 1)',
+          fill: 'backwards',
+        })
+      } catch {
+        // a browser that cannot animate the counter leaves the number as it is
+      }
+    }
+  })
 }
