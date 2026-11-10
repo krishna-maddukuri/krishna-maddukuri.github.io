@@ -38,6 +38,9 @@ const useSlide: (ref: RefObject<HTMLElement | null>, dist: MotionValue<number>) 
  * The row leans with the speed of the scroll: while the page is moving the cards slant a few degrees the
  * way they travel (their tops trailing), and stand straight again when it stops. One listener, and frames
  * only while the lean is not zero; the angle is a custom property the row's own transform reads (`.ach-lean`).
+ * The speed is averaged over about a quarter of a second, so the uneven steps of a mouse wheel do not show
+ * as a twitch, and while it leans the row is its own layer, so a new angle is a cheap move for the
+ * compositor and never a repaint of every card.
  */
 function useLean(section: RefObject<HTMLElement | null>, row: RefObject<HTMLElement | null>) {
   useEffect(() => {
@@ -49,19 +52,25 @@ function useLean(section: RefObject<HTMLElement | null>, row: RefObject<HTMLElem
     let lastY = window.scrollY
     let lastT = performance.now()
     let seen = false
+    let speed = 0
     const frame = (now: number) => {
       raf = 0
       const dt = Math.max(1, now - lastT)
-      const speed = (window.scrollY - lastY) / dt // px a millisecond
+      const step = (window.scrollY - lastY) / dt // px a millisecond, this frame
       lastY = window.scrollY
       lastT = now
-      const want = Math.max(-5, Math.min(5, -speed * 1.6))
-      lean += (want - lean) * Math.min(1, dt / 120)
-      if (want === 0 && Math.abs(lean) < 0.02) {
+      // two gentle followers, one behind the other: the speed, then the angle
+      speed += (step - speed) * Math.min(1, dt / 140)
+      const want = Math.max(-3.5, Math.min(3.5, -speed * 1.3))
+      lean += (want - lean) * Math.min(1, dt / 160)
+      if (step === 0 && Math.abs(lean) < 0.03 && Math.abs(speed) < 0.01) {
         el.style.removeProperty('--lean')
+        el.style.removeProperty('will-change')
         lean = 0
+        speed = 0
         return
       }
+      el.style.willChange = 'transform'
       el.style.setProperty('--lean', `${lean.toFixed(2)}deg`)
       raf = requestAnimationFrame(frame)
     }

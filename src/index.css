@@ -632,10 +632,11 @@ html.lenis, html.lenis body { height: auto; }
   }
   :root[data-mode="dark"] .spot::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.09), transparent 70%); }
   /* and the card leans towards the pointer (the experience, education and proud-moment cards): the same
-     listener sets the two angles. Mouse only, and not for people who ask for less motion. It must win over
+     listener sets the two angles, and marks the card while the pointer is moving over it (a card sliding
+     under a still pointer, as the page scrolls, stays upright). Mouse only, and not for people who ask for less motion. It must win over
      the transform a card's entrance leaves on it, hence !important */
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .spot:hover {
+    .spot.is-leaning:hover {
       transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-3px) !important;
     }
   }
