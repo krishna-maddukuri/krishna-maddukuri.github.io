@@ -3,7 +3,9 @@
  * On wide screens the blade is the red tape itself: it starts at the left edge, crosses, slows and settles
  * back into its place on the right, where its words come back. Narrower screens have no tape on the first
  * screen, so a blade of the tape's width crosses and leaves. As it passes, each letter of the giant name
- * flashes red and cools, the red block wipes in again with its words, and the numbers count up from 0.
+ * flashes red and cools, the red block wipes in again with its words, and everything else in the hero (the
+ * hello, the intro, the numbers, the buttons, the list beside him and his stack) comes in again behind the
+ * blade, each piece when the blade reaches it and a touch later the lower it sits.
  * (The figure answers on its own: components/PaperFigure.tsx.) Nothing here runs for people who ask for
  * less motion; every animation is a one-off that leaves the page exactly as it found it.
  */
@@ -99,18 +101,46 @@ export function homeSweep(hero: HTMLElement) {
       fill: 'backwards',
     })
   })
-  hero.querySelectorAll<HTMLElement>('.count').forEach((count, i) => {
+  // everything else comes in again as the blade reaches it, the lower pieces a touch later
+  const top = hero.getBoundingClientRect().top
+  const tall = Math.min(hero.offsetHeight, window.innerHeight) || 1
+  const after = (el: Element) => {
+    const box = el.getBoundingClientRect()
+    return reaches(box.left) + Math.max(0, Math.min(1, (box.top - top) / tall)) * 350
+  }
+  for (const el of hero.querySelectorAll<HTMLElement>('.enter')) {
+    if (el.querySelector('[data-paper-figure]')) continue // he answers on his own
+    const y = getComputedStyle(el).getPropertyValue('--enter-y').trim() || '14px'
+    el.animate([{ opacity: 0, transform: `translateY(${y})` }, { opacity: 1, transform: 'translateY(0)' }], {
+      duration: 700,
+      delay: after(el),
+      easing: EASE_OUT,
+      fill: 'backwards',
+    })
+  }
+  // the intro, said again: faint, then each word up to full strength in turn
+  const words = hero.querySelectorAll<HTMLElement>('.lede-word')
+  const said = words.length ? after(words[0]) : 0
+  words.forEach((word, i) => {
+    word.animate([{ opacity: 0.14, transform: 'translateY(3px)' }, { opacity: 1, transform: 'translateY(0)' }], {
+      duration: 650,
+      delay: said + i * 35,
+      easing: EASE_OUT,
+      fill: 'backwards',
+    })
+  })
+  for (const count of hero.querySelectorAll<HTMLElement>('.count')) {
     const value = Number(count.style.getPropertyValue('--to'))
-    if (!Number.isFinite(value)) return
+    if (!Number.isFinite(value)) continue
     try {
       count.animate([{ '--count': 0 }, { '--count': value }], {
         duration: 1100,
-        delay: at + 500 + i * 80,
+        delay: after(count) + 100,
         easing: 'cubic-bezier(0.33, 1, 0.68, 1)',
         fill: 'backwards',
       })
     } catch {
       // a browser that cannot animate the counter leaves the number as it is
     }
-  })
+  }
 }
