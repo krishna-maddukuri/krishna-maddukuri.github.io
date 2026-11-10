@@ -631,6 +631,14 @@ html.lenis, html.lenis body { height: auto; }
     .spot:hover::before { opacity: 1; }
   }
   :root[data-mode="dark"] .spot::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.09), transparent 70%); }
+  /* and the card leans towards the pointer (the experience, education and proud-moment cards): the same
+     listener sets the two angles. Mouse only, and not for people who ask for less motion. It must win over
+     the transform a card's entrance leaves on it, hence !important */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .spot:hover {
+      transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-3px) !important;
+    }
+  }
 
   /*
     The accent text: red, deeper on the paper and brighter on black. (--accent-mark can put a highlighter
@@ -1943,4 +1951,75 @@ html.defer-sections .fit-section:not(.is-warm):not(#work) {
 .resume-dot.is-current {
   border-color: var(--accent-ring);
   background: var(--accent);
+}
+
+/* Skills: a picked family's tiles hop, one after another (two names for one hop: the second pick of a
+   family swaps the name, which starts the hop again). `translate` and `scale`, so the lift under the
+   pointer and the press, which use the same two properties, are untouched once the hop is over */
+@media (prefers-reduced-motion: no-preference) {
+  .skills-hop-a { animation: skills-hop-a 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) var(--hop, 0s) backwards; }
+  .skills-hop-b { animation: skills-hop-b 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) var(--hop, 0s) backwards; }
+}
+@keyframes skills-hop-a {
+  0% { translate: 0 0; scale: 1; }
+  35% { translate: 0 -9px; scale: 1.06; }
+  70% { translate: 0 2px; scale: 1; }
+  100% { translate: 0 0; scale: 1; }
+}
+@keyframes skills-hop-b {
+  0% { translate: 0 0; scale: 1; }
+  35% { translate: 0 -9px; scale: 1.06; }
+  70% { translate: 0 2px; scale: 1; }
+  100% { translate: 0 0; scale: 1; }
+}
+
+/* Experience: a year's digits roll into place (sections/Experience.tsx). A cell is exactly as wide as its
+   digit; while rolling, a strip of seven digits that ends on it runs up through the cell */
+.yr { display: inline-flex; }
+.yr-cell { position: relative; display: inline-block; overflow: hidden; height: 1em; line-height: 1; vertical-align: bottom; }
+.yr-strip { display: none; }
+.tl-dot { transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .yr.is-rolling .yr-digit { visibility: hidden; }
+  .yr.is-rolling .yr-strip {
+    position: absolute;
+    inset: 0 0 auto;
+    display: block;
+    text-align: center;
+    transform: translateY(-6em);
+    animation: yr-roll 1s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i, 0) * 70ms) backwards;
+  }
+  .yr-strip > span { display: block; height: 1em; }
+  /* and the dot on the line pops when the red line reaches it */
+  .tl-dot.is-reached { animation: tl-pop 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) backwards; }
+}
+@keyframes yr-roll {
+  from { transform: translateY(0); }
+}
+@keyframes tl-pop {
+  0% { scale: 0; }
+  60% { scale: 1.5; }
+  100% { scale: 1; }
+}
+
+/* Contact: "Copied" comes up over the copy button like a rubber stamp, holds, and leaves (2s, as long as
+   the button says it) */
+.copy-key { position: relative; overflow: hidden; }
+.copy-stamp {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: var(--brand-red);
+  color: var(--role-ink, #000);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .copy-stamp { animation: copy-stamp 2s both; }
+}
+@keyframes copy-stamp {
+  0% { transform: translateY(140%) rotate(-6deg); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  14%, 86% { transform: translateY(0) rotate(0deg); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.2); }
+  100% { transform: translateY(-140%) rotate(4deg); }
 }

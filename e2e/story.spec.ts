@@ -26,6 +26,16 @@ test.describe('learning, experience and achievements', () => {
     await expect(exp.getByText('Current role')).toBeVisible()
     await expect(exp.getByText('In progress')).toBeVisible()
     for (const year of ['2020', '2023', '2024', '2026']) await expect(exp.getByText(year, { exact: true }).first()).toBeAttached()
+    // a year rolls into place when it comes into view and lands on its own digits; its dot pops on the line
+    const year = exp.locator('.yr').first()
+    await year.scrollIntoViewIfNeeded()
+    await expect(year).toHaveClass(/is-rolling/)
+    await expect(exp.locator('.tl-dot.is-reached').first()).toBeAttached()
+    expect(await year.evaluate((el) => [...el.querySelectorAll('.yr-cell')].map((c) => c.querySelector('.yr-strip')!.lastElementChild!.textContent).join(''))).toBe('2020')
+    const cell = year.locator('.yr-cell').first()
+    await expect
+      .poll(() => cell.evaluate((c) => Math.abs(c.querySelector('.yr-strip')!.lastElementChild!.getBoundingClientRect().top - c.getBoundingClientRect().top)), { timeout: 5_000 })
+      .toBeLessThan(1)
   })
 
   test('achievements: nine cards whose numbers count up to the résumé figures', async ({ page }) => {
@@ -81,5 +91,23 @@ test.describe('learning, experience and achievements', () => {
     const scrollable = await row.evaluate((el) => el.scrollWidth > el.clientWidth && getComputedStyle(el).overflowX === 'auto')
     expect(scrollable).toBe(true)
     await expect(page.locator('#achievements').getByText('Swipe')).toBeVisible()
+  })
+
+  test('desktop: the experience and proud-moment cards lean towards the pointer and straighten when it leaves', async ({ page }) => {
+    test.skip(isPhone(page), 'there is no pointer to lean towards on a phone')
+    await openHome(page)
+    for (const id of ['experience', 'achievements']) {
+      await jumpTo(page, id)
+      const card = page.locator(`#${id} .spot`).first()
+      await card.scrollIntoViewIfNeeded()
+      const box = (await card.boundingBox())!
+      await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.2)
+      await page.mouse.move(box.x + box.width * 0.86, box.y + box.height * 0.2)
+      // leaning: a 3D transform, with the pointer's side turned towards the viewer
+      await expect.poll(() => card.evaluate((el) => getComputedStyle(el).transform)).toMatch(/^matrix3d/)
+      expect(await card.evaluate((el) => parseFloat(el.style.getPropertyValue('--ry')))).toBeGreaterThan(1)
+      await page.mouse.move(2, 2)
+      await expect.poll(() => card.evaluate((el) => getComputedStyle(el).transform)).not.toMatch(/^matrix3d/)
+    }
   })
 })

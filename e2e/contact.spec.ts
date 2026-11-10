@@ -11,6 +11,7 @@ test.describe('contact and footer', () => {
     await expect(contact.getByText('m.krishnakoushik@icloud.com')).toBeVisible()
     await contact.getByRole('button', { name: 'Copy email' }).click()
     await expect(contact.getByRole('button', { name: 'Copied' })).toBeVisible()
+    await expect(contact.locator('.copy-stamp')).toBeVisible()
     await expect(page.getByRole('status')).toContainText('Email copied')
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('m.krishnakoushik@icloud.com')
     await expect(contact.getByRole('button', { name: 'Copy email' })).toBeVisible({ timeout: 5_000 })

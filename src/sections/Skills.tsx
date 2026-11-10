@@ -11,6 +11,15 @@ import { Container, EASE, SectionHeading } from '../components/ui'
 const familyLabel = Object.fromEntries(families.map((f) => [f.id, f.label])) as Record<FamilyId, string>
 /** Columns on wide screens (the entrance wave runs across them); see `.skills-body` in index.css. */
 const COLS = 11
+/** Each element's place within its own family, in table order: the order its family's tiles hop in. */
+const familyRank: Record<string, number> = {}
+{
+  const seen: Partial<Record<FamilyId, number>> = {}
+  for (const el of elements) {
+    familyRank[el.sym] = seen[el.family] ?? 0
+    seen[el.family] = familyRank[el.sym] + 1
+  }
+}
 /** The lightest family is drawn as outlined tiles rather than filled ones. */
 const OUTLINE: FamilyId = families[families.length - 1].id
 
@@ -21,6 +30,8 @@ export function Skills() {
   const tableRef = useRef<HTMLDivElement>(null)
   const inView = useInView(tableRef, { once: true, amount: 0.2 })
   const [waveDone, setWaveDone] = useState(false)
+  // each pick of a family makes its tiles hop, one after another (the count's parity restarts the hop)
+  const [picks, setPicks] = useState(0)
   const hover = useMedia('(hover: hover)', true)
 
   useEffect(() => {
@@ -40,7 +51,10 @@ export function Skills() {
   const pick = (id: FamilyId) => {
     const next = family === id ? null : id
     setFamily(next)
-    if (next) setFocus(elements.find((e) => e.family === next) ?? null)
+    if (next) {
+      setFocus(elements.find((e) => e.family === next) ?? null)
+      setPicks((n) => n + 1)
+    }
   }
 
   return (
@@ -78,6 +92,8 @@ export function Skills() {
               <Tile
                 key={el.sym}
                 el={el}
+                hop={el.family === family ? (picks % 2 ? 1 : 2) : 0}
+                hopDelay={familyRank[el.sym] * 0.045}
                 lit={inView}
                 delay={waveDone ? 0 : ((i % COLS) + Math.floor(i / COLS)) * 0.05}
                 dim={family !== null && el.family !== family}
@@ -97,12 +113,15 @@ export function Skills() {
 /**
  * One element. It is memoised and is handed the same `onFocus` every time, so pointing at a tile redraws
  * only the two tiles whose ring changes (the one left and the one entered), not all of them. Its lift
- * under the pointer and its press are plain CSS (`.skills-tile`), so they cost no script at all.
+ * under the pointer and its press are plain CSS (`.skills-tile`), so they cost no script at all; so is the
+ * hop its family does when picked (`.skills-hop-a` / `-b`: two names for one hop, so a second pick restarts it).
  */
 const Tile = memo(function Tile({
   el,
   lit,
   delay,
+  hop,
+  hopDelay,
   dim,
   active,
   hover,
@@ -111,17 +130,20 @@ const Tile = memo(function Tile({
   el: Element
   lit: boolean
   delay: number
+  hop: 0 | 1 | 2
+  hopDelay: number
   dim: boolean
   active: boolean
   hover: boolean
   onFocus: (el: Element) => void
 }) {
   const show = () => onFocus(el)
-  const style: CSSProperties & { '--wave': string } = {
+  const style: CSSProperties & { '--wave': string; '--hop': string } = {
     background: lit ? `var(--fam-${el.family})` : 'var(--wash)',
     color: lit ? `var(--fam-${el.family}-fg)` : 'var(--ink-soft)',
     // the entrance wave delays only the tile's colours (see `.skills-tile`), never its lift under the pointer
     '--wave': `${delay}s`,
+    '--hop': `${hopDelay}s`,
     // the picked tile is ringed in its brand's colour
     outline: active ? `2px solid ${skillLogos[el.sym]?.color ?? 'var(--ink)'}` : undefined,
     outlineOffset: active ? 2 : undefined,
@@ -140,7 +162,7 @@ const Tile = memo(function Tile({
       style={style}
       className={`skills-tile relative aspect-square min-w-0 rounded-[12px] text-left shadow-sm hover:shadow-md sm:rounded-[14px] ${
         dim ? 'opacity-[0.18]' : 'opacity-100'
-      } ${el.family === OUTLINE ? 'hover:bg-wash!' : ''}`}
+      } ${el.family === OUTLINE ? 'hover:bg-wash!' : ''} ${hop ? (hop === 1 ? 'skills-hop-a' : 'skills-hop-b') : ''}`}
     >
       <span className="skills-num tabular absolute left-2 top-1.5 font-mono text-[10px] font-medium sm:left-2.5 sm:top-2 sm:text-[11px]">
         {String(el.n).padStart(2, '0')}

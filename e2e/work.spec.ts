@@ -93,7 +93,8 @@ test.describe('case study', () => {
   test('the pipeline to play with stores every event once, even when a consumer stops mid-event', async ({ page }) => {
     await page.goto('/work/event-driven-pipelines/')
     const demo = page.locator('.pd:not(.pd--loading)')
-    await demo.scrollIntoViewIfNeeded()
+    // (the demo arrives after its placeholder, and can be swapped once more as the page settles)
+    await expect(async () => demo.scrollIntoViewIfNeeded({ timeout: 2_000 })).toPass({ timeout: 15_000 })
     const stat = async (name: string) => Number(await demo.locator('.pd-stats div', { hasText: name }).locator('dd').innerText())
     expect(await stat('Sent')).toBe(await stat('Stored'))
     await demo.getByRole('button', { name: 'Send 12' }).click()

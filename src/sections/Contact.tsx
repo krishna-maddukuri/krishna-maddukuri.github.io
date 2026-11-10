@@ -55,10 +55,17 @@ export function Contact() {
               <button
                 type="button"
                 onClick={copy}
-                className="btn-solid btn-key w-fit shrink-0"
+                aria-label={copied ? 'Copied' : 'Copy email'}
+                className="btn-solid btn-key copy-key w-fit shrink-0"
               >
-                {copied ? <Check /> : <Copy />}
-                {copied ? 'Copied' : 'Copy email'}
+                <Copy />
+                Copy email
+                {/* the confirmation: a red "Copied" comes up over the button like a rubber stamp, then leaves */}
+                {copied && (
+                  <span className="copy-stamp" aria-hidden>
+                    <Check /> Copied
+                  </span>
+                )}
               </button>
             </div>
 

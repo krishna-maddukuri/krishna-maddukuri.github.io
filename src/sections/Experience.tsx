@@ -1,7 +1,7 @@
-import { useScroll, useSpring } from 'motion/react'
+import { useInView, useScroll, useSpring } from 'motion/react'
 import type { RefObject } from 'react'
 import * as m from 'motion/react-m'
-import { useRef } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
 import { timeline, type Milestone } from '../data/site'
 import { OrgMark } from '../components/Logo'
 import { Container, EASE, SectionHeading } from '../components/ui'
@@ -60,7 +60,41 @@ export function Experience() {
   )
 }
 
+/**
+ * A year whose digits roll into place, like a counter, once `play` is set (`.yr` in index.css). Each digit
+ * keeps its own width (the real digit is there, unseen, under a strip of seven that ends on it), so the year
+ * is set exactly as plain text would be. Read aloud as the plain year.
+ */
+function Year({ value, play }: { value: string | number; play: boolean }) {
+  const text = String(value)
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden className={`yr ${play ? 'is-rolling' : ''}`}>
+        {[...text].map((ch, i) =>
+          /\d/.test(ch) ? (
+            <span key={i} className="yr-cell" style={{ '--i': i } as CSSProperties}>
+              <span className="yr-digit">{ch}</span>
+              <span className="yr-strip">
+                {Array.from({ length: 7 }, (_, k) => (
+                  <span key={k}>{(Number(ch) + 4 + k) % 10}</span>
+                ))}
+              </span>
+            </span>
+          ) : (
+            ch
+          ),
+        )}
+      </span>
+    </>
+  )
+}
+
 function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: boolean }) {
+  // the year rolls as it comes in; the dot pops when the red line reaches it (70% of the way down the screen)
+  const [rolled, setRolled] = useState(false)
+  const dotRef = useRef<HTMLSpanElement>(null)
+  const reached = useInView(dotRef, { once: true, margin: '0px 0px -30% 0px' })
   const year = (
     <div className={`flex items-center ${left ? 'lg:justify-start' : 'lg:justify-end'}`}>
       {showYear && (
@@ -69,9 +103,10 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
           initial={{ opacity: 0, x: left ? -24 : 24 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.5 }}
+          onViewportEnter={() => setRolled(true)}
           transition={{ duration: 1.1, ease: EASE }}
         >
-          {ms.year}
+          <Year value={ms.year} play={rolled} />
         </m.span>
       )}
     </div>
@@ -113,7 +148,8 @@ function Row({ ms, left, showYear }: { ms: Milestone; left: boolean; showYear: b
     <div className="relative grid gap-4 pl-10 lg:grid-cols-2 lg:gap-x-20 lg:pl-0">
       {/* dot on the line, level with the middle of the card's mark */}
       <span
-        className={`absolute left-0 top-3 size-[15px] rounded-full border-2 lg:left-1/2 lg:top-[calc(var(--tl-pad)_+_var(--tl-mark)_/_2_-_7.5px)] lg:-translate-x-1/2 ${
+        ref={dotRef}
+        className={`tl-dot ${reached ? 'is-reached' : ''} absolute left-0 top-3 size-[15px] rounded-full border-2 lg:left-1/2 lg:top-[calc(var(--tl-pad)_+_var(--tl-mark)_/_2_-_7.5px)] lg:-translate-x-1/2 ${
           ms.current ? 'border-[color:var(--accent-ring)] bg-accent' : 'border-ink bg-paper'
         }`}
         aria-hidden

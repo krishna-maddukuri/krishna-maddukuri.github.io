@@ -42,8 +42,12 @@ test.describe('skills', () => {
     await expect.poll(() => java.evaluate((el) => getComputedStyle(el).opacity)).toBe('0.18')
     await expect.poll(() => fargate.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
     await expect(skills.locator('[aria-live="polite"]')).toContainText('Cloud & AWS')
+    // the picked family's tiles hop (and only they do); a tile of another family stays put
+    expect(await fargate.evaluate((el) => getComputedStyle(el).animationName)).toMatch(/^skills-hop-/)
+    expect(await java.evaluate((el) => getComputedStyle(el).animationName)).toBe('none')
     await cloud.click()
     await expect(cloud).toHaveAttribute('aria-pressed', 'false')
+    expect(await fargate.evaluate((el) => getComputedStyle(el).animationName)).toBe('none')
     await expect.poll(() => java.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
   })
 
