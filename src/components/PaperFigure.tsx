@@ -12,6 +12,11 @@ import { onHome } from '../lib/home'
  * and part around it, photo side up. A click (or, on phones and tablets, the "Scatter him" button) sends
  * them back out over the whole screen, each to its own spot, turning over and over on the way so the
  * red back of the paper flashes between the photo; they drift there a moment, then come back by themselves.
+ * While they are out, a ring travels through them every couple of seconds (each shard it passes is nudged
+ * outward, swells and turns over), and with a mouse the shards part around the pointer, the rings start
+ * from wherever the pointer is, and the shards stay out for as long as the pointer keeps moving over the
+ * first screen: they come home two seconds after it stops, on a second click, or when the page is scrolled
+ * on. Left alone (and on phones) it is the same couple of seconds out as ever.
  *
  * On the paper page he casts his paper shadow, a little down and to the right, as if the cut-out stands
  * just in front of the page (it fades while his pieces are out). On the black page there is no light round
@@ -38,8 +43,12 @@ const FADE_IN = 450 // on load the spread shards fade in,
 const GATHER_DELAY = 400 // wait a moment, so he lands with the rest of the hero,
 const GATHER_IN = 2300 // and glide in to make him
 const SCATTER_OUT = 1000 // a click sends them out this quickly,
-const SCATTER_HOLD = 2200 // lets them drift this long,
+const SCATTER_HOLD = 2200 // lets them drift this long (longer while a mouse keeps playing with them: PLAY_ON),
 const GATHER_BACK = 1700 // then brings them back
+const PLAY_ON = 2000 // out there, a moving mouse keeps them out; this long after it stops, they go home
+const RING_EVERY = 2200 // out there, a ring sets off through them this often,
+const RING_LIFE = 3600 // and has left the screen after this long
+const RINGS = 3 // (so no more than this many are ever travelling)
 const WAVE = 1600 // when the page comes home, his shards turn over once in a wave from head to feet: all of it, this long
 
 /** The back of the paper: the brand red (#f0412e, the same in both modes). */
@@ -73,6 +82,8 @@ uniform float u_breath; // -1..1
 uniform vec3 u_ptr;     // the pointer on the canvas, and how hard it pushes (0..1)
 uniform float u_avg;    // the shards' average size
 uniform float u_wave;   // the card wave: seconds since it set off (below 0: none)
+uniform vec3 u_poke;    // out there: the pointer on the canvas, and how hard it parts them (0..1)
+uniform vec3 u_rings[${RINGS}]; // out there: where each ring set off on the canvas, and its age in seconds (below 0: none)
 out vec2 v_uv;
 out vec3 v_n;
 out float v_shade;
@@ -121,11 +132,31 @@ void main() {
     + vec2(sin(u_time * 0.7 + a_rand.z * 20.0), cos(u_time * 0.55 + a_rand.w * 20.0)) * 12.0 * reach * k;
   float a = a_rand.x * 6.2832;
   vec3 pos = mix(home, vec3(spot, 0.0), k) + vec3(vec2(sin(a), -cos(a)) * sin(k * PI) * 70.0 * reach, 0.0);
+  // out there, two more things move them (both scale with k, so neither touches him when he is whole).
+  // The pointer parts them, like leaves around a hand:
+  float wide = max(u_view.x, u_view.y);
+  vec2 from = pos.xy - u_poke.xy;
+  float pd = length(from);
+  float part = 1.0 - smoothstep(0.0, 0.13 * wide, pd);
+  part *= part * u_poke.z * k;
+  pos.xy += (pd > 0.5 ? from / pd : vec2(0.0, -1.0)) * part * 0.1 * wide;
+  // and rings travel out through them: as one passes, a shard is nudged outward, swells and turns over
+  float ring = 0.0;
+  for (int i = 0; i < ${RINGS}; i++) {
+    vec3 r = u_rings[i];
+    if (r.z < 0.0) continue;
+    vec2 o = pos.xy - r.xy;
+    float rd = length(o);
+    float g = exp(-pow((rd - r.z * 0.5 * wide) / (0.05 * wide), 2.0)) * k;
+    pos.xy += (rd > 0.5 ? o / rd : vec2(0.0)) * g * 0.022 * wide;
+    ring += g;
+  }
+  ring = min(ring, 1.0);
   // out there the shards are all about one size, so the spread reads as an even field
-  float grow = mix(1.0, clamp(u_avg / a_size, 0.45, 2.4) * 1.3, 0.85 * k);
+  float grow = mix(1.0, clamp(u_avg / a_size, 0.45, 2.4) * 1.3, 0.85 * k) * (1.0 + 0.45 * ring);
   vec3 off = turn(local * grow, Z, (a_rand.w - 0.5) * 6.0 * k);
   vec3 ax = vec3(cos(a), sin(a), 0.0);
-  float tip = (4.0 * k * (1.0 - k) * (2.4 + 1.6 * a_rand.w) + k * (0.75 + 1.05 * sin(u_time * 2.0 + a_rand.y * 30.0))) * sg;
+  float tip = (4.0 * k * (1.0 - k) * (2.4 + 1.6 * a_rand.w) + k * (0.75 + 1.05 * sin(u_time * 2.0 + a_rand.y * 30.0)) + PI * ring + 0.9 * part) * sg;
   pos += turn(off, ax, tip);
   v_n = turn(turn(Z, UP, flip), ax, tip);
 
@@ -300,6 +331,8 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         breath: loc('u_breath'),
         ptr: loc('u_ptr'),
         wave: loc('u_wave'),
+        poke: loc('u_poke'),
+        rings: loc('u_rings'),
         alpha: loc('u_alpha'),
       }
       gl.uniform1i(loc('u_tex'), 0)
@@ -475,6 +508,15 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       let holdUntil = 0
       let built = false
       let holdTimer: ReturnType<typeof setTimeout> | undefined
+      // out there: the last time a mouse moved over the first screen, the rings on their way (where each set
+      // off, and when), when the next one is due, and the pointer's eased hold on the shards
+      let lastPlay = 0
+      let nextRing = 0
+      const rings: { x: number; y: number; t0: number }[] = []
+      const ringData = new Float32Array(RINGS * 3)
+      const poke = { x: 0, y: 0, k: 0 }
+      /** While a mouse keeps moving over the first screen, the shards stay out. */
+      const playing = (now: number) => now - lastPlay < PLAY_ON
       const gather = (now: number) => {
         clearTimeout(holdTimer)
         phase = 'gather'
@@ -491,12 +533,17 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         // the frames bring him back once the hold is over; this timer does the same should the frames stop
         // meanwhile (the hero scrolled away, a switch of tabs), so the buttons never stay on "put him back"
         clearTimeout(holdTimer)
-        holdTimer = setTimeout(() => {
-          if (!disposed && (phase === 'out' || phase === 'hold')) {
-            gather(performance.now())
-            schedule()
+        const fallback = () => {
+          if (disposed || (phase !== 'out' && phase !== 'hold')) return
+          // (still being played with, and the frames are running: they will bring him home; look again later)
+          if (visible && !document.hidden && playing(performance.now())) {
+            holdTimer = setTimeout(fallback, 500)
+            return
           }
-        }, ms + SCATTER_HOLD + 150)
+          gather(performance.now())
+          schedule()
+        }
+        holdTimer = setTimeout(fallback, ms + SCATTER_HOLD + 150)
       }
       toggleRef.current = () => {
         const now = performance.now()
@@ -518,7 +565,18 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         mouse.y = e.clientY
         mouse.in = true
         lastPointer = performance.now()
+        // over the first screen (the shards' canvas): that is playing with them
+        const cr = canvas.getBoundingClientRect()
+        if (e.clientX >= cr.left && e.clientX <= cr.right && e.clientY >= cr.top && e.clientY <= cr.bottom) lastPlay = lastPointer
       }
+      // scrolled on while they are out: he comes home, so nobody returns to a scattered hero
+      const onScroll = () => {
+        if ((phase === 'out' || phase === 'hold') && window.scrollY > window.innerHeight * 0.4) {
+          gather(performance.now())
+          schedule()
+        }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true })
       const onLeave = () => {
         mouse.in = false
         hovered.current = false
@@ -573,6 +631,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
             if (tw.to === 1) {
               phase = 'hold'
               holdUntil = now + SCATTER_HOLD
+              nextRing = now
             } else {
               phase = 'rest'
               built = true
@@ -580,7 +639,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
             }
           }
         }
-        if (phase === 'hold' && now >= holdUntil) gather(now)
+        if (phase === 'hold' && now >= holdUntil && !playing(now)) gather(now)
 
         const { cr, br, x, y, s } = place()
         // the pointer: the mouse, while it is over him (and he is whole)
@@ -648,6 +707,31 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         gl.uniform1f(U.breath, Math.sin(now / 1900))
         gl.uniform3f(U.ptr, ptr.x, ptr.y, ptr.k)
         gl.uniform1f(U.wave, turning)
+        // out there: the pointer's hold on the shards follows the mouse while it is over the canvas,
+        const over = mouse.in && tx >= 0 && tx <= cr.width && ty >= 0 && ty <= cr.height
+        if (poke.k < 0.001) {
+          poke.x = tx
+          poke.y = ty
+        }
+        const kq = 1 - Math.pow(0.0002, dt)
+        poke.x += (tx - poke.x) * kq
+        poke.y += (ty - poke.y) * kq
+        poke.k += ((over && (phase === 'out' || phase === 'hold') ? 1 : 0) - poke.k) * (1 - Math.pow(0.002, dt))
+        gl.uniform3f(U.poke, poke.x, poke.y, poke.k)
+        // and a ring sets off every so often, from the pointer if there is one and from his middle if not
+        if (phase === 'hold' && now >= nextRing) {
+          rings.push(over ? { x: tx, y: ty, t0: now } : { x: x + (TEX_W / 2) * s, y: y + TEX_H * 0.45 * s, t0: now })
+          if (rings.length > RINGS) rings.shift()
+          nextRing = now + RING_EVERY
+        }
+        while (rings.length && now - rings[0].t0 > RING_LIFE) rings.shift()
+        for (let i = 0; i < RINGS; i++) {
+          const r = rings[i]
+          ringData[i * 3] = r ? r.x : 0
+          ringData[i * 3 + 1] = r ? r.y : 0
+          ringData[i * 3 + 2] = r ? (now - r.t0) / 1000 : -1
+        }
+        gl.uniform3fv(U.rings, ringData)
         gl.uniform1f(U.alpha, fade)
         gl.drawArrays(gl.TRIANGLES, 0, geo.count)
         if (visible && !document.hidden) schedule()
@@ -671,6 +755,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         exact.disconnect()
         io.disconnect()
         window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('scroll', onScroll)
         document.removeEventListener('mouseleave', onLeave)
         window.removeEventListener('blur', onLeave)
         offHome()

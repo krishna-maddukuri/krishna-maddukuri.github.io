@@ -137,6 +137,39 @@ test.describe('paper figure', () => {
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready')
   })
 
+  test('a mouse that keeps moving over the first screen keeps his shards out; they go home soon after it stops', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'there is no mouse to play with on a phone')
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    await page.getByRole('button', { name: 'Scatter the paper figure' }).click()
+    await expect(figure).toHaveAttribute('data-paper-figure', 'scattered')
+    // well past the 3.2 seconds he would be out by himself, the pointer still wandering
+    for (let n = 0; n < 60; n++) {
+      await page.mouse.move(300 + (n % 20) * 30, 420 + (n % 7) * 12)
+      await page.waitForTimeout(100)
+    }
+    await expect(figure).toHaveAttribute('data-paper-figure', 'scattered')
+    expect((await paint(page)).outside).toBeGreaterThan(0.02)
+    // the pointer rests: home in a couple of seconds
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 8_000 })
+  })
+
+  test('scrolling on while his shards are out brings him home', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'the pointer is what keeps them out')
+    await openHome(page)
+    const figure = page.locator('#top [data-paper-figure]')
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })
+    await page.getByRole('button', { name: 'Scatter the paper figure' }).click()
+    await expect(figure).toHaveAttribute('data-paper-figure', 'scattered')
+    for (let n = 0; n < 12; n++) {
+      await page.mouse.move(300 + n * 30, 420)
+      await page.waitForTimeout(100)
+    }
+    await page.mouse.wheel(0, 700)
+    await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 3_000 })
+  })
+
   test('phones: the button under his feet scatters him and "Keep together" brings him back', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) >= 1024, 'phones and tablets only')
     await openHome(page)
