@@ -5,6 +5,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { site } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
 import { onHome } from '../lib/home'
+import { homeSweep } from '../lib/homeSweep'
 import { useScrollTo } from '../lib/scroll'
 import { CSS_SCROLL } from '../lib/scrollTimeline'
 import { ResumeLink } from '../components/ResumeLink'
@@ -47,9 +48,6 @@ export function Hero() {
 
   // where the figure's shards fly (the layer below), handed to the figure once it is in the page
   const [shardLayer, setShardLayer] = useState<HTMLDivElement | null>(null)
-  // the name draws itself in as the page opens (its letters stay unseen until their font is in: Antonio is
-  // font-display: block), and again each time the page comes home
-  const [wmPlay, setWmPlay] = useState(true)
   // the numbers count up when first in view (narrow screens; wide ones count as the page opens)
   const statsRef = useRef<HTMLUListElement>(null)
   const statsSeen = useInView(statsRef, { once: true })
@@ -85,16 +83,8 @@ export function Hero() {
     side.dataset.fit = ''
     return () => watch.disconnect()
   }, [])
-  // and draws itself in again each time the page comes home (the name in the header)
-  useEffect(
-    () =>
-      onHome(() => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-        setWmPlay(false)
-        requestAnimationFrame(() => requestAnimationFrame(() => setWmPlay(true)))
-      }),
-    [],
-  )
+  // each time the page comes home (the name in the header), the red blade crosses the hero (lib/homeSweep.ts)
+  useEffect(() => onHome(() => ref.current && homeSweep(ref.current)), [])
   return (
     <section
       id="top"
@@ -122,7 +112,9 @@ export function Hero() {
         aria-hidden
         className="hero-drift-name wm-wrap pointer-events-none absolute inset-x-0 top-[68px] -z-10 select-none sm:top-[78px] lg:top-[10%]"
       >
-        <GiantWord lines={wm.lines} play={wmPlay} />
+        {/* the name draws itself in as the page opens (its letters stay unseen until their font is in: Antonio
+            is font-display: block) */}
+        <GiantWord lines={wm.lines} play />
       </m.div>
 
       {/* the paper figure's shards fly here: over the giant name, under the words, anywhere on the hero's first

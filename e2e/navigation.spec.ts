@@ -28,6 +28,32 @@ test.describe('navigation', () => {
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 8_000 }).toBeLessThan(2)
   })
 
+  test('pressing the name at the top sends the red blade across the hero and leaves the page as it was', async ({ page }) => {
+    await openHome(page)
+    const wide = await page.evaluate(() => window.matchMedia('(min-width: 1024px)').matches)
+    const letter = page.locator('#top .wm-ch').first()
+    const tape = page.locator('.role-tape-window')
+    const before = {
+      colour: await letter.evaluate((el) => getComputedStyle(el).color),
+      tape: await tape.evaluate((el) => Math.round(el.getBoundingClientRect().left)),
+    }
+    await page.getByRole('button', { name: /Krishna Maddukuri, back to top/ }).click()
+    if (wide) {
+      // the tape itself is the blade: it starts from the left edge
+      await expect.poll(() => tape.evaluate((el) => Math.round(el.getBoundingClientRect().left))).toBeLessThan(before.tape - 200)
+    } else {
+      // no tape on the first screen: a blade of its own crosses and is taken away
+      await expect(page.locator('[data-home-blade]')).toHaveCount(1)
+    }
+    await expect(page.locator('[data-home-blade]')).toHaveCount(0, { timeout: 6_000 })
+    await expect.poll(() => tape.evaluate((el) => Math.round(el.getBoundingClientRect().left)), { timeout: 6_000 }).toBe(before.tape)
+    await expect.poll(() => letter.evaluate((el) => getComputedStyle(el).color), { timeout: 6_000 }).toBe(before.colour)
+    // every one-off it started (the letters, the red block, the numbers) has finished
+    await expect
+      .poll(() => page.evaluate(() => document.querySelector('#top')!.getAnimations({ subtree: true }).filter((a) => a.playState === 'running' && !(a instanceof CSSAnimation) && !(a instanceof CSSTransition)).length), { timeout: 8_000 })
+      .toBe(0)
+  })
+
   test('phones: the menu opens, lists the sections, navigates, and closes with Escape or the scrim', async ({ page }) => {
     test.skip(!isPhone(page), 'the sheet menu is a phone control')
     await openHome(page)

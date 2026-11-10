@@ -1,7 +1,7 @@
 /**
  * "Home" is what the name in the header does. The page scrolls back to the top and, once it is
- * there, the hero gives its welcome again: the name draws itself in and a wave runs down the paper
- * figure. Each of those pieces listens for this one event.
+ * there, the hero answers: a red blade crosses it (lib/homeSweep.ts) and the paper figure's shards turn
+ * over in a wave, head to feet. Each of those pieces listens for this one event.
  */
 const HOME_EVENT = 'kkm:home'
 

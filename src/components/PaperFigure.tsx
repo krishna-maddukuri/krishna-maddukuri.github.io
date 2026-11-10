@@ -40,7 +40,7 @@ const GATHER_IN = 2300 // and glide in to make him
 const SCATTER_OUT = 1000 // a click sends them out this quickly,
 const SCATTER_HOLD = 2200 // lets them drift this long,
 const GATHER_BACK = 1700 // then brings them back
-const WAVE = 1100 // when the page comes home, a ripple runs down him from head to feet, this long
+const WAVE = 1600 // when the page comes home, his shards turn over once in a wave from head to feet: all of it, this long
 
 /** The back of the paper: the brand red (#f0412e, the same in both modes). */
 const RED = [240 / 255, 65 / 255, 46 / 255] as const
@@ -72,6 +72,7 @@ uniform float u_time;   // seconds
 uniform float u_breath; // -1..1
 uniform vec3 u_ptr;     // the pointer on the canvas, and how hard it pushes (0..1)
 uniform float u_avg;    // the shards' average size
+uniform float u_wave;   // the card wave: seconds since it set off (below 0: none)
 out vec2 v_uv;
 out vec3 v_n;
 out float v_shade;
@@ -106,6 +107,12 @@ void main() {
   home += vec3(dir * push * 18.0 * U * s, push * 30.0 * U * s);
   local = turn(local * (1.0 + 0.05 * push), Z, push * 0.06 * sg);
 
+  // home: each shard turns over once about its own upright, the head first and the feet last, so a band
+  // of the paper's red back travels down him
+  float flip = u_wave < 0.0 ? 0.0 : 2.0 * PI * ease((u_wave - c.y / TH * 0.7) / 0.5);
+  vec3 UP = vec3(0.0, 1.0, 0.0);
+  local = turn(local, UP, flip);
+
   // the spread: each shard flies out to its own spot on an arc, turning over and over (so the back of
   // the paper flashes between the photo), and drifts and flutters there; some go a little before others
   float k = ease(u_k * 1.5 - a_rand.y * 0.5);
@@ -120,7 +127,7 @@ void main() {
   vec3 ax = vec3(cos(a), sin(a), 0.0);
   float tip = (4.0 * k * (1.0 - k) * (2.4 + 1.6 * a_rand.w) + k * (0.75 + 1.05 * sin(u_time * 2.0 + a_rand.y * 30.0))) * sg;
   pos += turn(off, ax, tip);
-  v_n = turn(Z, ax, tip);
+  v_n = turn(turn(Z, UP, flip), ax, tip);
 
   // a gentle perspective, converging on his chest
   float f = CAM * s;
@@ -292,6 +299,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         time: loc('u_time'),
         breath: loc('u_breath'),
         ptr: loc('u_ptr'),
+        wave: loc('u_wave'),
         alpha: loc('u_alpha'),
       }
       gl.uniform1i(loc('u_tex'), 0)
@@ -503,7 +511,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       const ptr = { x: 0, y: 0, k: 0 } // the eased push, in the canvas's px
       const lbl = { x: 0, y: 0 } // the label beside the pointer, in the box's px
       let lastPointer = 0
-      let wave = 0 // when the ripple started; 0 while there is none
+      let wave = 0 // when the card wave started; 0 while there is none
       const onMove = (e: PointerEvent) => {
         if (e.pointerType && e.pointerType !== 'mouse') return
         mouse.x = e.clientX
@@ -518,7 +526,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       window.addEventListener('pointermove', onMove, { passive: true })
       document.addEventListener('mouseleave', onLeave)
       window.addEventListener('blur', onLeave)
-      // home: the ripple, once he is built and whole
+      // home: the card wave, once he is built and whole
       const offHome = onHome(() => {
         if (!built || phase !== 'rest') return
         wave = performance.now()
@@ -575,19 +583,14 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         if (phase === 'hold' && now >= holdUntil) gather(now)
 
         const { cr, br, x, y, s } = place()
-        // the pointer: the mouse, while it is over him (and he is whole) … or the ripple, a pointer nobody holds
-        let tx = mouse.x - cr.left
-        let ty = mouse.y - cr.top
+        // the pointer: the mouse, while it is over him (and he is whole)
+        const tx = mouse.x - cr.left
+        const ty = mouse.y - cr.top
         let tk = 0
-        if (wave) {
-          const p = (now - wave) / WAVE
-          if (p >= 1) wave = 0
-          else {
-            tx = x + (TEX_W / 2) * s
-            ty = y + (-120 * UNIT + (TEX_H + 240 * UNIT) * p) * s
-            tk = 1
-          }
-        } else if (mouse.in) {
+        // the card wave sets off a moment after the press, as the blade reaches him
+        if (wave && now - wave >= WAVE) wave = 0
+        const turning = wave ? (now - wave) / 1000 - 0.3 : -1
+        if (mouse.in) {
           const dx = mouse.x - (br.left + br.width / 2)
           const dy = mouse.y - br.top
           tk = Math.abs(dx) < br.width * 0.8 && dy > -120 * UNIT * s && dy < br.height + 80 * UNIT * s ? 1 : 0
@@ -644,6 +647,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
         gl.uniform1f(U.time, (now - born) / 1000)
         gl.uniform1f(U.breath, Math.sin(now / 1900))
         gl.uniform3f(U.ptr, ptr.x, ptr.y, ptr.k)
+        gl.uniform1f(U.wave, turning)
         gl.uniform1f(U.alpha, fade)
         gl.drawArrays(gl.TRIANGLES, 0, geo.count)
         if (visible && !document.hidden) schedule()
