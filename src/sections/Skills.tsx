@@ -73,7 +73,7 @@ export function Skills() {
 
         {/* on wide screens the table is as wide as its square tiles allow and the inspector takes the rest */}
         <div className="skills-body mt-8 grid items-center gap-6 lg:mt-[clamp(12px,2.4svh,32px)] lg:items-stretch lg:gap-10">
-          <div ref={tableRef} className="skills-table grid grid-cols-5 gap-1.5 self-start min-[520px]:grid-cols-8 sm:gap-2.5">
+          <div ref={tableRef} className={`skills-table ${inView ? 'is-in' : ''} grid grid-cols-5 gap-1.5 self-start min-[520px]:grid-cols-8 sm:gap-2.5`}>
             {elements.map((el, i) => (
               <Tile
                 key={el.sym}

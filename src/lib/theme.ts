@@ -8,10 +8,10 @@ const KEY = 'kkm-theme'
  */
 const ATTR = 'data-mode'
 
-/** The theme picked with the switch, kept for this visit only (a new visit opens in dark mode again). */
+/** The theme last picked with the switch, kept on this device: a returning visitor gets it again. */
 function readStoredTheme(): Theme | null {
   try {
-    const v = sessionStorage.getItem(KEY)
+    const v = localStorage.getItem(KEY)
     return v === 'light' || v === 'dark' ? v : null
   } catch {
     return null
@@ -42,9 +42,9 @@ function nudgeStatusBar() {
 }
 
 /**
- * The site opens in dark mode (index.html starts that way too, so the first paint is black); light
- * mode is a choice made with the switch, kept while you browse (across the site's pages and a
- * reload) and forgotten when you come back another time. Applied before React renders.
+ * The site opens in dark mode the first time (index.html starts that way too, so the first paint is
+ * black); once a visitor has used the switch, their choice is kept on their device and is what they get
+ * from then on, on every page and every later visit. Applied before React renders.
  */
 export function applyStoredTheme() {
   const t = readStoredTheme() ?? 'dark'
@@ -90,7 +90,7 @@ export function useTheme() {
       syncThemeColor(next)
     }
     try {
-      sessionStorage.setItem(KEY, next)
+      localStorage.setItem(KEY, next)
     } catch {
       /* storage can be blocked; the toggle still works for this visit */
     }

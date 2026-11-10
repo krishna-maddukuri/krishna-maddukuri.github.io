@@ -1275,6 +1275,31 @@ html.lenis, html.lenis body { height: auto; }
 [data-paper-figure="still"] img { filter: drop-shadow(5cqw 1.4cqh 1.1cqh rgb(43 34 25 / 0.26)); }
 :root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
 
+/* wide but very short screens (a laptop window squeezed to under ~710px tall): the hero keeps room for its
+   words and buttons instead of ending at the screen's height and cutting them off */
+@media (min-width: 1024px) {
+  .hero-scroll { --hero-floor: 712px; }
+}
+
+/*
+  Touch screens: the Skills table comes in as one piece (a fade and a short rise, which the browser can do
+  without repainting) with its tiles already in their colours, in place of the wave that tweens the colours
+  of all 52 tiles one after another, which made phones stutter as the table scrolled in.
+*/
+@media (pointer: coarse) {
+  .skills-table {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+  }
+  .skills-table.is-in { opacity: 1; transform: none; }
+  .skills-table .skills-tile { transition-property: opacity, box-shadow, translate, scale; }
+  html.script-failed .skills-table { opacity: 1; transform: none; }
+}
+@media (pointer: coarse) and (prefers-reduced-motion: reduce) {
+  .skills-table { transition: none; }
+}
+
 /* small text links (the footer's, the resume's LinkedIn) are a finger-sized target on touch screens */
 @media (pointer: coarse) {
   .tap-target {

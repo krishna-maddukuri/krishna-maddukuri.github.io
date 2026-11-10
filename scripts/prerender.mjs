@@ -29,7 +29,7 @@ fs.writeFileSync(path.join(DIST, '404.html'), shell)
 // wait for the script (the same rule as html.script-failed in index.css)
 const NOSCRIPT = /<noscript id="boot-fallback">[\s\S]*?<\/noscript>/
 if (!NOSCRIPT.test(shell)) throw new Error('index.html has no boot-fallback block')
-const REVEAL = `<noscript><style>[style*="opacity:0"]{opacity:1!important;transform:none!important;filter:none!important}.wm-ch{opacity:1!important}.hero-stack{visibility:visible!important}</style></noscript>`
+const REVEAL = `<noscript><style>[style*="opacity:0"]{opacity:1!important;transform:none!important;filter:none!important}.wm-ch{opacity:1!important}.hero-stack{visibility:visible!important}.skills-table{opacity:1!important;transform:none!important}</style></noscript>`
 // only the home page has the figure: the other pages don't fetch its picture and mesh ahead of time
 const FIGURE = /^\s*<link rel="preload" href="[^"]*avatar\/krishna-origami\.[^"]*"[^>]*>\n/gm
 

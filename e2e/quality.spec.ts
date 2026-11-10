@@ -10,7 +10,7 @@ test.describe('accessibility and motion', () => {
       // is its still picture), which is also the version assistive-tech users most often get
       await page.emulateMedia({ reducedMotion: 'reduce' })
       // the site opens in dark mode; light is the switch's choice for the visit
-      if (scheme === 'light') await page.addInitScript(() => sessionStorage.setItem('kkm-theme', 'light'))
+      if (scheme === 'light') await page.addInitScript(() => localStorage.setItem('kkm-theme', 'light'))
       await openHome(page)
       await expect(page.locator('html')).toHaveAttribute('data-mode', scheme)
       await revealAll(page)

@@ -102,7 +102,9 @@ export function Hero() {
       className="hero-scroll wm-frame wm-frame--hero relative isolate flex flex-col overflow-hidden lg:block"
       style={
         {
-          minHeight: 'min(100svh, 1000px)',
+          // one screen tall, but on a wide and very short screen never too short for its words and buttons
+          // (--hero-floor in index.css), which would otherwise be cut off at its foot
+          minHeight: 'max(min(100svh, 1000px), var(--hero-floor, 0px))',
           '--wm-word': wm.word,
           // wide screens: his figure stands 60% of the way across the 1440px frame (on a wider screen the
           // frame is centred, so the whole composition keeps its proportions), and is about 0.357x as wide

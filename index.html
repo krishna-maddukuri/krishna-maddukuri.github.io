@@ -17,8 +17,8 @@
     <meta name="twitter:image" content="https://krishna-maddukuri.github.io/og.png" />
     <meta name="theme-color" content="#000000" />
     <script>
-      // light mode picked earlier in this visit: before the first paint, so a pre-built page never shows dark first
-      try { if (sessionStorage.getItem('kkm-theme') === 'light') document.documentElement.setAttribute('data-mode', 'light') } catch (e) {}
+      // light mode picked earlier on this device: before the first paint, so a pre-built page never shows dark first
+      try { if (localStorage.getItem('kkm-theme') === 'light') document.documentElement.setAttribute('data-mode', 'light') } catch (e) {}
       // an old-style address (/#/resume, /#/work/<slug>) goes to the page's own address
       if (location.hash.length > 2 && location.hash.indexOf('#/') === 0) location.replace('%BASE_URL%' + location.hash.slice(2).replace(/\/+$/, '') + '/')
     </script>

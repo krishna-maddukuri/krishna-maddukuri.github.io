@@ -22,4 +22,21 @@ test.describe('one screen per section', () => {
       for (const [id, h] of sizes) expect(h, `#${id} is ${h}px tall`).toBeLessThanOrEqual(height)
     })
   }
+
+  test('on a wide but very short screen the hero keeps its words and buttons whole', async ({ page }) => {
+    test.skip(isPhone(page), 'a wide-screen check')
+    for (const [width, height] of [
+      [1280, 600],
+      [1200, 560],
+      [1024, 600],
+    ] as const) {
+      await page.setViewportSize({ width, height })
+      await openHome(page)
+      const { hero, buttons } = await page.evaluate(() => ({
+        hero: document.getElementById('top')!.getBoundingClientRect().bottom,
+        buttons: document.querySelector('#top .hero-cta')!.getBoundingClientRect().bottom,
+      }))
+      expect(buttons, `${width}×${height}: the buttons end ${Math.round(buttons)}px down, the hero ${Math.round(hero)}px`).toBeLessThanOrEqual(hero - 16)
+    }
+  })
 })

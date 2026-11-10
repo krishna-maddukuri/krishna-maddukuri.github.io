@@ -277,7 +277,7 @@ test.describe('paper figure', () => {
   })
 
   test('on the paper page his shadow falls on the page instead', async ({ page }) => {
-    await page.addInitScript(() => sessionStorage.setItem('kkm-theme', 'light'))
+    await page.addInitScript(() => localStorage.setItem('kkm-theme', 'light'))
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: 10_000 })

@@ -83,4 +83,16 @@ test.describe('skills', () => {
     // the picked tile is ringed in that colour (Docker blue)
     await expect.poll(() => docker.evaluate((el) => getComputedStyle(el).outlineColor)).toBe('rgb(36, 150, 237)')
   })
+
+  test('phones: the table comes in as one piece, its tiles already in their colours', async ({ page }) => {
+    test.skip(!isPhone(page), 'a touch-screen check')
+    await openHome(page)
+    await jumpTo(page, 'skills')
+    const table = page.locator('#skills .skills-table')
+    await table.scrollIntoViewIfNeeded()
+    await expect(table).toHaveClass(/is-in/)
+    await expect.poll(() => table.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+    // no colour tween per tile
+    expect(await table.locator('.skills-tile').first().evaluate((el) => getComputedStyle(el).transitionProperty)).not.toContain('background-color')
+  })
 })

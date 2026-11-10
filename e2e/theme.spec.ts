@@ -20,7 +20,7 @@ test.describe('theme', () => {
     await themeButton(page).click()
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'light')
     await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(244, 243, 239)')
-    expect(await page.evaluate(() => sessionStorage.getItem('kkm-theme'))).toBe('light')
+    expect(await page.evaluate(() => localStorage.getItem('kkm-theme'))).toBe('light')
     const bar = await page.locator('meta[name="theme-color"]').first().getAttribute('content')
     expect(bar).toBe('#f4f3ef')
 
@@ -28,20 +28,21 @@ test.describe('theme', () => {
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'light')
     await themeButton(page).click()
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
-    expect(await page.evaluate(() => sessionStorage.getItem('kkm-theme'))).toBe('dark')
+    expect(await page.evaluate(() => localStorage.getItem('kkm-theme'))).toBe('dark')
   })
 
-  test('a new visit opens in dark mode even after light was picked, and a host setting data-theme on the root changes nothing', async ({ page, context }) => {
+  test('a first visit opens in dark mode, a later visit keeps the theme last picked, and a host setting data-theme on the root changes nothing', async ({ page, context }) => {
     await openHome(page)
+    await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
     await themeButton(page).click()
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'light')
-    // a fresh tab is a new visit: the choice is not carried over
+    // a fresh tab is a new visit: the choice comes with it, from the first paint
     const fresh = await context.newPage()
     await fresh.goto('/')
-    await expect(fresh.locator('html')).toHaveAttribute('data-mode', 'dark')
+    await expect(fresh.locator('html')).toHaveAttribute('data-mode', 'light')
     // some hosts stamp their own theme on the root; the site keeps its own
-    await fresh.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'))
-    expect(await fresh.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(0, 0, 0)')
+    await fresh.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'))
+    expect(await fresh.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(244, 243, 239)')
     await fresh.close()
   })
 

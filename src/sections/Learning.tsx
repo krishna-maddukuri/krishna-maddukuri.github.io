@@ -29,9 +29,10 @@ export function Learning() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.4 }}
                 transition={{ duration: 0.95, ease: EASE, delay: 0.06 * i }}
-                className="group grid cursor-default grid-cols-[1.6rem_3rem_minmax(0,1fr)] items-center gap-3 rounded-2xl px-4 py-4 transition-colors duration-300 hover:bg-ink hover:text-paper sm:grid-cols-[2.5rem_3.25rem_minmax(0,1fr)] sm:px-6 sm:py-5"
+                // a list to read, not to press: a row only warms a little under the pointer (it used to turn solid, like a button)
+                className="grid cursor-default grid-cols-[1.6rem_3rem_minmax(0,1fr)] items-center gap-3 rounded-2xl px-4 py-4 transition-colors duration-300 hover:bg-ink/[0.04] sm:grid-cols-[2.5rem_3.25rem_minmax(0,1fr)] sm:px-6 sm:py-5"
               >
-                  <span className="tabular font-mono text-xs text-ink-soft transition-colors group-hover:text-paper/60">
+                  <span className="tabular font-mono text-xs text-ink-soft">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   {/* the school's mark, or the certification's badge */}
@@ -44,7 +45,7 @@ export function Learning() {
                     <span className="block font-display text-[clamp(1.2rem,2vw,1.6rem)] font-semibold leading-tight">
                       {item.title}
                     </span>
-                    <span className="mt-1 block text-sm text-ink-soft transition-colors group-hover:text-paper/70">{item.from}</span>
+                    <span className="mt-1 block text-sm text-ink-soft">{item.from}</span>
                   </span>
               </m.li>
             ))}
