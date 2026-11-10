@@ -1,7 +1,16 @@
 import * as m from 'motion/react-m'
 import type { ReactNode } from 'react'
+import type { CSSProperties } from 'react'
 
 export const EASE = [0.22, 1, 0.36, 1] as const
+
+/**
+ * The settings of an entrance that plays as the page opens, for an element with the class `enter` (index.css):
+ * it starts `delay` seconds in, rises `y` px over `d` seconds while it fades in, and can grow from scale `s`.
+ * These run in CSS alone, so a pre-built page plays them from its first paint, before any script.
+ */
+export const enter = (delay = 0, y = 14, d = 0.8, s?: number) =>
+  ({ '--enter-delay': `${delay}s`, '--enter-y': `${y}px`, '--enter-d': `${d}s`, ...(s === undefined ? {} : { '--enter-s': s }) }) as CSSProperties
 
 /**
  * A slow fade and rise when a block scrolls into view (about a second, easing out), once.

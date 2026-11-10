@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 export type Theme = 'light' | 'dark'
 const KEY = 'kkm-theme'
@@ -56,15 +56,15 @@ function currentTheme(): Theme {
   return document.documentElement.getAttribute(ATTR) === 'dark' ? 'dark' : 'light'
 }
 
-export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(currentTheme)
+function watchTheme(on: () => void) {
+  const mo = new MutationObserver(on)
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: [ATTR] })
+  return () => mo.disconnect()
+}
 
-  useEffect(() => {
-    const sync = () => setThemeState(currentTheme())
-    const mo = new MutationObserver(sync)
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: [ATTR] })
-    return () => mo.disconnect()
-  }, [])
+export function useTheme() {
+  // a pre-built page is built dark, as the site opens; the real theme takes over right after
+  const theme = useSyncExternalStore<Theme>(watchTheme, currentTheme, () => 'dark')
 
   /** Switch themes. Given the button's position, the new theme grows out of it as a circle (where the browser can). */
   const toggle = (origin?: { x: number; y: number }) => {

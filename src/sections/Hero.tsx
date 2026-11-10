@@ -1,4 +1,4 @@
-import { animate, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { useInView, useScroll, useTransform } from 'motion/react'
 import type { RefObject } from 'react'
 import * as m from 'motion/react-m'
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
@@ -10,7 +10,7 @@ import { CSS_SCROLL } from '../lib/scrollTimeline'
 import { ResumeLink } from '../components/ResumeLink'
 import { GiantWord, giantWord } from '../components/GiantWord'
 import { HeroMedia } from '../components/HeroMedia'
-import { ArrowDown, ArrowRight, EASE, plain, richWords } from '../components/ui'
+import { ArrowDown, ArrowRight, plain, richWords, enter } from '../components/ui'
 
 /** The giant name behind the hero: his first and middle names on one line (the surname is the footer's word). */
 const wm = giantWord([site.name.split(' ').slice(0, -1).join(' ')])
@@ -47,9 +47,12 @@ export function Hero() {
 
   // where the figure's shards fly (the layer below), handed to the figure once it is in the page
   const [shardLayer, setShardLayer] = useState<HTMLDivElement | null>(null)
-  // the name draws itself in once its font is in (or after a moment, if the font is slow), so the
-  // outline is never drawn in the fallback font and swapped mid-way
-  const [wmPlay, setWmPlay] = useState(false)
+  // the name draws itself in as the page opens (its letters stay unseen until their font is in: Antonio is
+  // font-display: block), and again each time the page comes home
+  const [wmPlay, setWmPlay] = useState(true)
+  // the numbers count up when first in view (narrow screens; wide ones count as the page opens)
+  const statsRef = useRef<HTMLUListElement>(null)
+  const statsSeen = useInView(statsRef, { once: true })
   // the two columns end on one line: the list beside his figure is stretched to the foot of the buttons,
   // with his stack at its bottom (measured from layout offsets, so the scroll drift doesn't count)
   const copyRef = useRef<HTMLDivElement>(null)
@@ -72,18 +75,6 @@ export function Hero() {
     document.fonts?.ready.then(fit)
     fit()
     return () => watch.disconnect()
-  }, [])
-  useEffect(() => {
-    let done = false
-    const go = () => {
-      if (!done) {
-        done = true
-        setWmPlay(true)
-      }
-    }
-    const t = setTimeout(go, 1500)
-    document.fonts?.load('700 100px "Antonio"').then(go, go)
-    return () => clearTimeout(t)
   }, [])
   // and draws itself in again each time the page comes home (the name in the header)
   useEffect(
@@ -135,14 +126,9 @@ export function Hero() {
         style={touch || !script ? undefined : { y: script.figY }}
         className="hero-drift-figure relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[var(--fig-x)] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
       >
-        <m.div
-          className="relative h-full"
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1.2, ease: EASE, delay: 0.35 }}
-        >
+        <div className="enter relative h-full" style={enter(0.35, 50, 1.2)}>
           <HeroMedia shardLayer={shardLayer} />
-        </m.div>
+        </div>
       </m.div>
 
       {/* left, portfolio-2's opening: "Hello, I'm a" in his hand, the role on a red block, the intro, the
@@ -159,62 +145,36 @@ export function Hero() {
             wraps under the block, edge to edge */}
         <div className="w-min">
           <h1 className="flex flex-col items-start gap-1">
-            <m.span
-              className="hero-hello"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: 0.45 }}
-            >
+            <span className="hero-hello enter" style={enter(0.45, 14, 0.8)}>
               {site.hero.hello}{' '}
-            </m.span>
-            {/* the red wipes in from the left, then the words rise into it */}
-            <m.span
-              className="role-block"
-              initial={{ clipPath: 'inset(0 100% 0 0)' }}
-              animate={{ clipPath: 'inset(0 0% 0 0)' }}
-              transition={{ duration: 0.8, ease: EASE, delay: 0.55 }}
-            >
+            </span>
+            {/* the red wipes in from the left, then the words rise into it (.role-block, .role-word in index.css) */}
+            <span className="role-block">
               {site.headline.map((word, i) => (
                 <Fragment key={word}>
                   {i > 0 && ' '}
                   <span className="role-line">
-                    <m.span
-                      className="block"
-                      initial={{ y: '105%' }}
-                      animate={{ y: 0 }}
-                      transition={{ duration: 0.9, ease: EASE, delay: 0.7 + i * 0.1 }}
-                    >
+                    <span className="role-word" style={{ '--i': i } as CSSProperties}>
                       {word}
                       {i === site.headline.length - 1 && '.'}
-                    </m.span>
+                    </span>
                   </span>
                 </Fragment>
               ))}
-            </m.span>
+            </span>
           </h1>
           <SpokenIntro text={site.intro} />
         </div>
-        <ul className="hero-stats" aria-label="In numbers">
+        <ul ref={statsRef} className={`hero-stats ${statsSeen ? 'is-seen' : ''}`} aria-label="In numbers">
           {site.hero.stats.map((stat, i) => (
-            <m.li
-              key={stat.label}
-              className="hero-stat"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: EASE, delay: 1.2 + i * 0.08 }}
-            >
+            <li key={stat.label} className="hero-stat enter" style={enter(1.2 + i * 0.08, 12, 0.7)}>
               <CountUp value={stat.value} delay={1.2 + i * 0.08} />
               <span className="hero-stat-k">{stat.label}</span>
-            </m.li>
+            </li>
           ))}
         </ul>
         {/* the buttons, under the numbers (their own look and motion) */}
-        <m.div
-          className="hero-cta relative z-20 flex flex-wrap items-center gap-3"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: EASE, delay: 0.95 }}
-        >
+        <div className="hero-cta enter relative z-20 flex flex-wrap items-center gap-3" style={enter(0.95, 20, 0.9)}>
           <button
             type="button"
             onClick={() => scrollTo('work')}
@@ -234,7 +194,7 @@ export function Hero() {
               Resume <ArrowDown className="size-3.5" />
             </ResumeLink>
           </div>
-        </m.div>
+        </div>
       </m.div>
 
       {/* right, portfolio-2's list beside the portrait: now, before, studying, then his stack. Screens 1280px
@@ -249,29 +209,18 @@ export function Hero() {
       >
         <ol className="now-list">
           {site.hero.now.map((item, i) => (
-            <m.li
-              key={item.title}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: 1.05 + i * 0.1 }}
-            >
+            <li key={item.title} className="enter" style={enter(1.05 + i * 0.1, 14, 0.8)}>
               <p className="now-tag">{item.tag}</p>
               <p className="now-title">{item.title}</p>
               <p className="now-text">{item.text}</p>
-            </m.li>
+            </li>
           ))}
         </ol>
-        <m.ul
-          className="hero-stack"
-          aria-label="Main stack"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 1.4 }}
-        >
+        <ul className="hero-stack enter" aria-label="Main stack" style={enter(1.4, 0, 0.8)}>
           {site.hero.stack.map((name) => (
             <li key={name}>{name}</li>
           ))}
-        </m.ul>
+        </ul>
       </m.div>
 
     </section>
@@ -279,36 +228,26 @@ export function Hero() {
 }
 
 /**
- * One of the three numbers: it counts up from 0 to its value (43% runs 0% … 43%) once it is first in view,
- * which on a wide screen is as the page loads, easing into the real number as portfolio-2's numbers do. With
- * reduced motion it is simply the number. Only the eye sees the count: screen readers (and anything else
- * reading the page) always get the real number.
+ * One of the three numbers: it counts up from 0 to its value (43% runs 0% … 43%), easing into the real
+ * number as portfolio-2's numbers do. The count is CSS (`.count` in index.css: a number animated from 0 and
+ * shown through a counter), so it needs no script: on a wide screen, where the numbers are on the first
+ * screen, it runs as the page opens; on a narrower one it waits until the numbers are first in view
+ * (`.hero-stats.is-seen`). With reduced motion it is simply the number. Only the eye sees the count: screen
+ * readers (and anything else reading the page) always get the real number.
  */
 function CountUp({ value, delay }: { value: string; delay: number }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  const seen = useInView(ref, { once: true })
-  const reduce = useReducedMotion()
   const parts = /^(\d+)(.*)$/.exec(value)
-  const end = parts ? Number(parts[1]) : 0
-  const suffix = parts ? parts[2] : ''
-  const count = useMotionValue(0)
-  const shown = useTransform(count, (v) => `${Math.round(v)}${suffix}`)
-  useEffect(() => {
-    if (!parts) return
-    if (reduce) {
-      count.set(end)
-      return
-    }
-    if (!seen) return
-    // ease out, quick off the mark and slow into the real number
-    const run = animate(count, end, { duration: 1.1, delay, ease: [0.33, 1, 0.68, 1] })
-    return () => run.stop()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seen, reduce])
   return (
-    <span ref={ref} className="hero-stat-v">
+    <span className="hero-stat-v">
       <span className="sr-only">{value}</span>
-      <m.span aria-hidden>{parts ? shown : value}</m.span>
+      {parts ? (
+        <span aria-hidden>
+          <span className="count" style={{ '--to': Number(parts[1]), '--count-delay': `${delay}s` } as CSSProperties} />
+          {parts[2]}
+        </span>
+      ) : (
+        <span aria-hidden>{value}</span>
+      )}
     </span>
   )
 }
@@ -319,7 +258,6 @@ function CountUp({ value, delay }: { value: string; delay: number }) {
  * piece, so the lines wrap as prose does on a narrow screen.
  */
 function SpokenIntro({ text }: { text: string }) {
-  const reduce = useReducedMotion()
   const words = richWords(text)
   return (
     // portfolio-2's lede: muted, with the key words bright (.hero-lede in index.css); the column it sits in
@@ -328,15 +266,9 @@ function SpokenIntro({ text }: { text: string }) {
       <span className="sr-only">{plain(text)}</span>
       {words.map((word, i) => (
         <Fragment key={i}>
-          <m.span
-            aria-hidden
-            className="inline-block"
-            initial={reduce ? false : { opacity: 0.14, y: 3 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: EASE, delay: 1.1 + i * 0.065 }}
-          >
+          <span aria-hidden className="lede-word" style={{ '--i': i } as CSSProperties}>
             {word.map((piece, j) => (piece.strong ? <strong key={j}>{piece.text}</strong> : piece.text))}
-          </m.span>{' '}
+          </span>{' '}
         </Fragment>
       ))}
     </p>

@@ -1,5 +1,5 @@
+import { useReducedMotion } from '../hooks/useMedia'
 import { asset } from '../lib/asset'
-import { useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { site } from '../data/site'

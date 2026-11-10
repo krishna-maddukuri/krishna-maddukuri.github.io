@@ -4,4 +4,5 @@
  * (see "scroll-driven" in index.css) and no script runs while the page scrolls; where it can't, the same
  * effects are driven from script as before.
  */
-export const CSS_SCROLL = typeof CSS !== 'undefined' && CSS.supports('animation-timeline: view()')
+// (a pre-built page is built for browsers that can)
+export const CSS_SCROLL = typeof CSS === 'undefined' || CSS.supports('animation-timeline: view()')

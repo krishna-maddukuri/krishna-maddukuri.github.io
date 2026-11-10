@@ -1,10 +1,9 @@
-import * as m from 'motion/react-m'
 import type { ReactNode } from 'react'
 import { Link, Navigate, useParams } from '../lib/router'
 import { projects } from '../data/site'
 import { ProjectVisual } from '../visuals/LazyProjectVisual'
 import { OrgMark, ToolChip } from '../components/Logo'
-import { ArrowLeft, ArrowRight, Check, Container, EASE, Reveal } from '../components/ui'
+import { ArrowLeft, ArrowRight, Check, Container, enter, Reveal } from '../components/ui'
 
 export function CaseStudy() {
   const { slug } = useParams()
@@ -45,23 +44,13 @@ export function CaseStudy() {
           <OrgMark label={p.org} className="size-5 rounded-md text-[8px]" />
           <span>{p.eyebrow}</span>
         </div>
-        <m.h1
-          className="mt-5 font-display text-[clamp(2.8rem,8vw,7.4rem)] font-bold leading-[0.92]"
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.9, ease: EASE }}
-        >
+        <h1 className="enter mt-5 font-display text-[clamp(2.8rem,8vw,7.4rem)] font-bold leading-[0.92]" style={enter(0, 40, 0.9)}>
           {p.title}{' '}
           <em className="accent-tail">{p.accent}</em>
-        </m.h1>
-        <m.p
-          className="mt-6 max-w-[58ch] text-lg text-ink-soft"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
+        </h1>
+        <p className="enter mt-6 max-w-[58ch] text-lg text-ink-soft" style={enter(0.2, 0, 0.8)}>
           {p.summary}
-        </m.p>
+        </p>
 
         <dl className="mt-10 grid grid-cols-2 border-y border-line lg:grid-cols-4">
           {meta.map((m, i) => (
@@ -82,13 +71,9 @@ export function CaseStudy() {
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <m.div
-              initial={{ y: 40, scale: 0.98, opacity: 0 }}
-              animate={{ y: 0, scale: 1, opacity: 1 }}
-              transition={{ duration: 1, ease: EASE, delay: 0.25 }}
-            >
+            <div className="enter" style={enter(0.25, 40, 1, 0.98)}>
               <ProjectVisual kind={p.visual} className="aspect-[4/3] w-full" />
-            </m.div>
+            </div>
             {p.metrics.length > 0 && (
               <div className={`mt-4 grid gap-4 ${p.metrics.length === 1 ? 'grid-cols-1' : p.metrics.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
                 {p.metrics.map((m) => (

@@ -1,7 +1,6 @@
-import * as m from 'motion/react-m'
 import { useLayoutEffect, useRef } from 'react'
 import { site } from '../data/site'
-import { EASE } from './ui'
+import { enter } from './ui'
 
 /**
  * The red tape down the right edge of the home page, in the red block's colours: "Open to Software Engineer
@@ -38,21 +37,13 @@ export function RoleTape({ onClick }: { onClick: () => void }) {
   }, [])
   return (
     <div ref={track} className="role-tape">
-      <m.button
-        type="button"
-        onClick={onClick}
-        aria-label={`${site.openTo}. Go to contact`}
-        className="role-tape-window"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
-      >
+      <button type="button" onClick={onClick} aria-label={`${site.openTo}. Go to contact`} className="role-tape-window enter" style={enter(1.1, 0, 0.9)}>
         <span className="role-tape-run" aria-hidden>
           {Array.from({ length: 12 }, (_, i) => (
             <span key={i}>{run}</span>
           ))}
         </span>
-      </m.button>
+      </button>
     </div>
   )
 }

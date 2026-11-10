@@ -11,7 +11,7 @@ import { LinkedInMark } from './Logo'
 import { MONOGRAM_PATH } from './monogram'
 import { ResumeLink } from './ResumeLink'
 import { copyText, toast } from './Toast'
-import { ArrowDown, Copy, EASE, Moon, Sun } from './ui'
+import { ArrowDown, Copy, EASE, enter, Moon, Sun } from './ui'
 
 const sectionIds = ['top', ...navItems.map((n) => n.id)]
 const sectionLabel = Object.fromEntries(navItems.map((n) => [n.id, n.label])) as Record<string, string>
@@ -104,13 +104,11 @@ export function Header() {
         {/* phones and tablets: the monogram at the left, the theme switch and the menu in a capsule at the right
             (the home page's red tape stops just under this row, so the capsule keeps the page's own edge) */}
         <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:hidden">
-          <m.button
+          <button
             type="button"
             onClick={goHome}
-            initial={{ y: -16, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
-            className="pointer-events-auto flex items-center gap-3 rounded-xl"
+            style={enter(0.1, -16, 0.8)}
+            className="enter pointer-events-auto flex items-center gap-3 rounded-xl"
             aria-label={`${site.shortName}, back to top`}
           >
             <span key={pressed} className={`brand-stamp ${pressed ? 'is-stamping' : ''}`}>
@@ -118,13 +116,11 @@ export function Header() {
                 <Monogram />
               </span>
             </span>
-          </m.button>
+          </button>
 
-          <m.div
-            initial={{ y: -16, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
-            className="glass header-glass pointer-events-auto flex h-12 items-center rounded-xl p-1"
+          <div
+            style={enter(0.2, -16, 0.8)}
+            className="enter glass header-glass pointer-events-auto flex h-12 items-center rounded-xl p-1"
           >
             <ThemeButton className="grid size-10 place-items-center rounded-[8px] text-ink transition-colors active:bg-[var(--glass-press)]" />
             <span className="mx-0.5 h-5 w-px bg-ink/15" aria-hidden />
@@ -143,16 +139,14 @@ export function Header() {
               </span>
               <MorphLabel text={open ? 'Close' : (here ?? 'Menu')} />
             </button>
-          </m.div>
+          </div>
         </div>
 
         {/* wide screens: one bar in the middle, and the theme switch on its own at the right corner */}
         <div className="relative hidden justify-center pl-10 pr-[calc(40px+var(--lane,0px))] lg:flex">
-          <m.div
-            initial={{ y: -16, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
-            className="glass header-glass pointer-events-auto flex max-w-full items-center gap-[clamp(14px,2vw,26px)] rounded-xl p-[7px]"
+          <div
+            style={enter(0.1, -16, 0.8)}
+            className="enter glass header-glass pointer-events-auto flex max-w-full items-center gap-[clamp(14px,2vw,26px)] rounded-xl p-[7px]"
           >
             {/* the brand: the red monogram tile and his first and middle names beside it */}
             <button
@@ -195,16 +189,14 @@ export function Header() {
                 )
               })}
             </nav>
-          </m.div>
+          </div>
 
           {/* the theme switch: a square of the same glass, exactly as tall as the bar (7px + the 32px tile + 7px), at the
               right corner of the page's layout (the 1440px frame the hero and the sections sit in), not of the screen */}
-          <m.div
-            initial={{ y: -16, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
+          <div
+            style={enter(0.2, -16, 0.8)}
             // 40px in from the page's frame, like the text; on the home page that is 40px in from the red tape
-            className="pointer-events-auto absolute top-0 right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))]"
+            className="enter pointer-events-auto absolute top-0 right-[calc(max(0px,(100vw-1440px)/2)+40px+var(--lane,0px))]"
           >
             {/* as on the main portfolio: a solid tile in the ink, so it is light in the dark and black on the
                 paper, the icon cut out of it in the page's own colour (22px, about half the tile). It stays level
@@ -213,7 +205,7 @@ export function Header() {
               className="grid size-[46px] place-items-center rounded-xl bg-ink text-paper shadow-[var(--shadow-button)] transition-[background-color,scale] duration-200 hover:bg-[color-mix(in_srgb,var(--ink)_86%,var(--paper))] active:scale-95"
               icon="size-[22px]"
             />
-          </m.div>
+          </div>
         </div>
       </header>
 

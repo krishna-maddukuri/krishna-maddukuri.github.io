@@ -45,7 +45,7 @@
   font-family: "Antonio";
   font-style: normal;
   font-weight: 100 700;
-  font-display: swap;
+  font-display: block;
   src: url("/fonts/antonio-latin.woff2") format("woff2");
 }
 /* metric-matched fallbacks (measured against Arial / Courier New / Georgia) */
@@ -1274,6 +1274,72 @@ html.lenis, html.lenis body { height: auto; }
 [data-paper-figure="still"] { container-type: size; }
 [data-paper-figure="still"] img { filter: drop-shadow(5cqw 1.4cqh 1.1cqh rgb(43 34 25 / 0.26)); }
 :root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
+
+/*
+  Entrances that play as the page opens, in CSS alone: a pre-built page starts them at its first paint, before
+  any script has run, and they carry on untouched when the script takes the page over.
+  - .enter: rise and fade in. Its settings come from `enter()` in components/ui.tsx: --enter-delay (start),
+    --enter-y (how far it rises), --enter-d (how long), --enter-s (a scale to grow from).
+  - the hero's red block wipes in from the left and its words rise into it (.role-block, .role-word);
+  - the hero's intro comes up word by word from faint (.lede-word);
+  - the hero's numbers count up from 0 (.count: an integer animated to --to and shown through a counter).
+  They fill backwards only: once over they no longer apply, so hovers and the scroll drift are untouched.
+  With reduced motion nothing moves: .enter only fades, the rest are simply there.
+*/
+@property --count {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+.enter {
+  animation: enter var(--enter-d, 0.8s) var(--ease-out) var(--enter-delay, 0s) backwards;
+}
+@keyframes enter {
+  from { opacity: 0; transform: translateY(var(--enter-y, 14px)) scale(var(--enter-s, 1)); }
+}
+@keyframes enter-fade {
+  from { opacity: 0; }
+}
+.role-block { animation: role-wipe 0.8s var(--ease-out) 0.55s backwards; }
+@keyframes role-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0% 0 0); }
+}
+.role-word {
+  display: block;
+  animation: role-rise 0.9s var(--ease-out) calc(0.7s + var(--i, 0) * 0.1s) backwards;
+}
+@keyframes role-rise {
+  from { transform: translateY(105%); }
+}
+.lede-word {
+  display: inline-block;
+  animation: lede-word 0.65s var(--ease-out) calc(1.1s + var(--i, 0) * 0.065s) backwards;
+}
+@keyframes lede-word {
+  from { opacity: 0.14; transform: translateY(3px); }
+}
+.count {
+  --count: var(--to);
+  counter-reset: count var(--count);
+}
+.count::before { content: counter(count); }
+@keyframes count-up {
+  from { --count: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* wide screens have the numbers on the first screen: they count as the page opens; narrower ones when first seen */
+  @media (min-width: 1024px) {
+    .count { animation: count-up 1.1s cubic-bezier(0.33, 1, 0.68, 1) var(--count-delay, 0s) backwards; }
+  }
+  @media (max-width: 1023.98px) {
+    .is-seen .count { animation: count-up 1.1s cubic-bezier(0.33, 1, 0.68, 1) var(--count-delay, 0s) backwards; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .enter { animation-name: enter-fade; }
+  .role-block, .role-word, .lede-word { animation: none; }
+}
 
 /*
   While the page opens, the sections still far below the screen are skipped (no layout, no paint) and filled

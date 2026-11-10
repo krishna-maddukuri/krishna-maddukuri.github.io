@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Link } from '../lib/router'
 import { projects, type Project } from '../data/site'
 import { useMedia } from '../hooks/useMedia'
@@ -94,14 +94,15 @@ const num = (i: number) => String(i + 1).padStart(2, '0')
  * the section's padding and heading (about 0.77 of it, less 40px), between 380 and 610.
  */
 function useRowMin() {
-  const read = () => (typeof window === 'undefined' ? 610 : Math.round(Math.min(610, Math.max(380, window.innerHeight * 0.77 - 40))))
-  const [h, setH] = useState(read)
-  useEffect(() => {
-    const on = () => setH(read())
-    window.addEventListener('resize', on)
-    return () => window.removeEventListener('resize', on)
-  }, [])
-  return h
+  return useSyncExternalStore(
+    watchResize,
+    () => Math.round(Math.min(610, Math.max(380, window.innerHeight * 0.77 - 40))),
+    () => 610,
+  )
+}
+function watchResize(on: () => void) {
+  window.addEventListener('resize', on)
+  return () => window.removeEventListener('resize', on)
 }
 /** A closed panel's width and the gap between panels (px; basis-[64px] and gap-3 below). */
 const CLOSED_WIDTH = 64

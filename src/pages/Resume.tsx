@@ -1,10 +1,9 @@
-import * as m from 'motion/react-m'
 import type { ReactNode } from 'react'
 import { Link } from '../lib/router'
 import { education, experience, resume, site } from '../data/site'
 import { BadgeMark, LinkedInMark, OrgMark } from '../components/Logo'
 import { ResumeLink } from '../components/ResumeLink'
-import { ArrowDown, ArrowLeft, ArrowUpRight, Container, EASE, Reveal } from '../components/ui'
+import { ArrowDown, ArrowLeft, ArrowUpRight, Container, enter, Reveal } from '../components/ui'
 
 /**
  * The web version of the résumé, in the site's own UI: the keys at the top; his name and role, with his
@@ -26,12 +25,7 @@ export function Resume() {
           </ResumeLink>
         </div>
 
-        <m.header
-          initial={{ y: 24, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.9, ease: EASE }}
-          className="mt-12 sm:mt-16"
-        >
+        <header className="enter mt-12 sm:mt-16" style={enter(0, 24, 0.9)}>
           <div className="eyebrow">Resume</div>
           <h1 className="mt-5 font-display text-[clamp(2.6rem,7vw,5.4rem)] font-bold leading-[0.95]">{site.name}</h1>
           <p className="mt-4 text-lg">
@@ -57,7 +51,7 @@ export function Resume() {
               </dd>
             </div>
           </dl>
-        </m.header>
+        </header>
 
         <Part index="01" title="Summary">
           <Reveal y={20} className="resume-panel">
