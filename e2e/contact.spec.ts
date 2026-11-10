@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { jumpTo, openHome } from './helpers'
+import { isPhone, jumpTo, openHome } from './helpers'
 
 test.describe('contact and footer', () => {
   test('copies the email address and confirms it', async ({ page, context, browserName }) => {
@@ -72,4 +72,12 @@ test.describe('web résumé', () => {
     const home = await page.locator('body').innerText()
     expect(home).not.toMatch(/\(\d{3}\)\s?\d{3}-\d{4}|\+1\s?\d{3}/)
   })
+
+test('phones: the footer\'s small links are finger-sized', async ({ page }) => {
+  test.skip(!isPhone(page), 'a touch-screen check')
+  await openHome(page)
+  const heights = await page.evaluate(() => [...document.querySelectorAll('footer .tap-target')].map((el) => Math.round(el.getBoundingClientRect().height)))
+  expect(heights).toHaveLength(3)
+  for (const h of heights) expect(h).toBeGreaterThanOrEqual(44)
+})
 })

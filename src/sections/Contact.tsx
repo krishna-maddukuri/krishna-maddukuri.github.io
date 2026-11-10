@@ -128,13 +128,13 @@ export function Footer() {
         <div className="flex flex-col gap-4 text-sm text-ink-soft sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} {site.name}</span>
           <span className="flex items-center gap-5">
-            <a href={site.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-ink">
+            <a href={site.linkedin} target="_blank" rel="noreferrer" className="tap-target inline-flex items-center gap-1.5 transition-colors hover:text-ink">
               <LinkedInMark className="size-4 rounded-[3px]" /> LinkedIn
             </a>
-            <Link to="/resume" className="transition-colors hover:text-ink">
+            <Link to="/resume" className="tap-target transition-colors hover:text-ink">
               Resume
             </Link>
-            <button type="button" onClick={() => scrollTo('top')} className="transition-colors hover:text-ink">
+            <button type="button" onClick={() => scrollTo('top')} className="tap-target transition-colors hover:text-ink">
               Back to top ↑
             </button>
           </span>

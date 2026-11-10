@@ -52,6 +52,22 @@ export function applyStoredTheme() {
   syncThemeColor(t)
 }
 
+/**
+ * Printing (the web resume, mostly) is always on the paper theme: black on white, whatever is on screen.
+ * The theme on screen comes back when the print is done.
+ */
+export function installPrintTheme() {
+  let before: string | null = null
+  window.addEventListener('beforeprint', () => {
+    before = document.documentElement.getAttribute(ATTR)
+    document.documentElement.setAttribute(ATTR, 'light')
+  })
+  window.addEventListener('afterprint', () => {
+    if (before) document.documentElement.setAttribute(ATTR, before)
+    before = null
+  })
+}
+
 function currentTheme(): Theme {
   return document.documentElement.getAttribute(ATTR) === 'dark' ? 'dark' : 'light'
 }

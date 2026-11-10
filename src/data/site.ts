@@ -8,7 +8,7 @@ export const site = {
   shortName: 'Krishna Maddukuri',
   first: 'Krishna',
   monogram: 'KM',
-  role: 'Senior Software Engineer',
+  role: 'Full Stack Software Engineer',
   /** The hero's red block, after "Hello, I'm", on one line (a full stop follows the last word). */
   headline: ['Software', 'Engineer'],
   /**

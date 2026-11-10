@@ -18,7 +18,7 @@ const DIST = 'dist'
 const SSR = 'node_modules/.prerender'
 
 await build({ logLevel: 'warn', build: { ssr: 'src/entry-server.tsx', outDir: SSR, emptyOutDir: true } })
-const { render, routes } = await import(pathToFileURL(path.resolve(SSR, 'entry-server.js')).href)
+const { render, routes, pageTitle } = await import(pathToFileURL(path.resolve(SSR, 'entry-server.js')).href)
 
 const shell = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8')
 const ROOT = '<div id="root"></div>'
@@ -33,6 +33,10 @@ const REVEAL = `<noscript><style>[style*="opacity:0"]{opacity:1!important;transf
 // only the home page has the figure: the other pages don't fetch its picture and mesh ahead of time
 const FIGURE = /^\s*<link rel="preload" href="[^"]*avatar\/krishna-origami\.[^"]*"[^>]*>\n/gm
 
+const TITLE = /<title>[^<]*<\/title>/
+if (!TITLE.test(shell)) throw new Error('index.html has no title')
+const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
 /** "/resume" -> "/resume/" under the base: the address of a route. */
 const address = (route) => (route === '/' ? BASE : `${BASE}${route.slice(1)}/`)
 // a page that loads part of its code separately fetches that part alongside the main script
@@ -44,6 +48,7 @@ for (const route of routes) {
   const html = await render(route)
   const head = [`<link rel="canonical" href="${SITE_URL}${address(route)}" />`, ...extra(route)].map((l) => `    ${l}\n`).join('')
   const page = (route === '/' ? shell : shell.replace(FIGURE, ''))
+    .replace(TITLE, () => `<title>${escape(pageTitle(route))}</title>`)
     .replace(NOSCRIPT, () => REVEAL)
     .replace(ROOT, () => `<div id="root" data-prerendered="${route}">${html}</div>`)
     .replace('  </head>', () => `${head}  </head>`)

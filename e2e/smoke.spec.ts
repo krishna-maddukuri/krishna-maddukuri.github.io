@@ -36,7 +36,7 @@ test.describe('page load', () => {
 
   test('has the SEO essentials: description, open graph and structured data', async ({ page }) => {
     await openHome(page)
-    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Senior Software Engineer/)
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Full Stack Software Engineer/)
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /Krishna Koushik Maddukuri/)
     const ld = await page.locator('script[type="application/ld+json"]').textContent()
     expect(JSON.parse(ld ?? '{}')).toMatchObject({ '@type': 'Person', name: 'Krishna Koushik Maddukuri' })
@@ -116,6 +116,35 @@ test.describe('page load', () => {
     await expect(page.getByText('The full site did not load.')).toBeVisible()
     await expect(page.getByText('Krishna Koushik Maddukuri')).toBeVisible()
     await expect(page.getByRole('link', { name: 'linkedin.com/in/krishna-koushik' })).toBeVisible()
+  })
+
+  test('the tab names the page: his name at home, the page before it elsewhere', async ({ page }) => {
+    for (const [address, title] of [
+      ['/resume/', 'Resume | Krishna Koushik Maddukuri'],
+      ['/work/cloud-delivery/', 'Cloud Delivery | Krishna Koushik Maddukuri'],
+    ]) {
+      // in the file itself, and once the page is up
+      expect(await (await page.request.get(address)).text()).toContain(`<title>${title}</title>`)
+      await page.goto(address)
+      await expect(page).toHaveTitle(title)
+    }
+    // and it follows as you move between pages without a reload
+    await page.getByRole('link', { name: 'All work' }).click()
+    await expect(page).toHaveTitle('Krishna Koushik Maddukuri')
+  })
+
+  test('the resume prints as a clean document: black on white, without the site\'s header and footer', async ({ page }) => {
+    await page.goto('/resume/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.emulateMedia({ media: 'print' })
+    await expect(page.getByRole('banner')).toBeHidden()
+    await expect(page.getByRole('contentinfo')).toBeHidden()
+    await expect(page.getByRole('link', { name: /Download PDF/ })).toBeHidden()
+    const look = await page.evaluate(() => {
+      const card = document.querySelector('.resume-card')!
+      return { page: getComputedStyle(document.body).backgroundColor, ink: getComputedStyle(card).color, card: getComputedStyle(card).backgroundColor, shown: getComputedStyle(card.closest('[style*="opacity"]') ?? card).opacity }
+    })
+    expect(look).toEqual({ page: 'rgb(255, 255, 255)', ink: 'rgb(0, 0, 0)', card: 'rgb(255, 255, 255)', shown: '1' })
   })
 
   test('the page never scrolls sideways', async ({ page }) => {

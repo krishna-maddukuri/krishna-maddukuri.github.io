@@ -14,7 +14,7 @@ import { ArrowDown, ArrowLeft, ArrowUpRight, Container, enter, Reveal } from '..
  */
 export function Resume() {
   return (
-    <main id="main" className="pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 112px)' }}>
+    <main id="main" className="resume-page pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 112px)' }}>
       <Container className="max-w-[1080px]!">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link to="/" className="lift btn-fill btn-key">
@@ -43,7 +43,7 @@ export function Resume() {
             <div className="resume-cell">
               <dt className="eyebrow">LinkedIn</dt>
               <dd className="resume-cell-value">
-                <a href={site.linkedin} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-2">
+                <a href={site.linkedin} target="_blank" rel="noreferrer" className="tap-target group inline-flex items-center gap-2">
                   <LinkedInMark className="size-5 shrink-0 rounded-[4px]" />
                   <span className="[overflow-wrap:anywhere]">{site.linkedinLabel}</span>
                   <ArrowUpRight className="size-3.5 shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -113,7 +113,7 @@ export function Resume() {
         </Part>
 
         <Part index="04" title="Education">
-          <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="resume-grid-3 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
             {education.map((e, i) => (
               <Reveal key={e.role} y={20} delay={i * 0.06} className="resume-card flex items-start gap-3.5">
                 <OrgMark label={e.org} className="size-11 shrink-0 rounded-[13px] text-[13px]" />

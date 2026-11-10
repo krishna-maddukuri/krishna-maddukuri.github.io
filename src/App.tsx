@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useLayoutEffect } from 'react'
 import { Header } from './components/Header'
 import { Toaster } from './components/Toast'
 import { clearRetry, ErrorBoundary } from './components/ErrorBoundary'
+import { pageTitle } from './lib/pageTitle'
 import { Navigate, Route, Router, Routes, useLocation } from './lib/router'
 import { SmoothScroll, useLenis } from './lib/scroll'
 import { Home } from './pages/Home'
@@ -56,6 +57,10 @@ function PageFallback() {
 /** The pages, inside the safety net (components/ErrorBoundary.tsx): a page that fails shows a way on, not a blank screen. */
 function Pages() {
   const { pathname } = useLocation()
+  // the tab names the page you are on (a pre-built page already carries its title)
+  useEffect(() => {
+    document.title = pageTitle(pathname)
+  }, [pathname])
   // once the site has been up for a while, a later failed download may be tried again by itself
   useEffect(() => {
     const t = setTimeout(clearRetry, 10_000)

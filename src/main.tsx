@@ -4,10 +4,11 @@ import App from './App'
 import { deferSections } from './lib/deferSections'
 import { readPath } from './lib/router'
 import { installSpotlight } from './lib/spotlight'
-import { applyStoredTheme } from './lib/theme'
+import { applyStoredTheme, installPrintTheme } from './lib/theme'
 import './index.css'
 
 applyStoredTheme()
+installPrintTheme()
 installSpotlight()
 deferSections()
 

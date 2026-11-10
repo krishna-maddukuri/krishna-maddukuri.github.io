@@ -1275,6 +1275,60 @@ html.lenis, html.lenis body { height: auto; }
 [data-paper-figure="still"] img { filter: drop-shadow(5cqw 1.4cqh 1.1cqh rgb(43 34 25 / 0.26)); }
 :root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
 
+/* small text links (the footer's, the resume's LinkedIn) are a finger-sized target on touch screens */
+@media (pointer: coarse) {
+  .tap-target {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+/*
+  On paper (or saved as a PDF): the web resume prints as a clean document. The page's own chrome (header,
+  footer, the keys at the top) is left out, everything is black on white whatever the theme on screen
+  (lib/theme.ts also switches to the paper theme while printing), nothing waits to be scrolled into view,
+  and a card is never cut in two across pages.
+*/
+@page { margin: 14mm 13mm; }
+@media print {
+  :root, :root[data-mode] {
+    --paper: #ffffff;
+    --surface: #ffffff;
+    --panel: #ffffff;
+    --wash: #ffffff;
+    --ink: #000000;
+    --ink-soft: #3c3c40;
+    --line: #c9c9cf;
+    --panel-line: #c9c9cf;
+  }
+  html, body { background: #ffffff !important; }
+  .site-header, footer, .skip-link, .role-tape, .resume-page .btn-key { display: none !important; }
+  .resume-page { padding-top: 0 !important; padding-bottom: 0 !important; }
+  .resume-page > div { max-width: none !important; padding-inline: 0 !important; }
+  /* nothing waits for a scroll or an entrance */
+  .enter { animation: none !important; }
+  [style*='opacity'] { opacity: 1 !important; transform: none !important; filter: none !important; }
+  * { box-shadow: none !important; transition: none !important; }
+  .resume-page section { margin-top: 22px !important; }
+  .resume-page header { margin-top: 0 !important; }
+  .resume-page h1 { font-size: 34pt !important; }
+  .resume-card, .resume-panel, .resume-cell, .resume-timeline > li { break-inside: avoid; }
+  .resume-page h2 { break-after: avoid; }
+  .resume-card, .resume-panel { border-color: #c9c9cf !important; }
+  /* a sheet of paper is narrower than a screen: the page is drawn smaller, in its wide-screen layout */
+  .resume-page { zoom: 0.7; }
+  .resume-page .resume-cells--3 { grid-template-columns: repeat(3, auto); }
+  .resume-page .resume-cells--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .resume-page .resume-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* the cells' hairlines are drawn by each cell (on screen they are the gaps over a line-coloured ground,
+     which would print as a grey slab where a row moves to the next page) */
+  .resume-page .resume-cells { gap: 0; overflow: visible; border: 0; border-radius: 0; background: none; }
+  .resume-page .resume-cell { border: 1px solid #c9c9cf; margin: 0 -1px -1px 0; }
+  .resume-dot.is-current { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .live-dot { animation: none !important; }
+}
+
 /*
   A pre-built page whose script failed to download (index.html adds .script-failed): the parts that wait
   for the script to bring them in as you scroll are simply shown. (With script switched off, the same rule
