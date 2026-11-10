@@ -121,6 +121,9 @@ test.describe('case study', () => {
       const arch = page.getByRole('region', { name: 'How it fits together.' })
       await arch.scrollIntoViewIfNeeded()
       await expect(arch.locator('.arch-stage')).toHaveCount(stages)
+      // it draws itself once on screen, and ends with every stage there
+      await expect(arch.locator('.arch-draw')).toHaveClass(/is-drawn/)
+      await expect.poll(() => arch.locator('.arch-stage').last().evaluate((el) => getComputedStyle(el).opacity + getComputedStyle(el).clipPath), { timeout: 8_000 }).toBe('1none')
       await expect(arch.locator('.arch-stage').first()).toContainText(first)
       if (beside) await expect(arch.locator('.arch-aside')).toContainText(beside)
       else await expect(arch.locator('.arch-aside')).toHaveCount(0)

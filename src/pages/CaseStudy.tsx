@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState, type CSSProperties, type ReactNode } from 'react'
+import { useInView } from 'motion/react'
+import { lazy, Suspense, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, Navigate, useParams } from '../lib/router'
 import { projects } from '../data/site'
 import { ProjectVisual } from '../visuals/LazyProjectVisual'
@@ -7,6 +8,17 @@ import { ArrowLeft, ArrowRight, Check, Container, enter, Reveal } from '../compo
 
 // the pipeline to play with, on its one case study: its code loads with that page only
 const PipelineDemo = lazy(() => import('../visuals/PipelineDemo').then((m) => ({ default: m.PipelineDemo })))
+
+/** The architecture's frame: it marks itself drawn the first time a third of it is on screen (each case study afresh). */
+function ArchDraw({ stages, children }: { stages: number; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const seen = useInView(ref, { once: true, amount: 0.35 })
+  return (
+    <div ref={ref} className={`arch-draw ${seen ? 'is-drawn' : ''}`} style={{ '--arch-n': stages } as CSSProperties}>
+      {children}
+    </div>
+  )
+}
 
 export function CaseStudy() {
   const { slug } = useParams()
@@ -133,10 +145,12 @@ export function CaseStudy() {
           <h2 id="arch-title" className="mt-4 font-display text-[clamp(2rem,4.6vw,3.6rem)] font-bold leading-[0.98]">
             How it <em className="accent-tail">fits together.</em>
           </h2>
-          <Reveal y={20}>
-            <ol className="arch" style={{ '--arch-n': p.architecture.flow.length } as CSSProperties}>
+          {/* drawn the first time it is on screen: each stage wipes in in order, its arrow as it completes,
+              then what sits beside the flow (.arch-draw in index.css) */}
+          <ArchDraw key={p.slug} stages={p.architecture.flow.length}>
+            <ol className="arch">
               {p.architecture.flow.map((stage, i) => (
-                <li key={stage.label} className="arch-stage">
+                <li key={stage.label} className="arch-stage" style={{ '--i': i } as CSSProperties}>
                   <span className="eyebrow">
                     <span className="accent-index tabular">{num(i)}</span> {stage.label}
                   </span>
@@ -153,15 +167,15 @@ export function CaseStudy() {
               ))}
             </ol>
             {p.architecture.aside && (
-              <p className="arch-aside">
+              <p className="arch-aside arch-after">
                 <span className="eyebrow">{p.architecture.aside.label}</span>
                 {p.architecture.aside.items.map((t) => (
                   <ToolChip key={t} name={t} />
                 ))}
               </p>
             )}
-            <p className="mt-4 text-sm text-ink-soft">Simplified: the parts named on this page and the order they work in.</p>
-          </Reveal>
+            <p className="arch-after mt-4 text-sm text-ink-soft">Simplified: the parts named on this page and the order they work in.</p>
+          </ArchDraw>
         </section>
 
         {p.slug === 'event-driven-pipelines' && (

@@ -2076,3 +2076,34 @@ html.defer-sections .fit-section:not(.is-warm):not(#work) {
   from { clip-path: inset(-100% 100% -100% 0); }
   to { clip-path: inset(-100% -2% -100% 0); }
 }
+
+/* Achievements: the row leans with the speed of the scroll (sections/Achievements.tsx sets --lean) */
+.ach-lean { transform: skewX(var(--lean, 0deg)); }
+
+/* A case study's architecture draws itself the first time it is on screen (pages/CaseStudy.tsx sets
+   .is-drawn): each stage wipes in in order, along the flow (left to right on wide screens, downwards on
+   narrow ones), its arrow showing as the stage completes; then what sits beside the flow fades in. Until
+   then the stages are unseen, but only where this can play: not for people who ask for less motion, not
+   in print, and not when the page's script never arrived */
+@media (prefers-reduced-motion: no-preference) {
+  .arch-draw:not(.is-drawn) .arch-stage,
+  .arch-draw:not(.is-drawn) .arch-after { opacity: 0; }
+  .arch-draw.is-drawn .arch-stage { animation: arch-wipe-down 0.55s var(--ease-out) calc(var(--i, 0) * 0.34s) backwards; }
+  .arch-draw.is-drawn .arch-after { animation: enter-fade 0.6s var(--ease-out) calc(var(--arch-n, 4) * 0.34s + 0.15s) backwards; }
+  @media (min-width: 900px) {
+    .arch-draw.is-drawn .arch-stage { animation-name: arch-wipe-across; }
+  }
+  html.script-failed .arch-draw .arch-stage,
+  html.script-failed .arch-draw .arch-after { opacity: 1; }
+}
+@media print {
+  .arch-draw .arch-stage, .arch-draw .arch-after { opacity: 1 !important; animation: none !important; }
+}
+@keyframes arch-wipe-across {
+  from { opacity: 1; clip-path: inset(-2px 100% -2px -2px); }
+  to { opacity: 1; clip-path: inset(-2px -40px -2px -2px); }
+}
+@keyframes arch-wipe-down {
+  from { opacity: 1; clip-path: inset(-2px -2px 100% -2px); }
+  to { opacity: 1; clip-path: inset(-2px -2px -40px -2px); }
+}

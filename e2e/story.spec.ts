@@ -56,7 +56,7 @@ test.describe('learning, experience and achievements', () => {
     await jumpTo(page, 'achievements')
     await page.waitForTimeout(400)
     const section = page.locator('#achievements')
-    const track = section.locator('article').first().locator('..')
+    const track = section.locator('.ach-track')
     const x0 = await track.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41)
     const height = await section.evaluate((el) => el.getBoundingClientRect().height)
     expect(height).toBeGreaterThan(1200) // taller than one screen: the pin has room to run
@@ -109,5 +109,21 @@ test.describe('learning, experience and achievements', () => {
       await page.mouse.move(2, 2)
       await expect.poll(() => card.evaluate((el) => getComputedStyle(el).transform)).not.toMatch(/^matrix3d/)
     }
+  })
+
+  test('desktop: the proud-moments row leans while the page scrolls and stands straight when it stops', async ({ page }) => {
+    test.skip(isPhone(page), 'phones swipe the row sideways; nothing leans')
+    await openHome(page)
+    await jumpTo(page, 'achievements')
+    const row = page.locator('#achievements .ach-lean')
+    await page.mouse.move(600, 400)
+    const seen: string[] = []
+    for (let n = 0; n < 14; n++) {
+      await page.mouse.wheel(0, 90)
+      await page.waitForTimeout(16)
+      seen.push(await row.evaluate((el) => el.style.getPropertyValue('--lean')))
+    }
+    expect(seen.some((v) => Math.abs(parseFloat(v)) > 0.2)).toBe(true)
+    await expect.poll(() => row.evaluate((el) => el.style.getPropertyValue('--lean')), { timeout: 5_000 }).toBe('')
   })
 })

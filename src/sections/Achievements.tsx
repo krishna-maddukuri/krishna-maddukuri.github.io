@@ -35,6 +35,56 @@ const useSlide: (ref: RefObject<HTMLElement | null>, dist: MotionValue<number>) 
   : useScriptSlide
 
 /**
+ * The row leans with the speed of the scroll: while the page is moving the cards slant a few degrees the
+ * way they travel (their tops trailing), and stand straight again when it stops. One listener, and frames
+ * only while the lean is not zero; the angle is a custom property the row's own transform reads (`.ach-lean`).
+ */
+function useLean(section: RefObject<HTMLElement | null>, row: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = row.current
+    const sec = section.current
+    if (!el || !sec) return
+    let raf = 0
+    let lean = 0
+    let lastY = window.scrollY
+    let lastT = performance.now()
+    let seen = false
+    const frame = (now: number) => {
+      raf = 0
+      const dt = Math.max(1, now - lastT)
+      const speed = (window.scrollY - lastY) / dt // px a millisecond
+      lastY = window.scrollY
+      lastT = now
+      const want = Math.max(-5, Math.min(5, -speed * 1.6))
+      lean += (want - lean) * Math.min(1, dt / 120)
+      if (want === 0 && Math.abs(lean) < 0.02) {
+        el.style.removeProperty('--lean')
+        lean = 0
+        return
+      }
+      el.style.setProperty('--lean', `${lean.toFixed(2)}deg`)
+      raf = requestAnimationFrame(frame)
+    }
+    const onScroll = () => {
+      if (!seen || raf) return
+      lastY = window.scrollY
+      lastT = performance.now()
+      raf = requestAnimationFrame(frame)
+    }
+    const io = new IntersectionObserver(([entry]) => {
+      seen = entry.isIntersecting
+    })
+    io.observe(sec)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      io.disconnect()
+      window.removeEventListener('scroll', onScroll)
+      cancelAnimationFrame(raf)
+    }
+  }, [section, row])
+}
+
+/**
  * Desktop: the section pins and scrolling down slides the cards sideways. Where the browser can, the slide
  * and the progress line follow the scroll in CSS (`.ach-track`, `.ach-progress` in index.css, by the distance
  * in --ach-dist), with no script per frame.
@@ -64,6 +114,8 @@ function PinnedTrack() {
   }, [distMV])
 
   const script = useSlide(sectionRef, distMV)
+  const leanRef = useRef<HTMLDivElement>(null)
+  useLean(sectionRef, leanRef)
 
   return (
     <section
@@ -78,12 +130,15 @@ function PinnedTrack() {
         <m.div
           ref={trackRef}
           style={script ? { x: script.x } : undefined}
-          className="ach-track flex w-max items-center gap-6 px-[max(24px,calc((100vw-1440px)/2+40px))] py-4"
+          className="ach-track w-max"
         >
-          {achievements.map((a, i) => (
-            <Card key={a.title} a={a} i={i} />
-          ))}
-          <EndNote />
+          {/* the row itself leans with the scroll's speed (the track above it does the sliding) */}
+          <div ref={leanRef} className="ach-lean flex w-max items-center gap-6 px-[max(24px,calc((100vw-1440px)/2+40px))] py-4">
+            {achievements.map((a, i) => (
+              <Card key={a.title} a={a} i={i} />
+            ))}
+            <EndNote />
+          </div>
         </m.div>
 
         <Container>
