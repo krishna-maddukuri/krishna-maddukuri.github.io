@@ -18,7 +18,7 @@ const DIST = 'dist'
 const SSR = 'node_modules/.prerender'
 
 await build({ logLevel: 'warn', build: { ssr: 'src/entry-server.tsx', outDir: SSR, emptyOutDir: true } })
-const { render, routes, pageTitle } = await import(pathToFileURL(path.resolve(SSR, 'entry-server.js')).href)
+const { render, routes, pageTitle, pageDescription } = await import(pathToFileURL(path.resolve(SSR, 'entry-server.js')).href)
 
 const shell = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8')
 const ROOT = '<div id="root"></div>'
@@ -35,7 +35,26 @@ const FIGURE = /^\s*<link rel="preload" href="[^"]*avatar\/krishna-origami\.[^"]
 
 const TITLE = /<title>[^<]*<\/title>/
 if (!TITLE.test(shell)) throw new Error('index.html has no title')
-const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+
+/**
+ * The card a shared link shows: every page carries its own address, title and description, and the
+ * picture's full address (apps that draw the card need one). The home page keeps the title and description
+ * written in index.html.
+ */
+const meta = (html, key, content) => {
+  const tag = new RegExp(`(<meta (?:name|property)="${key}" content=")[^"]*(")`)
+  if (!tag.test(html)) throw new Error(`index.html has no ${key} tag`)
+  return html.replace(tag, (_, a, b) => `${a}${escape(content)}${b}`)
+}
+const card = (html, route) => {
+  const picture = `${SITE_URL}${BASE}og.png`
+  let out = meta(meta(meta(html, 'og:image', picture), 'twitter:image', picture), 'og:url', `${SITE_URL}${address(route)}`)
+  if (route === '/') return out
+  out = meta(out, 'og:title', pageTitle(route))
+  const description = pageDescription(route)
+  return description ? meta(meta(out, 'description', description), 'og:description', description) : out
+}
 
 /** "/resume" -> "/resume/" under the base: the address of a route. */
 const address = (route) => (route === '/' ? BASE : `${BASE}${route.slice(1)}/`)
@@ -47,7 +66,7 @@ const extra = (route) => (route === '/resume' ? chunk('Resume') : route.startsWi
 for (const route of routes) {
   const html = await render(route)
   const head = [`<link rel="canonical" href="${SITE_URL}${address(route)}" />`, ...extra(route)].map((l) => `    ${l}\n`).join('')
-  const page = (route === '/' ? shell : shell.replace(FIGURE, ''))
+  const page = card(route === '/' ? shell : shell.replace(FIGURE, ''), route)
     .replace(TITLE, () => `<title>${escape(pageTitle(route))}</title>`)
     .replace(NOSCRIPT, () => REVEAL)
     .replace(ROOT, () => `<div id="root" data-prerendered="${route}">${html}</div>`)

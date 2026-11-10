@@ -86,6 +86,14 @@ test.describe('page load', () => {
       expect(html, address).toContain(text)
       expect(html, address).toMatch(new RegExp(`<link rel="canonical" href="https://[^"]+${address}" />`))
     }
+    // each page's link shares as its own card: its title, its address, and the site's picture
+    const study = await (await page.request.get('/work/credit-bureau-reporting/')).text()
+    expect(study).toContain('<meta property="og:title" content="Credit Bureau Reporting | Krishna Koushik Maddukuri" />')
+    expect(study).toMatch(/<meta property="og:url" content="https:\/\/[^"]+\/work\/credit-bureau-reporting\/" \/>/)
+    expect(study).toMatch(/<meta property="og:image" content="https:\/\/[^"]+\/og\.png" \/>/)
+    expect(study).not.toContain('content="Distributed systems, event-driven pipelines')
+    const picture = await page.request.get('/og.png')
+    expect(picture.ok()).toBe(true)
     const sitemap = await (await page.request.get('/sitemap.xml')).text()
     for (const address of ['/resume/', '/work/credit-bureau-reporting/', '/work/internship-projects/']) expect(sitemap).toContain(`${address}</loc>`)
     expect(await (await page.request.get('/robots.txt')).text()).toMatch(/Sitemap: https:\/\/.+\/sitemap\.xml/)

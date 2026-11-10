@@ -8,7 +8,7 @@ import { prerender } from 'react-dom/static'
 import App from './App'
 import { projects } from './data/site'
 
-export { pageTitle } from './lib/pageTitle'
+export { pageDescription, pageTitle } from './lib/pageTitle'
 
 /** Every address the site has. */
 export const routes = ['/', '/resume', ...projects.map((p) => `/work/${p.slug}`)]

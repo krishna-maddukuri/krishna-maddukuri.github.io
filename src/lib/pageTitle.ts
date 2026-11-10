@@ -6,3 +6,13 @@ export function pageTitle(path: string) {
   const project = path.startsWith('/work/') ? projects.find((p) => `/work/${p.slug}` === path) : undefined
   return project ? `${project.title} | ${site.name}` : site.name
 }
+
+/**
+ * The line under the title when a page's link is shared (and in search results): the case study's own summary,
+ * a line for the resume; the home page keeps the one written in index.html (null).
+ */
+export function pageDescription(path: string) {
+  if (path === '/resume') return `The resume of ${site.name}, ${site.role}: experience, skills, education and certifications.`
+  const project = path.startsWith('/work/') ? projects.find((p) => `/work/${p.slug}` === path) : undefined
+  return project ? project.summary : null
+}
