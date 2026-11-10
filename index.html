@@ -17,6 +17,8 @@
     <meta name="twitter:image" content="https://krishna-maddukuri.github.io/og.png" />
     <meta name="theme-color" content="#000000" />
     <script>
+      // light mode picked earlier in this visit: before the first paint, so a pre-built page never shows dark first
+      try { if (sessionStorage.getItem('kkm-theme') === 'light') document.documentElement.setAttribute('data-mode', 'light') } catch (e) {}
       // an old-style address (/#/resume, /#/work/<slug>) goes to the page's own address
       if (location.hash.length > 2 && location.hash.indexOf('#/') === 0) location.replace('%BASE_URL%' + location.hash.slice(2).replace(/\/+$/, '') + '/')
     </script>
@@ -50,7 +52,9 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- shown only if the page's script is switched off or fails to download: who he is and how to reach him -->
+    <!-- shown only where there is no pre-built page (the 404 page, the dev server) and the page's script is
+         switched off or fails to download: who he is and how to reach him. A pre-built page shows itself
+         instead (scripts/prerender.mjs swaps this block for a style that reveals what waits for the script) -->
     <noscript id="boot-fallback">
       <div style="min-height: 100vh; display: grid; place-content: center; gap: 14px; padding: 32px; background: #000; color: #f1f1f3; font: 16px/1.5 system-ui, sans-serif">
         <div style="font: 700 clamp(2rem, 7vw, 3.4rem) / 1 system-ui, sans-serif">Krishna Koushik Maddukuri</div>
@@ -67,7 +71,8 @@
         function show() {
           if (shown) return
           var root = document.getElementById('root')
-          if (root && root.childNodes.length) return
+          // a pre-built page is already on screen: show the parts that were waiting for the script
+          if (root && root.childNodes.length) return document.documentElement.classList.add('script-failed')
           shown = true
           // with script on, a noscript element holds its markup as text
           var box = document.createElement('div')

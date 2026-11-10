@@ -73,14 +73,46 @@ test.describe('page load', () => {
     await expect(page.getByRole('banner')).toBeVisible()
   })
 
-  test('with script switched off, or the script failing to download, his name and how to reach him still show', async ({ page }) => {
-    // script off: the page carries the fallback in a noscript block
-    const html = await (await page.request.get('/')).text()
-    const block = html.slice(html.indexOf('<noscript id="boot-fallback">'), html.indexOf('</noscript>'))
-    for (const text of ['Krishna Koushik Maddukuri', 'm.krishnakoushik@icloud.com', 'linkedin.com/in/krishna-koushik', 'Resume (PDF)']) expect(block).toContain(text)
-    // script failing to download: the same block is put on the page
+  test('every page is served ready-made at its own address, and is listed in the sitemap', async ({ page }) => {
+    const pages: [string, string][] = [
+      ['/', 'From the first commit to production.'],
+      ['/resume/', 'Certifications'],
+      ['/work/credit-bureau-reporting/', 'What I did'],
+    ]
+    for (const [address, text] of pages) {
+      const html = await (await page.request.get(address)).text()
+      // the page's own words are in the file itself, before any script runs
+      expect(html, address).toContain(`data-prerendered="${address === '/' ? '/' : address.replace(/\/$/, '')}"`)
+      expect(html, address).toContain(text)
+      expect(html, address).toMatch(new RegExp(`<link rel="canonical" href="https://[^"]+${address}" />`))
+    }
+    const sitemap = await (await page.request.get('/sitemap.xml')).text()
+    for (const address of ['/resume/', '/work/credit-bureau-reporting/', '/work/internship-projects/']) expect(sitemap).toContain(`${address}</loc>`)
+    expect(await (await page.request.get('/robots.txt')).text()).toMatch(/Sitemap: https:\/\/.+\/sitemap\.xml/)
+  })
+
+  test('a ready-made page paints its first screen without script, and shows the rest if the script fails', async ({ page }) => {
     await page.route('**/assets/index-*.js', (route) => route.abort())
     await page.goto('/')
+    // the hero is there and has played its entrance, with no script at all
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Software Engineer.')
+    await expect.poll(() => page.locator('.hero-cta').evaluate((el) => getComputedStyle(el).opacity), { timeout: 6_000 }).toBe('1')
+    // the parts that wait for the script to bring them in are shown
+    await expect(page.locator('html.script-failed')).toHaveCount(1)
+    const about = page.locator('#about .about-lead')
+    await about.scrollIntoViewIfNeeded()
+    await expect.poll(() => about.evaluate((el) => getComputedStyle(el.closest('[style*="opacity"]') ?? el).opacity)).toBe('1')
+    await expect(page.locator('#contact').getByText('m.krishnakoushik@icloud.com').first()).toBeAttached()
+  })
+
+  test('where there is no ready-made page, script off or failing still leaves his name and how to reach him', async ({ page }) => {
+    // the 404 page is the bare app: with script off it shows its noscript block
+    const html = await (await page.request.get('/404.html')).text()
+    const block = html.slice(html.indexOf('<noscript id="boot-fallback">'), html.indexOf('</noscript>'))
+    for (const text of ['Krishna Koushik Maddukuri', 'm.krishnakoushik@icloud.com', 'linkedin.com/in/krishna-koushik', 'Resume (PDF)']) expect(block).toContain(text)
+    // and with the script failing to download, the same block is put on the page
+    await page.route('**/assets/index-*.js', (route) => route.abort())
+    await page.goto('/404.html')
     await expect(page.getByText('The full site did not load.')).toBeVisible()
     await expect(page.getByText('Krishna Koushik Maddukuri')).toBeVisible()
     await expect(page.getByRole('link', { name: 'linkedin.com/in/krishna-koushik' })).toBeVisible()

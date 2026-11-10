@@ -74,6 +74,15 @@ export function Hero() {
     watch.observe(document.documentElement)
     document.fonts?.ready.then(fit)
     fit()
+    // the stack waits for this (.hero-side:not([data-fit]) in index.css), so on a pre-built page it never
+    // shows in one place and then moves; it then comes in at its usual moment, counted from when the list
+    // beside it started (the page's first paint, or when the hero was put on the page)
+    const stack = side.querySelector<HTMLElement>('.hero-stack')
+    const started = side.querySelector('.now-list li')?.getAnimations()[0]?.startTime
+    const now = document.timeline.currentTime
+    const elapsed = typeof started === 'number' && typeof now === 'number' ? (now - started) / 1000 : Infinity
+    stack?.style.setProperty('--enter-delay', `${Math.max(0, 1.4 - elapsed).toFixed(2)}s`)
+    side.dataset.fit = ''
     return () => watch.disconnect()
   }, [])
   // and draws itself in again each time the page comes home (the name in the header)

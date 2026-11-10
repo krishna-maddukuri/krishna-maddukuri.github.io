@@ -1276,6 +1276,18 @@ html.lenis, html.lenis body { height: auto; }
 :root[data-mode="dark"] [data-paper-figure="still"] img { filter: none; }
 
 /*
+  A pre-built page whose script failed to download (index.html adds .script-failed): the parts that wait
+  for the script to bring them in as you scroll are simply shown. (With script switched off, the same rule
+  is in the page's noscript block.)
+*/
+html.script-failed [style*='opacity:0'] {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+html.script-failed .wm-ch { opacity: 1 !important; }
+
+/*
   Entrances that play as the page opens, in CSS alone: a pre-built page starts them at its first paint, before
   any script has run, and they carry on untouched when the script takes the page over.
   - .enter: rise and fade in. Its settings come from `enter()` in components/ui.tsx: --enter-delay (start),
@@ -1335,6 +1347,12 @@ html.lenis, html.lenis body { height: auto; }
   @media (max-width: 1023.98px) {
     .is-seen .count { animation: count-up 1.1s cubic-bezier(0.33, 1, 0.68, 1) var(--count-delay, 0s) backwards; }
   }
+}
+/* the hero's stack sits at the foot of the list beside the figure, level with the buttons; script measures
+   that (Hero.tsx), so until it has, the stack waits unseen instead of showing and then moving */
+@media (min-width: 1280px) {
+  .hero-side:not([data-fit]) .hero-stack { visibility: hidden; animation: none; }
+  html.script-failed .hero-side .hero-stack { visibility: visible; }
 }
 @media (prefers-reduced-motion: reduce) {
   .enter { animation-name: enter-fade; }

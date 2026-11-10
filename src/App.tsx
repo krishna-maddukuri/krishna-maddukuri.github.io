@@ -75,11 +75,12 @@ function Pages() {
   )
 }
 
-export default function App() {
+/** `path` is given only when a page is pre-built (entry-server.tsx). */
+export default function App({ path }: { path?: string }) {
   return (
     <LazyMotion features={domMax} strict>
       <MotionConfig reducedMotion="user">
-        <Router>
+        <Router path={path}>
           <SmoothScroll>
             <SkipLink />
             <ScrollReset />

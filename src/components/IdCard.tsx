@@ -361,6 +361,10 @@ function CardFront() {
       <Chip style={{ left: u(22), top: u(122), width: u(34) }} />
       <img
         src={asset(site.photo)}
+        // below the first screen: fetched when it is near, behind the page's script
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
         alt=""
         draggable={false}
         className="pointer-events-none absolute block"
@@ -399,6 +403,10 @@ function CardFront() {
       {/* the ghost image: a faint second copy of the photo, as on a printed card */}
       <img
         src={asset(site.photo)}
+        // below the first screen: fetched when it is near, behind the page's script
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
         alt=""
         draggable={false}
         className="pointer-events-none absolute block opacity-20 grayscale"
