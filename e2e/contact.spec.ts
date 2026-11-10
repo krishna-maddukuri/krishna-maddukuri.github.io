@@ -88,7 +88,7 @@ test('phones: the footer\'s small links are finger-sized', async ({ page }) => {
     })
     await openHome(page)
     await expect(page.locator('footer .load-line')).toHaveText(/(First paint \d+\.\d+s · )?Loaded in \d+\.\d+s · (\d+ KB sent|From your browser’s cache)/, { timeout: 10_000 })
-    // no visit counter is built in unless one is set up, and nothing else is fetched from outside
+    // there is no visit counter, and nothing else is fetched from outside
     expect(outside).toEqual([])
   })
 })
