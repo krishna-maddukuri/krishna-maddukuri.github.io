@@ -1,3 +1,4 @@
+import { asset } from '../lib/asset'
 import { AnimatePresence, useInView } from 'motion/react'
 import * as m from 'motion/react-m'
 import { memo, useEffect, useRef, useState, type CSSProperties } from 'react'
@@ -28,7 +29,7 @@ export function Skills() {
     // fetch every logo once the table is on screen, so the inspector never shows an empty plate
     const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 300))
     const handle = idle(() => {
-      for (const file of new Set(Object.values(skillLogos).map((l) => l.file))) new Image().src = file
+      for (const file of new Set(Object.values(skillLogos).map((l) => l.file))) new Image().src = asset(file)
     })
     return () => {
       clearTimeout(t)

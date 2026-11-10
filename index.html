@@ -16,17 +16,21 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://krishna-maddukuri.github.io/og.png" />
     <meta name="theme-color" content="#000000" />
-    <link rel="icon" type="image/png" sizes="96x96" href="./favicon.png?v=km3" />
-    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=km3" />
+    <script>
+      // an old-style address (/#/resume, /#/work/<slug>) goes to the page's own address
+      if (location.hash.length > 2 && location.hash.indexOf('#/') === 0) location.replace('%BASE_URL%' + location.hash.slice(2).replace(/\/+$/, '') + '/')
+    </script>
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png?v=km3" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=km3" />
     <meta name="apple-mobile-web-app-title" content="Krishna" />
     <!-- the fonts the first screen is set in, fetched early. The page's script comes before everything else
          (nothing shows until it has run), so the hero photo is fetched early but at a low priority, behind
          it, and the handwriting font (three words on the first screen) is left to load when it is used -->
-    <link rel="preload" href="./fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="./fonts/ibm-plex-mono-latin-500.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="./fonts/antonio-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="./avatar/krishna-origami.webp" as="image" type="image/webp" fetchpriority="low" />
-    <link rel="preload" href="./avatar/krishna-origami.json" as="fetch" crossorigin />
+    <link rel="preload" href="/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-latin-500.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/antonio-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/avatar/krishna-origami.webp" as="image" type="image/webp" fetchpriority="low" />
+    <link rel="preload" href="/avatar/krishna-origami.json" as="fetch" crossorigin />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -54,7 +58,7 @@
         <div style="color: #b3b3bb; max-width: 46ch">The full site did not load. Loading the page again usually fixes it. You can also reach me here:</div>
         <div>m.krishnakoushik@icloud.com</div>
         <a href="https://www.linkedin.com/in/krishna-koushik" style="color: #f0412e">linkedin.com/in/krishna-koushik</a>
-        <a href="./Krishna_Koushik_Maddukuri_Resume.pdf" style="color: #f0412e">Resume (PDF)</a>
+        <a href="/Krishna_Koushik_Maddukuri_Resume.pdf" style="color: #f0412e">Resume (PDF)</a>
       </div>
     </noscript>
     <script>

@@ -23,7 +23,7 @@ test.describe('accessibility and motion', () => {
 
   test('the résumé page has no serious accessibility violations', async ({ page }) => {
     test.setTimeout(120_000)
-    await page.goto('/#/resume')
+    await page.goto('/resume/')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await revealAll(page)
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).exclude('[aria-hidden="true"]').analyze()
@@ -71,7 +71,7 @@ test.describe('accessibility and motion', () => {
     await page.waitForLoadState('networkidle')
     expect(chunks.some((u) => /CaseStudy/.test(u))).toBe(false)
     expect(chunks.some((u) => /Resume/.test(u))).toBe(false)
-    await page.goto('/#/work/credit-bureau-reporting')
+    await page.goto('/work/credit-bureau-reporting/')
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Credit Bureau Reporting')
     await expect.poll(() => chunks.some((u) => /CaseStudy/.test(u))).toBe(true)
   })

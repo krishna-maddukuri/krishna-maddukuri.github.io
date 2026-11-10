@@ -65,7 +65,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: s
           <button type="button" onClick={() => window.location.reload()} className="btn-solid btn-key btn-key--primary">
             Load it again
           </button>
-          <a href="./" className="lift btn-fill btn-key">
+          <a href={import.meta.env.BASE_URL} className="lift btn-fill btn-key">
             Home
           </a>
           <ResumeLink className="lift btn-fill btn-key">Resume (PDF)</ResumeLink>

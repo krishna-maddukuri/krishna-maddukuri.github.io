@@ -63,7 +63,7 @@ test.describe('page load', () => {
 
   test('a page whose code fails to download shows a way on instead of a blank screen', async ({ page }) => {
     await page.route('**/assets/Resume-*.js', (route) => route.abort())
-    await page.goto('/#/resume')
+    await page.goto('/resume/')
     // one try again by itself, then the safety net
     const net = page.getByRole('alert')
     await expect(net.getByRole('heading', { level: 1 })).toHaveText('This page didn’t load.', { timeout: 15_000 })

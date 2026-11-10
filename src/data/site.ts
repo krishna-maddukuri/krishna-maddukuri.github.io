@@ -525,7 +525,7 @@ export const timeline: Milestone[] = [
 
 /* ------------------------------------------------------ the web resume -- */
 
-/* Everything below is used by the web resume page (/#/resume), word for word from the PDF. */
+/* Everything below is used by the web resume page (/resume/), word for word from the PDF. */
 export type Role = {
   period: string
   current?: boolean

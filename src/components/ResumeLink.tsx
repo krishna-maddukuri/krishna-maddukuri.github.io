@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { site } from '../data/site'
+import { asset } from '../lib/asset'
 
 export const resumeFileName = () => site.resumePdf.split('/').pop() || 'resume.pdf'
 
@@ -15,7 +16,7 @@ export function ResumeLink({
 }) {
   if (!site.resumePdf) return null
   return (
-    <a href={site.resumePdf} download={resumeFileName()} aria-label={ariaLabel} className={className}>
+    <a href={asset(site.resumePdf)} download={resumeFileName()} aria-label={ariaLabel} className={className}>
       {children}
     </a>
   )

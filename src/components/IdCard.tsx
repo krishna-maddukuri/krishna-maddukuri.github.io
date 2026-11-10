@@ -1,3 +1,4 @@
+import { asset } from '../lib/asset'
 import { animate, useDragControls, useInView, useMotionValue, useTransform, type MotionValue } from 'motion/react'
 import * as m from 'motion/react-m'
 import {
@@ -359,7 +360,7 @@ function CardFront() {
 
       <Chip style={{ left: u(22), top: u(122), width: u(34) }} />
       <img
-        src={site.photo}
+        src={asset(site.photo)}
         alt=""
         draggable={false}
         className="pointer-events-none absolute block"
@@ -397,7 +398,7 @@ function CardFront() {
       </div>
       {/* the ghost image: a faint second copy of the photo, as on a printed card */}
       <img
-        src={site.photo}
+        src={asset(site.photo)}
         alt=""
         draggable={false}
         className="pointer-events-none absolute block opacity-20 grayscale"

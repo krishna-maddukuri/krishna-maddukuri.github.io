@@ -1,3 +1,4 @@
+import { asset } from '../lib/asset'
 import type { CSSProperties } from 'react'
 import { elements } from '../data/site'
 import { badgeFor, brandLogos, orgFor, skillLogos, toolAliases, type Badge, type Logo, type Org } from '../data/logos'
@@ -12,7 +13,7 @@ import { badgeFor, brandLogos, orgFor, skillLogos, toolAliases, type Badge, type
 export function Plate({ logo, alt = '', className = 'size-10 rounded-xl', eager = false }: { logo: Logo; alt?: string; className?: string; eager?: boolean }) {
   return (
     <span className={`plate ${className}`} style={plateStyle(logo.color, logo.fit, logo.plate, logo.wide)}>
-      <img src={logo.file} alt={alt} draggable={false} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+      <img src={asset(logo.file)} alt={alt} draggable={false} loading={eager ? 'eager' : 'lazy'} decoding="async" />
     </span>
   )
 }
@@ -48,13 +49,13 @@ export function OrgMark({ label, org: given, className }: { label?: string; org?
 export function BadgeMark({ label, badge: given, className = 'size-10 rounded-xl' }: { label?: string; badge?: Badge; className?: string }) {
   const badge = given ?? (label ? badgeFor(label) : undefined)
   if (!badge) return null
-  if (badge.file) return <img src={badge.file} alt={badge.name} className={`${className} object-contain`} loading="lazy" decoding="async" draggable={false} />
+  if (badge.file) return <img src={asset(badge.file)} alt={badge.name} className={`${className} object-contain`} loading="lazy" decoding="async" draggable={false} />
   return <Plate logo={brandLogos.aws} alt={badge.name} className={className} />
 }
 
 /** The LinkedIn mark, in its blue. */
 export function LinkedInMark({ className = 'size-5 rounded-[5px]' }: { className?: string }) {
-  return <img src={brandLogos.linkedin.file} alt="" className={className} draggable={false} decoding="async" />
+  return <img src={asset(brandLogos.linkedin.file)} alt="" className={className} draggable={false} decoding="async" />
 }
 
 const byName = new Map(elements.map((e) => [e.name, e.sym]))

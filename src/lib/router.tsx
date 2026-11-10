@@ -1,7 +1,9 @@
 /**
- * A small hash router: three routes, back/forward support, and per-entry state (used to say
- * "scroll to Work" when coming back from a case study). Hash URLs (#/work/slug) work on any
- * static host, GitHub Pages included, with no server rewrites.
+ * A small router on real addresses: the home page at the site's root, /resume/ and /work/<slug>/, with
+ * back/forward support and per-entry state (used to say "scroll to Work" when coming back from a case
+ * study). Each address is also a pre-built file (scripts/prerender.mjs), so opening one directly works on
+ * any static host with no server rewrites; an address with no page falls to the host's 404.html, which is
+ * this same app, and lands on the home page.
  */
 import {
   createContext,
@@ -24,11 +26,14 @@ export type NavigateFn = (to: string, opts?: NavigateOptions) => void
 const RouterContext = createContext<{ location: Location; navigate: NavigateFn } | null>(null)
 const ParamsContext = createContext<Record<string, string>>({})
 
-/** "#/work/x?y" -> "/work/x" (the hash's path part, always starting with "/"). */
-function readPath(hash = window.location.hash) {
-  const raw = hash.replace(/^#/, '').split('?')[0]
-  const path = raw.startsWith('/') ? raw : `/${raw}`
-  return path.length > 1 ? path.replace(/\/+$/, '') : path
+/** Where the site is served from: "/" or, under a sub-path, "/portfolio/". */
+const BASE = import.meta.env.BASE_URL
+
+/** "/work/x/" (or, under a sub-path, "/portfolio/work/x/") -> "/work/x": the route, always starting with "/". */
+export function readPath(pathname = window.location.pathname) {
+  const inside = pathname.startsWith(BASE) ? pathname.slice(BASE.length - 1) : pathname
+  const path = inside.replace(/\/index\.html$/, '/')
+  return path.length > 1 ? path.replace(/\/+$/, '') : '/'
 }
 
 function readState(): unknown {
@@ -36,27 +41,25 @@ function readState(): unknown {
   return s && typeof s === 'object' && 'usr' in s ? s.usr : null
 }
 
-/** Build a hash href for a path ("/resume" -> "#/resume"). Relative "." means the current path. */
-export function hashHref(to: string) {
-  return `#${to.startsWith('/') ? to : `/${to}`}`
+/** The address of a route ("/resume" -> "/resume/", "/" -> "/"): a folder, as the pre-built files are laid out. */
+export function href(to: string) {
+  const path = to.startsWith('/') ? to : `/${to}`
+  return path === '/' ? BASE : `${BASE}${path.slice(1).replace(/\/+$/, '')}/`
 }
 
-export function Router({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useState<Location>(() => ({ pathname: readPath(), state: readState() }))
+/** `path` is given only when a page is pre-built (there is no address bar to read then). */
+export function Router({ children, path }: { children: ReactNode; path?: string }) {
+  const [location, setLocation] = useState<Location>(() => (path ? { pathname: path, state: null } : { pathname: readPath(), state: readState() }))
 
   useEffect(() => {
     const sync = () => startTransition(() => setLocation({ pathname: readPath(), state: readState() }))
     window.addEventListener('popstate', sync)
-    window.addEventListener('hashchange', sync)
-    return () => {
-      window.removeEventListener('popstate', sync)
-      window.removeEventListener('hashchange', sync)
-    }
+    return () => window.removeEventListener('popstate', sync)
   }, [])
 
   const navigate = useCallback<NavigateFn>((to, opts = {}) => {
     const path = to === '.' ? readPath() : to.startsWith('/') ? to : `/${to}`
-    const url = `${window.location.pathname}${window.location.search}#${path}`
+    const url = href(path)
     const entry = { usr: opts.state ?? null }
     if (opts.replace) window.history.replaceState(entry, '', url)
     else window.history.pushState(entry, '', url)
@@ -121,7 +124,7 @@ export function Navigate({ to, replace = false, state }: { to: string; replace?:
 
 type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { to: string; state?: unknown }
 
-/** An ordinary hash link (works in a new tab, middle click, "copy link") that navigates in place on a plain click. */
+/** An ordinary link (works in a new tab, middle click, "copy link") that navigates in place on a plain click. */
 export function Link({ to, state, onClick, children, ...rest }: LinkProps) {
   const navigate = useNavigate()
   const handle = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -131,7 +134,7 @@ export function Link({ to, state, onClick, children, ...rest }: LinkProps) {
     navigate(to, { state })
   }
   return (
-    <a href={hashHref(to)} onClick={handle} {...rest}>
+    <a href={href(to)} onClick={handle} {...rest}>
       {children}
     </a>
   )

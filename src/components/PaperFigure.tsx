@@ -1,3 +1,4 @@
+import { asset } from '../lib/asset'
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -184,7 +185,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
   const toggleRef = useRef<() => void>(() => {})
   const labelRef = useRef<HTMLDivElement>(null)
   const hovered = useRef(false)
-  const { image } = site.hero
+  const image = asset(site.hero.image)
 
   useEffect(() => {
     if (reduce) return
@@ -223,7 +224,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       img.onerror = () => bad(new Error('texture'))
     })
     img.src = image
-    const meshReady = fetch('avatar/krishna-origami.json').then((r) => {
+    const meshReady = fetch(asset('avatar/krishna-origami.json')).then((r) => {
       if (!r.ok) throw new Error('mesh')
       return r.json() as Promise<MeshData>
     })
@@ -319,7 +320,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, 1, 1, 0, gl.RED, gl.UNSIGNED_BYTE, new Uint8Array(1))
       const shadePic = new Image()
       shadePic.decoding = 'async'
-      shadePic.src = SHADOW_SRC
+      shadePic.src = asset(SHADOW_SRC)
       shadePic
         .decode()
         .then(() => {

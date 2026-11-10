@@ -22,7 +22,7 @@ test.describe('contact and footer', () => {
     const contact = page.locator('#contact')
     await expect(contact.getByRole('link', { name: /LinkedIn/ })).toHaveAttribute('href', 'https://www.linkedin.com/in/krishna-koushik')
     await expect(contact.getByRole('link', { name: /Download Krishna's resume/ })).toHaveAttribute('download', /Resume\.pdf$/)
-    await expect(contact.getByRole('link', { name: /Web resume/ })).toHaveAttribute('href', '#/resume')
+    await expect(contact.getByRole('link', { name: /Web resume/ })).toHaveAttribute('href', '/resume/')
     await expect(contact.getByText('Richmond, VA')).toBeVisible()
     await expect(contact.getByText('Based in')).toBeVisible()
     // "Resume" with no accents, as on the keys; the email in the label font (IBM Plex Mono), as on portfolio-2
@@ -36,7 +36,7 @@ test.describe('contact and footer', () => {
     const footer = page.locator('footer')
     await expect(footer).toContainText(`© ${new Date().getFullYear()} Krishna Koushik Maddukuri`)
     await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/)
-    await expect(footer.getByRole('link', { name: 'Resume' })).toHaveAttribute('href', '#/resume')
+    await expect(footer.getByRole('link', { name: 'Resume' })).toHaveAttribute('href', '/resume/')
     // the giant surname, one letter per span (the letters join up as the word)
     await expect(footer.locator('.wm-word')).toHaveText('MADDUKURI')
   })
@@ -44,7 +44,7 @@ test.describe('contact and footer', () => {
 
 test.describe('web résumé', () => {
   test('renders the résumé, word for word from the PDF, with a download button and a way back', async ({ page }) => {
-    await page.goto('/#/resume')
+    await page.goto('/resume/')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Krishna Koushik Maddukuri')
     await expect(page.getByText('Senior Software Engineer').first()).toBeVisible()
     for (const heading of ['Summary', 'Skills', 'Experience', 'Education', 'Certifications']) {
@@ -65,7 +65,7 @@ test.describe('web résumé', () => {
   })
 
   test('the phone number is not published on the web pages', async ({ page }) => {
-    await page.goto('/#/resume')
+    await page.goto('/resume/')
     const text = await page.locator('body').innerText()
     expect(text).not.toMatch(/\(\d{3}\)\s?\d{3}-\d{4}|\+1\s?\d{3}/)
     await page.goto('/')
