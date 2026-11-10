@@ -256,24 +256,39 @@ function CountUp({ value, delay }: { value: string; delay: number }) {
 }
 
 /**
- * His intro line. It shows faint first, then each word comes up to full strength in
- * turn, as if he's saying it (no blur: he didn't like it). Each word is its own
- * piece, so the lines wrap as prose does on a narrow screen.
+ * His intro line, typed out behind a red caret (.lede-ch in index.css: each letter appears on its own
+ * count, and for a moment carries the caret at its right edge; the last one keeps it blinking a little
+ * longer). Each word is its own piece, so the lines wrap as prose does on a narrow screen.
  */
 function SpokenIntro({ text }: { text: string }) {
   const words = richWords(text)
+  // every letter's place in the typing order (a space between words takes a beat too)
+  let count = 0
+  const total = words.reduce((n, word) => n + word.reduce((m, piece) => m + [...piece.text].length, 0) + 1, -1)
+  const letters = (text: string) =>
+    [...text].map((ch) => {
+      const c = count++
+      return (
+        <span key={c} className={c === total - 1 ? 'lede-ch lede-ch--last' : 'lede-ch'} style={{ '--c': c } as CSSProperties}>
+          {ch}
+        </span>
+      )
+    })
   return (
     // portfolio-2's lede: muted, with the key words bright (.hero-lede in index.css); the column it sits in
     // already stops short of his figure on wide screens
     <p className="hero-lede">
       <span className="sr-only">{plain(text)}</span>
-      {words.map((word, i) => (
-        <Fragment key={i}>
-          <span aria-hidden className="lede-word" style={{ '--i': i } as CSSProperties}>
-            {word.map((piece, j) => (piece.strong ? <strong key={j}>{piece.text}</strong> : piece.text))}
-          </span>{' '}
-        </Fragment>
-      ))}
+      {words.map((word, i) => {
+        if (i > 0) count++
+        return (
+          <Fragment key={i}>
+            <span aria-hidden className="lede-word">
+              {word.map((piece, j) => (piece.strong ? <strong key={j}>{letters(piece.text)}</strong> : letters(piece.text)))}
+            </span>{' '}
+          </Fragment>
+        )
+      })}
     </p>
   )
 }

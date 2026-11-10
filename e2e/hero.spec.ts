@@ -65,4 +65,15 @@ test.describe('hero', () => {
       expect(gap, `gap at ${width}px`).toBeGreaterThan(16)
     }
   })
+
+  test('the intro is typed out letter by letter, ends whole, and reads as plain text', async ({ page }) => {
+    await openHome(page)
+    const lede = page.locator('#top .hero-lede')
+    const letters = lede.locator('.lede-ch')
+    expect(await letters.count()).toBeGreaterThan(150)
+    // typed in order: when the last letter is there, so is every other
+    await expect.poll(() => letters.last().evaluate((el) => getComputedStyle(el).opacity), { timeout: 12_000 }).toBe('1')
+    expect(await lede.evaluate((el) => [...el.querySelectorAll('.lede-ch')].every((c) => getComputedStyle(c).opacity === '1'))).toBe(true)
+    await expect(lede.locator('.sr-only')).toContainText("For more than six years, I've built distributed systems")
+  })
 })

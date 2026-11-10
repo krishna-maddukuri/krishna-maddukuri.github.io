@@ -1556,7 +1556,7 @@ html.script-failed .wm-ch { opacity: 1 !important; }
   - .enter: rise and fade in. Its settings come from `enter()` in components/ui.tsx: --enter-delay (start),
     --enter-y (how far it rises), --enter-d (how long), --enter-s (a scale to grow from).
   - the hero's red block wipes in from the left and its words rise into it (.role-block, .role-word);
-  - the hero's intro comes up word by word from faint (.lede-word);
+  - the hero's intro is typed out behind a red caret (.lede-ch);
   - the hero's numbers count up from 0 (.count: an integer animated to --to and shown through a counter).
   They fill backwards only: once over they no longer apply, so hovers and the scroll drift are untouched.
   With reduced motion nothing moves: .enter only fades, the rest are simply there.
@@ -1587,12 +1587,29 @@ html.script-failed .wm-ch { opacity: 1 !important; }
 @keyframes role-rise {
   from { transform: translateY(105%); }
 }
-.lede-word {
-  display: inline-block;
-  animation: lede-word 0.65s var(--ease-out) calc(1.1s + var(--i, 0) * 0.065s) backwards;
+.lede-word { display: inline-block; }
+/* the intro is typed: a letter is unseen until its count comes up (16ms a letter, from 1.1s), and for a
+   count it carries the red caret at its right edge (one count only, so there is one caret); the last letter keeps the caret, blinking, a little
+   longer */
+.lede-ch {
+  animation:
+    lede-type 0.01s steps(1) calc(1.1s + var(--c, 0) * 16ms) backwards,
+    lede-caret 17ms steps(1) calc(1.1s + var(--c, 0) * 16ms);
 }
-@keyframes lede-word {
-  from { opacity: 0.14; transform: translateY(3px); }
+.lede-ch--last {
+  animation:
+    lede-type 0.01s steps(1) calc(1.1s + var(--c, 0) * 16ms) backwards,
+    lede-caret-end 0.5s steps(1) calc(1.1s + var(--c, 0) * 16ms) 3;
+}
+@keyframes lede-type {
+  from { opacity: 0; }
+}
+@keyframes lede-caret {
+  from, to { box-shadow: 2px 0 0 var(--brand-red); }
+}
+@keyframes lede-caret-end {
+  0% { box-shadow: 2px 0 0 var(--brand-red); }
+  50%, 100% { box-shadow: none; }
 }
 .count {
   --count: var(--to);
@@ -1619,7 +1636,7 @@ html.script-failed .wm-ch { opacity: 1 !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .enter { animation-name: enter-fade; }
-  .role-block, .role-word, .lede-word { animation: none; }
+  .role-block, .role-word, .lede-ch { animation: none; }
 }
 
 /*
@@ -2025,4 +2042,36 @@ html.defer-sections .fit-section:not(.is-warm):not(#work) {
   0% { transform: translateY(140%) rotate(-6deg); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
   14%, 86% { transform: translateY(0) rotate(0deg); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.2); }
   100% { transform: translateY(-140%) rotate(4deg); }
+}
+
+/* Section headings: the handwritten words are written in from the left when the heading comes into view,
+   then underlined with one stroke of the pen (components/ui.tsx sets .is-written). The underline is always
+   there; only its drawing is the animation */
+.accent-line {
+  position: absolute;
+  left: 0;
+  bottom: -0.02em;
+  width: 100%;
+  height: 0.14em;
+  overflow: visible;
+  pointer-events: none;
+}
+.accent-line path {
+  fill: none;
+  stroke: var(--accent-display);
+  stroke-width: max(2px, 0.04em);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .accent-write.is-written { animation: accent-write 0.9s cubic-bezier(0.5, 0, 0.3, 1) 0.18s backwards; }
+  .accent-write.is-written .accent-line { animation: accent-line 0.5s cubic-bezier(0.5, 0, 0.3, 1) 1s backwards; }
+}
+@keyframes accent-write {
+  from { clip-path: inset(-20% 100% -20% 0); }
+  to { clip-path: inset(-20% -6% -20% 0); }
+}
+@keyframes accent-line {
+  from { clip-path: inset(-100% 100% -100% 0); }
+  to { clip-path: inset(-100% -2% -100% 0); }
 }

@@ -4,7 +4,7 @@
  * back into its place on the right, where its words come back. Narrower screens have no tape on the first
  * screen, so a blade of the tape's width crosses and leaves. As it passes, each letter of the giant name
  * flashes red and cools, the red block wipes in again with its words, and everything else in the hero (the
- * hello, the intro, the numbers, the buttons, the list beside him and his stack) comes in again behind the
+ * hello, the intro (typed again), the numbers, the buttons, the list beside him and his stack) comes in again behind the
  * blade, each piece when the blade reaches it and a touch later the lower it sits.
  * (The figure answers on its own: components/PaperFigure.tsx.) Nothing here runs for people who ask for
  * less motion; every animation is a one-off that leaves the page exactly as it found it.
@@ -118,16 +118,14 @@ export function homeSweep(hero: HTMLElement) {
       fill: 'backwards',
     })
   }
-  // the intro, said again: faint, then each word up to full strength in turn
-  const words = hero.querySelectorAll<HTMLElement>('.lede-word')
-  const said = words.length ? after(words[0]) : 0
-  words.forEach((word, i) => {
-    word.animate([{ opacity: 0.14, transform: 'translateY(3px)' }, { opacity: 1, transform: 'translateY(0)' }], {
-      duration: 650,
-      delay: said + i * 35,
-      easing: EASE_OUT,
-      fill: 'backwards',
-    })
+  // the intro, typed again behind its red caret (a little faster than when the page opens)
+  const letters = hero.querySelectorAll<HTMLElement>('.lede-ch')
+  const typed = letters.length ? after(letters[0]) : 0
+  const caret = [{ boxShadow: `2px 0 0 ${red}` }, { boxShadow: `2px 0 0 ${red}` }]
+  letters.forEach((letter, i) => {
+    const delay = typed + (Number(letter.style.getPropertyValue('--c')) || i) * 11
+    letter.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1, delay, fill: 'backwards' })
+    letter.animate(caret, i === letters.length - 1 ? { duration: 700, delay } : { duration: 12, delay })
   })
   for (const count of hero.querySelectorAll<HTMLElement>('.count')) {
     const value = Number(count.style.getPropertyValue('--to'))

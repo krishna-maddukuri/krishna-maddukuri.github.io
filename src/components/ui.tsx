@@ -1,5 +1,5 @@
 import * as m from 'motion/react-m'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { CSSProperties } from 'react'
 
 export const EASE = [0.22, 1, 0.36, 1] as const
@@ -63,11 +63,14 @@ export function SectionHeading({
   /** put the handwritten part on its own line ("Always / learning.") */
   stack?: boolean
 }) {
+  // the handwritten part is written in, left to right, when the heading comes into view, then underlined
+  // with one stroke of the pen (.accent-write in index.css)
+  const [written, setWritten] = useState(false)
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
       <div className="heading-drift min-w-0">
         <Eyebrow index={index} label={label} />
-        {/* the bold part first, the handwritten tail a beat later */}
+        {/* the bold part first, the handwritten tail written in a beat later */}
         <h2 className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95] lg:mt-[clamp(8px,1.5svh,20px)] lg:text-[length:min(5.4rem,6vw,7svh)]">
           <m.span
             className="inline-block"
@@ -80,13 +83,17 @@ export function SectionHeading({
           </m.span>
           {stack ? <br /> : ' '}
           <m.span
-            className="inline-block"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            className={`accent-write relative inline-block ${written ? 'is-written' : ''}`}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 1, ease: EASE, delay: 0.18 }}
+            onViewportEnter={() => setWritten(true)}
+            transition={{ duration: 0.01, delay: 0.18 }}
           >
             <Accent>{accent}</Accent>
+            <svg className="accent-line" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden>
+              <path d="M2 7 C 20 2, 35 11, 52 6 S 85 3, 98 7" />
+            </svg>
           </m.span>
         </h2>
         {sub && (
