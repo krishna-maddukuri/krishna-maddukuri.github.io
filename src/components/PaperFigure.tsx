@@ -137,9 +137,9 @@ void main() {
   float wide = max(u_view.x, u_view.y);
   vec2 from = pos.xy - u_poke.xy;
   float pd = length(from);
-  float part = 1.0 - smoothstep(0.0, 0.065 * wide, pd);
+  float part = 1.0 - smoothstep(0.0, 0.09 * wide, pd);
   part *= part * u_poke.z * k;
-  pos.xy += (pd > 0.5 ? from / pd : vec2(0.0, -1.0)) * part * 0.045 * wide;
+  pos.xy += (pd > 0.5 ? from / pd : vec2(0.0, -1.0)) * part * 0.065 * wide;
   // and rings travel out through them: as one passes, a shard is nudged outward, swells and turns over
   float ring = 0.0;
   for (int i = 0; i < ${RINGS}; i++) {
