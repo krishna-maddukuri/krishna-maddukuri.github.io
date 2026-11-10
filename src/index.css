@@ -1974,9 +1974,12 @@ html.defer-sections .fit-section:not(.is-warm):not(#work) {
 }
 
 /* Experience: a year's digits roll into place (sections/Experience.tsx). A cell is exactly as wide as its
-   digit; while rolling, a strip of seven digits that ends on it runs up through the cell */
+   digit; while rolling, a strip of seven digits that ends on it runs up through the cell. The digits are
+   taller than their own em (the display face is tall and narrow), so a cell is 1.5em tall with its digit in
+   the middle: nothing of a digit is cut off and nothing of the next one shows above or below it. The cell
+   gives the extra height back with its margins, so the year takes the room it always did */
 .yr { display: inline-flex; }
-.yr-cell { position: relative; display: inline-block; overflow: hidden; height: 1em; line-height: 1; vertical-align: bottom; }
+.yr-cell { position: relative; display: inline-block; overflow: hidden; height: 1.5em; line-height: 1.5; margin-block: -0.25em; vertical-align: bottom; }
 .yr-strip { display: none; }
 .tl-dot { transform-origin: center; }
 @media (prefers-reduced-motion: no-preference) {
@@ -1986,10 +1989,10 @@ html.defer-sections .fit-section:not(.is-warm):not(#work) {
     inset: 0 0 auto;
     display: block;
     text-align: center;
-    transform: translateY(-6em);
+    transform: translateY(-9em);
     animation: yr-roll 1s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i, 0) * 70ms) backwards;
   }
-  .yr-strip > span { display: block; height: 1em; }
+  .yr-strip > span { display: block; height: 1.5em; }
   /* and the dot on the line pops when the red line reaches it */
   .tl-dot.is-reached { animation: tl-pop 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) backwards; }
 }
