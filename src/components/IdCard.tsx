@@ -107,6 +107,13 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
   const [dragging, setDragging] = useState(false)
 
   const [flipped, setFlipped] = useState(false)
+  // Which face is towards the viewer, written on the turning card itself (data-showing) as it turns: the far
+  // face is then not drawn at all (index.css), so a browser that does not hide a turned-away face by itself
+  // never shows the back's mirror image over the front.
+  const turnRef = useRef<HTMLDivElement>(null)
+  const showFace = (back: boolean) => {
+    if (turnRef.current) turnRef.current.dataset.showing = back ? 'back' : 'front'
+  }
   const press = useRef({ x: 0, y: 0, timer: 0, armed: false, picked: false, event: null as PointerEvent | null })
 
   const lift = (to: number) => animate(scale, to, { type: 'spring', stiffness: 520, damping: to > 1 ? 26 : 30 })
@@ -223,9 +230,14 @@ export function IdCard({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
               >
                 <Clip />
                 <m.div
+                  ref={turnRef}
+                  data-showing="front"
                   className="preserve-3d relative aspect-[5/8] w-full"
                   animate={{ rotateY: flipped ? 180 : 0 }}
                   transition={{ type: 'spring', stiffness: 110, damping: 15 }}
+                  // past edge-on, the other face is the one to draw; when the turn has settled, the state decides
+                  onUpdate={(now) => typeof now.rotateY === 'number' && showFace(Math.cos((now.rotateY * Math.PI) / 180) < 0)}
+                  onAnimationComplete={() => showFace(flipped)}
                 >
                   <CardFront />
                   <CardBack />

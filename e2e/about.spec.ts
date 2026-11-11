@@ -37,14 +37,20 @@ test.describe('about', () => {
     await expect(front.getByText('Bank of America')).toBeVisible()
     await expect(front.getByText('Wealth Management Technology')).toBeVisible()
     await expect(card).not.toContainText(/FinTech|Portfolio/i)
+    // the face turned away is not drawn at all (so no browser can show the back's mirror image over the front)
+    const back = card.locator('[data-face="back"]')
+    await expect(back).toBeHidden()
     await card.click()
     await expect(card).toHaveAttribute('aria-pressed', 'true')
     await expect(card.getByText('If found, please return to')).toBeVisible()
+    await expect(front).toBeHidden()
     await expect(card.getByText('m.krishnakoushik@icloud.com')).toBeVisible()
     // the back carries a QR code for his LinkedIn profile
     await expect(card.getByRole('img', { name: 'QR code for linkedin.com/in/krishna-koushik' })).toBeVisible()
     await card.press('Enter')
     await expect(card).toHaveAttribute('aria-pressed', 'false')
+    await expect(front).toBeVisible()
+    await expect(back).toBeHidden()
   })
 
   test('the card can be dragged and springs back', async ({ page }) => {

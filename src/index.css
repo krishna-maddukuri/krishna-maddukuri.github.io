@@ -441,6 +441,10 @@ html.lenis, html.lenis body { height: auto; }
   }
   .preserve-3d { transform-style: preserve-3d; }
   .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  /* the ID card: the face turned away is not drawn at all (components/IdCard.tsx keeps data-showing in step
+     with the turn), whatever the browser does about hiding the back of a turned element */
+  [data-showing='front'] > [data-face='back'],
+  [data-showing='back'] > [data-face='front'] { visibility: hidden; }
   .no-scrollbar { scrollbar-width: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .dash-flow { stroke-dasharray: 6 6; animation: dash-flow 1.2s linear infinite; }
