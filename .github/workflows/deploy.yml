@@ -1,4 +1,6 @@
-# Publishes the site to GitHub Pages every time something is committed to main.
+# Publishes the site to GitHub Pages every time something is committed to main,
+# once the end-to-end tests have passed on that commit (a failing test stops it:
+# the site that is live stays as it was).
 # It installs the exact package versions in package-lock.json, builds the site
 # (npm run build -> dist/) and puts dist/ live on GitHub Pages.
 # Repo setting this needs: Settings > Pages > Source = GitHub Actions.
@@ -21,7 +23,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # the same tests as test.yml; nothing below runs unless they pass
+  test:
+    name: End-to-end tests
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
