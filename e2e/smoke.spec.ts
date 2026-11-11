@@ -139,21 +139,8 @@ test.describe('page load', () => {
     expect(study).toContain('class="arch-stage"')
   })
 
-  test('if the animation engine cannot be fetched, the parts that wait for it are simply shown', async ({ page }) => {
-    await page.route('**/assets/motionFeatures-*.js', (route) => route.abort())
-    await page.goto('/')
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Software Engineer.')
-    // the rest of the page carries on: the figure still comes together
-    await expect(page.locator('#top [data-paper-figure]')).toHaveAttribute('data-paper-figure', 'ready', { timeout: 20_000 })
-    // one more try by itself, then everything that would have faded in is there
-    await expect(page.locator('html.script-failed')).toHaveCount(1, { timeout: 10_000 })
-    const about = page.locator('#about .about-lead')
-    await about.scrollIntoViewIfNeeded()
-    await expect.poll(() => about.evaluate((el) => getComputedStyle(el.closest('[style*="opacity"]') ?? el).opacity)).toBe('1')
-  })
-
   test('a ready-made inner page keeps what it shows while its own code is still on the way', async ({ page }) => {
-    // (whatever else arrives first, the animation engine or smooth scrolling, must not blank the page meanwhile)
+    // (smooth scrolling arrives first: it must not blank the page meanwhile)
     await page.route('**/assets/Resume-*.js', async (route) => {
       await new Promise((r) => setTimeout(r, 1500))
       await route.continue()

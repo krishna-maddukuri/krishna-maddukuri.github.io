@@ -33,8 +33,8 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         frame = requestAnimationFrame(raf)
       }
       frame = requestAnimationFrame(raf)
-      // not urgent: a ready-made inner page still waiting for its own code keeps what it shows (an urgent
-      // change here would make React swap it for a blank page until that code arrived)
+      // not urgent: a ready-made inner page that is still waiting for its own code keeps what it shows (an
+      // urgent change to the app around it would make React swap it for a blank page until that code arrived)
       startTransition(() => setLenis(lenis))
     })
     return () => {

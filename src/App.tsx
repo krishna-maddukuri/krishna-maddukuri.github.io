@@ -1,4 +1,4 @@
-import { LazyMotion, MotionConfig } from 'motion/react'
+import { domMax, LazyMotion, MotionConfig } from 'motion/react'
 import { lazy, Suspense, useEffect, useLayoutEffect } from 'react'
 import { Header } from './components/Header'
 import { Toaster } from './components/Toast'
@@ -13,37 +13,6 @@ import { Footer } from './sections/Contact'
 
 // The two inner pages load only when someone opens them.
 const Resume = lazy(() => import('./pages/Resume').then((m) => ({ default: m.Resume })))
-
-/**
- * Settled once the page in view has been taken over by the script (`PageUp`, inside the pages' boundary).
- * A ready-made inner page waits for its own code before that; anything that changes the app around it
- * meanwhile would make React throw the ready-made page away and show a blank one until the code arrived.
- * So the animation engine, which loads after the first script, joins the app only once the page is up (or
- * after a few seconds, whatever happens); smooth scrolling (lib/scroll.tsx) joins as a change that can wait.
- */
-let pageIsUp = () => {}
-const pageUp = new Promise<void>((ok) => {
-  pageIsUp = ok
-})
-function PageUp() {
-  useEffect(() => pageIsUp(), [])
-  return null
-}
-
-/**
- * The animation engine arrives as its own file (lib/motionFeatures.ts). If it cannot be fetched, even on a
- * second try, the parts of the page that wait for it to fade in are simply shown (the same rule as for a
- * page whose script never arrived: `html.script-failed` in index.css), so nothing stays unseen.
- */
-const engine = () => import('./lib/motionFeatures').then((m) => m.default)
-const features = () =>
-  engine()
-    .catch(() => new Promise((again) => setTimeout(again, 1500)).then(engine))
-    .then((found) => Promise.race([pageUp, new Promise((late) => setTimeout(late, 4000))]).then(() => found))
-    .catch(() => {
-      document.documentElement.classList.add('script-failed')
-      return new Promise<never>(() => {})
-    })
 
 
 function ScrollReset() {
@@ -107,7 +76,6 @@ function Pages() {
           <Route path="/resume" element={<Resume />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <PageUp />
       </Suspense>
     </ErrorBoundary>
   )
@@ -116,7 +84,7 @@ function Pages() {
 /** `path` is given only when a page is pre-built (entry-server.tsx). */
 export default function App({ path }: { path?: string }) {
   return (
-    <LazyMotion features={features} strict>
+    <LazyMotion features={domMax} strict>
       <MotionConfig reducedMotion="user">
         <Router path={path}>
           <SmoothScroll>

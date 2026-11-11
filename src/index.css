@@ -1545,8 +1545,7 @@ html.vt-page::view-transition-group(project-visual) {
   for the script to bring them in as you scroll are simply shown. (With script switched off, the same rule
   is in the page's noscript block.)
 */
-html.script-failed [style*='opacity:0'],
-html.script-failed [style*='opacity: 0'] {
+html.script-failed [style*='opacity:0'] {
   opacity: 1 !important;
   transform: none !important;
   filter: none !important;

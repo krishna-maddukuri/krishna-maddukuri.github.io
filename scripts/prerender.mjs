@@ -66,13 +66,10 @@ const address = (route) => (route === '/' ? BASE : `${BASE}${route.slice(1)}/`)
 const assets = fs.readdirSync(path.join(DIST, 'assets'))
 const chunk = (name) => assets.filter((f) => f.startsWith(`${name}-`) && f.endsWith('.js')).map((f) => `<link rel="modulepreload" crossorigin href="${BASE}assets/${f}" />`)
 const extra = (route) => (route === '/resume' ? chunk('Resume') : route.startsWith('/work/') ? [...chunk('CaseStudy'), ...chunk('ProjectVisual')] : [])
-// the animation engine is its own file (src/lib/motionFeatures.ts): every page fetches it beside the main script, behind it
-const engine = chunk('motionFeatures').map((l) => l.replace(' crossorigin ', ' crossorigin fetchpriority="low" '))
-if (engine.length !== 1) throw new Error('the animation engine is not a file of its own')
 
 for (const route of routes) {
   const html = await render(route)
-  const head = [`<link rel="canonical" href="${SITE_URL}${address(route)}" />`, ...extra(route), ...engine].map((l) => `    ${l}\n`).join('')
+  const head = [`<link rel="canonical" href="${SITE_URL}${address(route)}" />`, ...extra(route)].map((l) => `    ${l}\n`).join('')
   const page = card(route === '/' ? shell : shell.replace(FIGURE, ''), route)
     .replace(TITLE, () => `<title>${escape(pageTitle(route))}</title>`)
     .replace(NOSCRIPT, () => REVEAL)

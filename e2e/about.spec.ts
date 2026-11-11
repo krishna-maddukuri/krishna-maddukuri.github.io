@@ -53,6 +53,24 @@ test.describe('about', () => {
     await expect(back).toBeHidden()
   })
 
+  test("the lanyard's hook hangs over the card, inside About: nothing of it shows on the first screen", async ({ page }) => {
+    await openHome(page)
+    const place = () =>
+      page.evaluate(() => {
+        const about = document.getElementById('about')!.getBoundingClientRect()
+        const hook = document.querySelector('#about [data-lanyard-hook]')!.getBoundingClientRect()
+        const card = document.querySelector('#about [role="button"]')!.getBoundingClientRect()
+        return { aboveAbout: Math.round(about.top - hook.top), offCentre: Math.round(Math.abs(hook.left + hook.width / 2 - (card.left + card.width / 2))), overCard: card.top > hook.top }
+      })
+    // (it is placed by the animation engine: this holds from the moment the page is up, and after a reload)
+    await expect.poll(place).toMatchObject({ offCentre: 0, overCard: true })
+    expect((await place()).aboveAbout).toBeLessThanOrEqual(0)
+    await page.reload()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect.poll(place).toMatchObject({ offCentre: 0, overCard: true })
+    expect((await place()).aboveAbout).toBeLessThanOrEqual(0)
+  })
+
   test('the card can be dragged and springs back', async ({ page }) => {
     test.skip(isPhone(page), 'on phones the card is picked up with a long press')
     await openHome(page)

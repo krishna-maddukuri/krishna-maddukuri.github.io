@@ -297,6 +297,7 @@ function Hook({ anchorX, anchorY, visible }: { anchorX: MotionValue<number>; anc
   return (
     <m.div
       aria-hidden
+      data-lanyard-hook
       className="pointer-events-none absolute left-0 top-0 z-[21] grid place-items-center rounded-full border border-line bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.12),inset_0_1px_0_rgb(255_255_255/0.6)]"
       style={{ x: left, y: top, width: HOOK, height: HOOK, opacity: visible ? 1 : 0 }}
     >
@@ -363,7 +364,7 @@ function CardFront() {
           {about.card.title}
         </span>
         <span
-          className="ml-auto font-semibold leading-none tabular-nums text-[rgb(22_4_3/0.72)]"
+          className="ml-auto font-semibold leading-none tabular-nums text-[rgb(22_4_3)]"
           style={{ fontSize: u(11.5), letterSpacing: '0.04em' }}
         >
           {about.card.idNo}

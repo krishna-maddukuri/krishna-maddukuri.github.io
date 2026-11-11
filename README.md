@@ -62,8 +62,8 @@ companies, schools and certifications show their logo or badge next to their nam
 **Speed.** Every page is built ahead of time into its own HTML file (`scripts/prerender.mjs`), so the first
 screen is there before any script has run, and its entrances are plain CSS. Effects that follow the scroll
 (the hero's drift, the timeline's line, the sliding cards) run on the browser's own scroll timeline where it
-has one, with a scripted fallback. The case-study and résumé pages, the project drawings and the animation
-engine are separate files, fetched only when they are needed. Sections far below the screen are laid out in
+has one, with a scripted fallback. The case-study and résumé pages and the project drawings are separate
+files, fetched only when they are needed. Sections far below the screen are laid out in
 idle moments after the page opens. Phones and tablets keep their native scrolling; smooth scrolling is
 added only for a mouse or trackpad.
 
