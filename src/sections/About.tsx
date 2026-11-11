@@ -3,7 +3,7 @@ import { about, site } from '../data/site'
 import { IdCard } from '../components/IdCard'
 import { LinkedInMark } from '../components/Logo'
 import { ResumeLink } from '../components/ResumeLink'
-import { Accent, ArrowDown, ArrowUpRight, Container, Eyebrow, Reveal, Rich } from '../components/ui'
+import { ArrowDown, ArrowUpRight, Container, Eyebrow, HeadingWords, Reveal, Rich } from '../components/ui'
 
 /**
  * About: "Hi, I'm Krishna." on one line; his path in a panel (as on portfolio-2) with the motto on
@@ -20,11 +20,7 @@ export function About() {
         <div className="about-grid">
           <div className="relative z-10 min-w-0 [grid-area:head]">
             <Eyebrow index="01" label="About" />
-            <Reveal>
-              <h2 className="about-title whitespace-nowrap font-display font-bold leading-[0.95]">
-                Hi, I&rsquo;m <Accent>{about.hello}</Accent>
-              </h2>
-            </Reveal>
+            <HeadingWords lead="Hi, I’m" accent={about.hello} className="about-title whitespace-nowrap font-display font-bold leading-[0.95]" />
           </div>
 
           <Reveal delay={0.05} className="relative z-10 min-w-0 [grid-area:panel]">

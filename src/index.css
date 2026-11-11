@@ -102,7 +102,6 @@
   --accent-text: #d92310; /* the same red, a step deeper for small text: 4.5:1 on the paper */
   --accent-mark: transparent;
   --accent-ring: var(--accent);
-  --accent-dot: var(--accent);
 
   /* skill families: a black-to-light ramp */
   --fam-lang: #000000;
@@ -917,7 +916,7 @@ html.lenis, html.lenis body { height: auto; }
   }
 
   /* key words in running text */
-  strong, b, .accent-word {
+  strong, b {
     font-weight: 600;
     color: var(--accent-text);
     background: var(--accent-mark);
@@ -950,8 +949,6 @@ html.lenis, html.lenis body { height: auto; }
     border-radius: 0.3em;
     box-shadow: 0 0 0 0.3em var(--accent-mark);
   }
-  /* a dot in the accent colour, with a ring that makes a neon one show on the paper */
-  .accent-dot { background: var(--accent); box-shadow: 0 0 0 1.5px var(--accent-ring); }
 
   /* a logo on a plate tinted with its brand colour (--brand); light in both themes, like a sticker */
   .plate {
@@ -1544,7 +1541,8 @@ html.vt-page::view-transition-group(project-visual) {
   for the script to bring them in as you scroll are simply shown. (With script switched off, the same rule
   is in the page's noscript block.)
 */
-html.script-failed [style*='opacity:0'] {
+html.script-failed [style*='opacity:0'],
+html.script-failed [style*='opacity: 0'] {
   opacity: 1 !important;
   transform: none !important;
   filter: none !important;
@@ -1852,6 +1850,16 @@ html.defer-sections .fit-section:not(.is-warm):not(#work) {
 @media (prefers-reduced-motion: no-preference) {
   .skills-tile:active { scale: 0.96; }
 }
+/* the keyboard's hint, under the table: there only while a tile holds the keyboard's focus */
+.skills-keys {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.skills-table:has(.skills-tile:focus-visible) .skills-keys { opacity: 1; }
 @media (min-width: 1024px) {
   .skills-body {
     --cols: 9;

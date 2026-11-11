@@ -1,5 +1,6 @@
+import { useInView } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useState, type ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import type { CSSProperties } from 'react'
 
 export const EASE = [0.22, 1, 0.36, 1] as const
@@ -44,6 +45,46 @@ export function Reveal({
   )
 }
 
+/**
+ * A heading in two parts: the bold words rise in and, a beat later, the tail is written in his own hand, left
+ * to right, then underlined with one stroke of the pen (.accent-write in index.css). Both parts start from
+ * the one moment the heading comes into view, so the tail is never there before the words it follows.
+ */
+export function HeadingWords({
+  lead,
+  accent,
+  className,
+  stack = false,
+}: {
+  lead: string
+  accent: string
+  className: string
+  /** put the handwritten part on its own line ("Always / learning.") */
+  stack?: boolean
+}) {
+  const ref = useRef<HTMLHeadingElement>(null)
+  const seen = useInView(ref, { once: true, amount: 0.3 })
+  return (
+    <h2 ref={ref} className={className}>
+      <m.span className="inline-block" initial={{ opacity: 0, y: 24 }} animate={seen ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }} transition={{ duration: 1, ease: EASE }}>
+        {lead}
+      </m.span>
+      {stack ? <br /> : ' '}
+      <m.span
+        className={`accent-write relative inline-block ${seen ? 'is-written' : ''}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: seen ? 1 : 0 }}
+        transition={{ duration: 0.01, delay: 0.18 }}
+      >
+        <Accent>{accent}</Accent>
+        <svg className="accent-line" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden>
+          <path d="M2 7 C 20 2, 35 11, 52 6 S 85 3, 98 7" />
+        </svg>
+      </m.span>
+    </h2>
+  )
+}
+
 /** "02 —— SKILLS" eyebrow + bold sans headline with a tail in his own hand. */
 export function SectionHeading({
   index,
@@ -63,39 +104,16 @@ export function SectionHeading({
   /** put the handwritten part on its own line ("Always / learning.") */
   stack?: boolean
 }) {
-  // the handwritten part is written in, left to right, when the heading comes into view, then underlined
-  // with one stroke of the pen (.accent-write in index.css)
-  const [written, setWritten] = useState(false)
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
       <div className="heading-drift min-w-0">
         <Eyebrow index={index} label={label} />
-        {/* the bold part first, the handwritten tail written in a beat later */}
-        <h2 className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95] lg:mt-[clamp(8px,1.5svh,20px)] lg:text-[length:min(5.4rem,6vw,7svh)]">
-          <m.span
-            className="inline-block"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 1, ease: EASE }}
-          >
-            {lead}
-          </m.span>
-          {stack ? <br /> : ' '}
-          <m.span
-            className={`accent-write relative inline-block ${written ? 'is-written' : ''}`}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            onViewportEnter={() => setWritten(true)}
-            transition={{ duration: 0.01, delay: 0.18 }}
-          >
-            <Accent>{accent}</Accent>
-            <svg className="accent-line" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden>
-              <path d="M2 7 C 20 2, 35 11, 52 6 S 85 3, 98 7" />
-            </svg>
-          </m.span>
-        </h2>
+        <HeadingWords
+          lead={lead}
+          accent={accent}
+          stack={stack}
+          className="mt-5 font-display text-[clamp(2.6rem,6vw,5.4rem)] font-bold leading-[0.95] lg:mt-[clamp(8px,1.5svh,20px)] lg:text-[length:min(5.4rem,6vw,7svh)]"
+        />
         {sub && (
           <Reveal delay={0.3} y={14}>
             <p className="mt-5 max-w-[52ch] text-md text-ink-soft lg:mt-[clamp(8px,1.6svh,20px)]">{sub}</p>
@@ -134,7 +152,7 @@ export function Eyebrow({ index, label }: { index: string; label: string }) {
 }
 
 /** The handwritten tail used in every heading (Sedgwick Ave, from portfolio-2), in the accent colour (red). */
-export function Accent({ children }: { children: ReactNode }) {
+function Accent({ children }: { children: ReactNode }) {
   return <em className="accent-tail">{children}</em>
 }
 
@@ -228,12 +246,5 @@ export const Copy = ({ className = 'size-4' }: IconProps) => (
 export const Check = ({ className = 'size-4' }: IconProps) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
     <path d="m5 12 5 5 9-10" />
-  </svg>
-)
-
-export const Sound = ({ on, className = 'size-4' }: IconProps & { on: boolean }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-    <path d="M4 9v6h4l5 4V5L8 9H4Z" />
-    {on ? <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /> : <path d="m17 9 5 6M22 9l-5 6" />}
   </svg>
 )

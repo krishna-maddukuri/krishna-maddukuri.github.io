@@ -16,7 +16,7 @@ export const site = {
    * Words **marked like this** are the key words: bold (in the hero, bright; in the About lead, in the accent colour).
    */
   intro:
-    "For more than six years, I've built **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**. I design **high-throughput, secure data platforms** and see them through to production.",
+    "Since 2020, I've been building software, most recently **distributed systems** for financial services, from **Kafka pipelines** and **Spring Boot microservices** to **zero-downtime releases on AWS**. I design **high-throughput, secure data platforms** and see them through to production.",
   location: 'Richmond, VA',
   email: 'm.krishnakoushik@icloud.com',
   linkedin: 'https://www.linkedin.com/in/krishna-koushik',
@@ -29,6 +29,8 @@ export const site = {
    */
   hero: {
     image: 'avatar/krishna-origami.webp',
+    /** The same picture at 867 x 2400 for phones, where he is drawn much smaller than the full one. Empty = phones use the full one. */
+    imagePhone: 'avatar/krishna-origami-phone.webp',
     /** The line in his hand above the red block. */
     hello: "Hello, I'm a",
     /** Three numbers under the intro, as on portfolio-2 (from the work and achievements further down). */
@@ -76,7 +78,7 @@ export const about = {
     { k: 'Based in', v: 'Richmond, VA' },
     { k: 'Experience', v: '6+ years', note: 'Building software since 2020' },
     { k: 'Studied', v: 'M.S., Computer Science', note: 'George Mason University, 2023' },
-    { k: 'Studying', v: 'DBA, Technology Management', note: 'Westcliff University, expected 2030' },
+    { k: 'Studying', v: 'DBA, Technology Management', note: 'Westcliff University, expected 2029' },
     { k: 'Certified', v: 'AWS Associate Developer', note: 'and AWS Cloud Practitioner' },
     { k: 'Stack', v: 'Cloud-native Java', note: 'Full stack' },
   ] as { k: string; v: string; note?: string }[],
@@ -220,30 +222,32 @@ export const projects: Project[] = [
     org: 'Capital One',
     period: 'Sep 2024 – Oct 2026',
     summary:
-      "Capital One's Enterprise Credit Bureau Reporting Service. I build the Java/Spring Boot microservices that generate its compliant Metro2 files for four credit bureaus.",
+      "Capital One's Enterprise Credit Bureau Reporting Service. I built the Java/Spring Boot microservices that generate its compliant Metro2 files: about 30 million accounts a month, for four credit bureaus.",
     context:
       'The Enterprise Credit Bureau Reporting Service generates the Metro2 files Capital One reports to the credit bureaus. It covers U.S., Canada, Small Business and Commercial segments across Equifax, Experian, TransUnion and LexisNexis, so the services behind it have to be scalable, secure and compliant.',
     highlights: [
       'Java/Spring Boot microservices',
-      'Metro2 files for four segments',
+      '~30M accounts a month in Metro2',
       'Spring Batch: 7 hours down to 4',
       'OAuth2 APIs, JUnit and Cucumber',
     ],
     did: [
       'Designed and built scalable, secure Java/Spring Boot microservices for the Enterprise Credit Bureau Reporting Service.',
-      'Generate compliant Metro2 files for U.S., Canada, Small Business and Commercial segments across Equifax, Experian, TransUnion and LexisNexis.',
+      'Generated compliant Metro2 files for about 30 million consumer, small-business and commercial accounts each month, across Equifax, Experian, TransUnion and LexisNexis.',
       'Improved batch performance by 43% (7 hours to 4) by replacing cursor-based readers with a paginated reader in Spring Batch for high-volume Metro2 file generation.',
       'Designed OAuth2-protected REST APIs and built automated test suites with JUnit and Cucumber, reducing production defects.',
+      'Onboarded Discover account portfolios into the reporting pipeline after the Capital One–Discover merger, extending the platform to new product segments without disrupting monthly regulatory deadlines.',
     ],
     outcomes: [
-      'Compliant Metro2 files for four segments and four credit bureaus',
+      'About 30 million accounts reported each month, to four credit bureaus',
       'Batch processing 43% faster: 7 hours down to 4',
+      'Discover portfolios onboarded after the merger, without disrupting monthly regulatory deadlines',
       'Fewer production defects',
     ],
     metrics: [
       { value: '43%', label: 'faster batch processing' },
+      { value: '~30M', label: 'accounts a month' },
       { value: '4', label: 'credit bureaus' },
-      { value: '4', label: 'reporting segments' },
     ],
     tools: ['Java', 'Spring Boot', 'Spring Batch', 'OAuth2', 'JUnit', 'Cucumber'],
     visual: 'pipeline',
@@ -316,7 +320,7 @@ export const projects: Project[] = [
       'Deployed containerized services on AWS Fargate via CloudFormation, integrating SNS, S3, RDS and Step Functions.',
       'Reduced container size by 60%, lowering compute costs and improving runtime efficiency.',
       'Implemented enterprise CI/CD pipelines with Jenkins to automate builds and enforce SonarQube quality gates.',
-      'Manage blue-green deployments with zero-downtime releases.',
+      'Managed blue-green deployments with zero-downtime releases.',
     ],
     outcomes: ['Containers 60% smaller, with lower compute costs', 'Zero-downtime releases'],
     metrics: [{ value: '60%', label: 'smaller containers' }],
@@ -502,8 +506,8 @@ export const projects: Project[] = [
 export const learning = {
   sub: 'A doctorate in progress, two AWS certifications and two computer science degrees.',
   items: [
-    { title: 'DBA, Technology Management', from: 'Westcliff University · Jul 2026 – 2030 (expected)' },
-    { title: 'AWS Certified Developer', from: 'Amazon Web Services · Certification' },
+    { title: 'DBA, Technology Management', from: 'Westcliff University · Jul 2026 – Aug 2029 (expected)' },
+    { title: 'AWS Certified Developer – Associate', from: 'Amazon Web Services · Certification' },
     { title: 'AWS Certified Cloud Practitioner', from: 'Amazon Web Services · Certification' },
     { title: 'M.S., Computer Science', from: 'George Mason University · Fairfax, VA · 2023' },
     { title: 'B.Tech, Computer Science', from: 'Amrita Vishwa Vidyapeetham · Coimbatore, India · 2020' },
@@ -576,7 +580,7 @@ export const timeline: Milestone[] = [
     kind: 'Education',
     title: 'DBA, Technology Management',
     org: 'Westcliff University',
-    period: 'Jul 2026 – 2030 (expected)',
+    period: 'Jul 2026 – Aug 2029 (expected)',
     badge: 'In progress',
     current: true,
   },
@@ -691,7 +695,7 @@ export const experience: Role[] = [
 
 export const education: Role[] = [
   {
-    period: 'Jul 2026 – 2030 (expected)',
+    period: 'Jul 2026 – Aug 2029 (expected)',
     role: 'Doctorate in Business Administration (DBA), Technology Management',
     org: 'Westcliff University',
     where: '',
@@ -741,6 +745,7 @@ export type Achievement = {
 }
 
 export const achievements: Achievement[] = [
+  { value: 30, suffix: 'M', title: 'Accounts reported a month', source: 'Capital One', detail: 'About 30 million, in Metro2 files for four credit bureaus', icon: 'report' },
   { value: 43, suffix: '%', title: 'Faster batch processing', source: 'Capital One', detail: '7 hours down to 4 in Spring Batch', icon: 'clock' },
   { value: 60, suffix: '%', title: 'Smaller containers', source: 'Capital One', detail: 'AWS Fargate services, lower compute costs', icon: 'box' },
   { value: 4, suffix: '', title: 'Credit bureaus reported to', source: 'Capital One', detail: 'Equifax, Experian, TransUnion and LexisNexis', icon: 'bank' },

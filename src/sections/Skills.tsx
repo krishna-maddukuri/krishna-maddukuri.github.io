@@ -1,7 +1,7 @@
 import { asset } from '../lib/asset'
 import { AnimatePresence, useInView } from 'motion/react'
 import * as m from 'motion/react-m'
-import { memo, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { memo, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { elements, families, type Element, type FamilyId } from '../data/site'
 import { skillLogos } from '../data/logos'
 import { Plate } from '../components/Logo'
@@ -57,6 +57,23 @@ export function Skills() {
     }
   }
 
+  // The table is one stop for the Tab key (the tile last shown); from there the arrow keys move between the
+  // tiles, Home and End go to the first and the last. The rows are read from where the tiles stand right now,
+  // so up and down are right at every width.
+  const onKeys = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.altKey || e.ctrlKey || e.metaKey || !['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return
+    const tiles = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('.skills-tile'))
+    const at = tiles.indexOf(document.activeElement as HTMLButtonElement)
+    if (at < 0) return
+    e.preventDefault()
+    const top = tiles[0].offsetTop
+    const wrap = tiles.findIndex((t) => t.offsetTop !== top)
+    const perRow = wrap < 0 ? tiles.length : wrap
+    const to =
+      e.key === 'ArrowRight' ? at + 1 : e.key === 'ArrowLeft' ? at - 1 : e.key === 'ArrowDown' ? at + perRow : e.key === 'ArrowUp' ? at - perRow : e.key === 'Home' ? 0 : tiles.length - 1
+    tiles[to]?.focus()
+  }
+
   return (
     <section id="skills" className="fit-section relative">
       <Container>
@@ -87,7 +104,14 @@ export function Skills() {
 
         {/* on wide screens the table is as wide as its square tiles allow and the inspector takes the rest */}
         <div className="skills-body mt-8 grid items-center gap-6 lg:mt-[clamp(12px,2.4svh,32px)] lg:items-stretch lg:gap-10">
-          <div ref={tableRef} className={`skills-table ${inView ? 'is-in' : ''} grid grid-cols-5 gap-1.5 self-start min-[520px]:grid-cols-8 sm:gap-2.5`}>
+          <div
+            ref={tableRef}
+            role="toolbar"
+            aria-label="Skills"
+            aria-describedby="skills-keys"
+            onKeyDown={onKeys}
+            className={`skills-table ${inView ? 'is-in' : ''} relative grid grid-cols-5 gap-1.5 self-start min-[520px]:grid-cols-8 sm:gap-2.5`}
+          >
             {elements.map((el, i) => (
               <Tile
                 key={el.sym}
@@ -98,10 +122,15 @@ export function Skills() {
                 delay={waveDone ? 0 : ((i % COLS) + Math.floor(i / COLS)) * 0.05}
                 dim={family !== null && el.family !== family}
                 active={focus?.sym === el.sym}
+                tab={focus ? focus.sym === el.sym : i === 0}
                 hover={hover}
                 onFocus={setFocus}
               />
             ))}
+            {/* shown under the table while a tile holds the keyboard's focus (`.skills-keys` in index.css) */}
+            <p id="skills-keys" className="skills-keys eyebrow" aria-hidden>
+              Arrow keys move between tiles
+            </p>
           </div>
           <Inspector el={focus} hover={hover} />
         </div>
@@ -115,6 +144,7 @@ export function Skills() {
  * only the two tiles whose ring changes (the one left and the one entered), not all of them. Its lift
  * under the pointer and its press are plain CSS (`.skills-tile`), so they cost no script at all; so is the
  * hop its family does when picked (`.skills-hop-a` / `-b`: two names for one hop, so a second pick restarts it).
+ * Only the tile last shown takes the Tab key (`tab`); the arrow keys reach the others.
  */
 const Tile = memo(function Tile({
   el,
@@ -124,6 +154,7 @@ const Tile = memo(function Tile({
   hopDelay,
   dim,
   active,
+  tab,
   hover,
   onFocus,
 }: {
@@ -134,6 +165,7 @@ const Tile = memo(function Tile({
   hopDelay: number
   dim: boolean
   active: boolean
+  tab: boolean
   hover: boolean
   onFocus: (el: Element) => void
 }) {
@@ -159,6 +191,7 @@ const Tile = memo(function Tile({
       onClick={show}
       aria-label={`${el.name} (${familyLabel[el.family]})`}
       aria-pressed={active}
+      tabIndex={tab ? 0 : -1}
       style={style}
       className={`skills-tile relative aspect-square min-w-0 rounded-[12px] text-left shadow-sm hover:shadow-md sm:rounded-[14px] ${
         dim ? 'opacity-[0.18]' : 'opacity-100'

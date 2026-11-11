@@ -1,6 +1,6 @@
 import { useInView } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from '../lib/router'
 import { site } from '../data/site'
 import { useScrollTo } from '../lib/scroll'
@@ -123,7 +123,7 @@ export function Contact() {
  * had it all saved). Filled in once the page has loaded; the line keeps its place meanwhile.
  */
 function LoadLine() {
-  const [text, setText] = useState('')
+  const [parts, setParts] = useState<string[]>([])
   useEffect(() => {
     let timer = 0
     const read = () => {
@@ -132,8 +132,7 @@ function LoadLine() {
       const seconds = (ms: number) => `${(ms / 1000).toFixed(ms < 9950 ? 2 : 1)}s`
       const paint = performance.getEntriesByName('first-contentful-paint')[0]?.startTime
       const sent = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).reduce((sum, r) => sum + (r.transferSize || 0), nav.transferSize || 0)
-      const parts = [paint ? `First paint ${seconds(paint)}` : '', `Loaded in ${seconds(nav.loadEventEnd)}`, sent > 1024 ? `${Math.round(sent / 1024)} KB sent` : 'From your browser’s cache']
-      setText(parts.filter(Boolean).join(' · '))
+      setParts([paint ? `First paint ${seconds(paint)}` : '', `Loaded in ${seconds(nav.loadEventEnd)}`, sent > 1024 ? `${Math.round(sent / 1024)} KB sent` : 'From your browser’s cache'].filter(Boolean))
     }
     const soon = () => {
       // just after the load event, so its own end time is known
@@ -148,7 +147,20 @@ function LoadLine() {
   }, [])
   return (
     <p className="load-line tabular mt-4 min-h-[1.5em] font-mono text-xs text-ink-soft" aria-live="off">
-      {text && <span title="Measured by your browser on this visit">{text}</span>}
+      {/* each measure keeps to one line, its dot with it: on a narrow screen the line breaks between measures, never inside one */}
+      {parts.length > 0 && (
+        <span title="Measured by your browser on this visit">
+          {parts.map((part, i) => (
+            <Fragment key={part}>
+              {i > 0 && ' '}
+              <span className="whitespace-nowrap">
+                {part}
+                {i < parts.length - 1 && ' ·'}
+              </span>
+            </Fragment>
+          ))}
+        </span>
+      )}
     </p>
   )
 }

@@ -1,8 +1,8 @@
 /**
  * After `vite build`: draws every page to HTML and writes it at its own address, so each page is served
  * ready-made (dist/index.html, dist/resume/index.html, dist/work/<slug>/index.html).
- * Also writes dist/404.html (the bare app, for an address that has no page: it lands on the home page),
- * dist/sitemap.xml and dist/robots.txt.
+ * Also writes dist/404.html (the bare app, for an address that has no page: it shows the "page not found"
+ * note), dist/sitemap.xml and dist/robots.txt.
  *
  * SITE_URL is where the site lives (for the sitemap and each page's canonical address);
  * SITE_BASE is its sub-path, if it is served from one (the same value vite.config.ts reads).
@@ -23,19 +23,23 @@ const { render, routes, pageTitle, pageDescription } = await import(pathToFileUR
 const shell = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8')
 const ROOT = '<div id="root"></div>'
 if (!shell.includes(ROOT)) throw new Error('index.html has no empty #root to fill')
-fs.writeFileSync(path.join(DIST, '404.html'), shell)
 
 // a pre-built page with script switched off shows itself: its noscript block only reveals the parts that
 // wait for the script (the same rule as html.script-failed in index.css)
 const NOSCRIPT = /<noscript id="boot-fallback">[\s\S]*?<\/noscript>/
 if (!NOSCRIPT.test(shell)) throw new Error('index.html has no boot-fallback block')
-const REVEAL = `<noscript><style>[style*="opacity:0"]{opacity:1!important;transform:none!important;filter:none!important}.wm-ch{opacity:1!important}.hero-stack{visibility:visible!important}.skills-table{opacity:1!important;transform:none!important}</style></noscript>`
+const REVEAL = `<noscript><style>[style*="opacity:0"]{opacity:1!important;transform:none!important;filter:none!important}.wm-ch{opacity:1!important}.hero-stack{visibility:visible!important}.skills-table{opacity:1!important;transform:none!important}.arch-draw .arch-stage,.arch-draw .arch-after{opacity:1!important}</style></noscript>`
 // only the home page has the figure: the other pages don't fetch its picture and mesh ahead of time
-const FIGURE = /^\s*<link rel="preload" href="[^"]*avatar\/krishna-origami\.[^"]*"[^>]*>\n/gm
+const FIGURE = /^\s*<link rel="preload" href="[^"]*avatar\/krishna-origami[^"]*"[^>]*>\n/gm
 
 const TITLE = /<title>[^<]*<\/title>/
 if (!TITLE.test(shell)) throw new Error('index.html has no title')
 const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+// an address with no page: the bare app, named for what it will show, and kept out of search results
+fs.writeFileSync(
+  path.join(DIST, '404.html'),
+  shell.replace(FIGURE, '').replace(TITLE, () => `<title>${escape(pageTitle('/404'))}</title>\n    <meta name="robots" content="noindex" />`),
+)
 
 /**
  * The card a shared link shows: every page carries its own address, title and description, and the
@@ -62,10 +66,13 @@ const address = (route) => (route === '/' ? BASE : `${BASE}${route.slice(1)}/`)
 const assets = fs.readdirSync(path.join(DIST, 'assets'))
 const chunk = (name) => assets.filter((f) => f.startsWith(`${name}-`) && f.endsWith('.js')).map((f) => `<link rel="modulepreload" crossorigin href="${BASE}assets/${f}" />`)
 const extra = (route) => (route === '/resume' ? chunk('Resume') : route.startsWith('/work/') ? [...chunk('CaseStudy'), ...chunk('ProjectVisual')] : [])
+// the animation engine is its own file (src/lib/motionFeatures.ts): every page fetches it beside the main script, behind it
+const engine = chunk('motionFeatures').map((l) => l.replace(' crossorigin ', ' crossorigin fetchpriority="low" '))
+if (engine.length !== 1) throw new Error('the animation engine is not a file of its own')
 
 for (const route of routes) {
   const html = await render(route)
-  const head = [`<link rel="canonical" href="${SITE_URL}${address(route)}" />`, ...extra(route)].map((l) => `    ${l}\n`).join('')
+  const head = [`<link rel="canonical" href="${SITE_URL}${address(route)}" />`, ...extra(route), ...engine].map((l) => `    ${l}\n`).join('')
   const page = card(route === '/' ? shell : shell.replace(FIGURE, ''), route)
     .replace(TITLE, () => `<title>${escape(pageTitle(route))}</title>`)
     .replace(NOSCRIPT, () => REVEAL)

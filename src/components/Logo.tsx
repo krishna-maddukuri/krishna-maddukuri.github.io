@@ -19,7 +19,7 @@ export function Plate({ logo, alt = '', className = 'size-10 rounded-xl', eager 
 }
 
 /** The same plate with initials instead of a picture (until the logo file is in /public/logos). */
-export function Monogram({ text, color, className = 'size-10 rounded-xl text-[13px]' }: { text: string; color: string; className?: string }) {
+function Monogram({ text, color, className = 'size-10 rounded-xl text-[13px]' }: { text: string; color: string; className?: string }) {
   return (
     <span className={`plate font-display font-bold leading-none ${className}`} style={plateStyle(color)} aria-hidden>
       <span style={{ color: `color-mix(in oklab, ${color} 82%, #000000)` }}>{text}</span>
@@ -61,7 +61,7 @@ export function LinkedInMark({ className = 'size-5 rounded-[5px]' }: { className
 const byName = new Map(elements.map((e) => [e.name, e.sym]))
 
 /** The periodic-table logo for a tool named in a project ("Spring Batch", "AWS RDS"), if it has one. */
-export function toolLogo(name: string): Logo | undefined {
+function toolLogo(name: string): Logo | undefined {
   const sym = byName.get(name) ?? toolAliases[name]
   return sym ? skillLogos[sym] : undefined
 }

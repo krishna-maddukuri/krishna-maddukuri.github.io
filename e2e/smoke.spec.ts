@@ -113,6 +113,73 @@ test.describe('page load', () => {
     await expect(page.locator('#contact').getByText('m.krishnakoushik@icloud.com').first()).toBeAttached()
   })
 
+  test('an address the site does not have says so and offers the ways on', async ({ page }) => {
+    for (const address of ['/no-such-page/', '/work/no-such-project/']) {
+      await page.goto(address)
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nothing at this address.')
+      await expect(page).toHaveTitle('Page not found | Krishna Koushik Maddukuri')
+    }
+    // the file a static host serves for such an address is named for it, kept out of search results,
+    // and does not fetch the figure's picture
+    const file = await (await page.request.get('/404.html')).text()
+    expect(file).toContain('<title>Page not found | Krishna Koushik Maddukuri</title>')
+    expect(file).toContain('<meta name="robots" content="noindex" />')
+    expect(file).not.toContain('krishna-origami')
+    // and the way home works
+    await page.getByRole('main').getByRole('link', { name: 'Home' }).click()
+    await expect(page).toHaveTitle('Krishna Koushik Maddukuri')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Software Engineer.')
+  })
+
+  test('with script switched off, a case study still shows its architecture', async ({ page }) => {
+    // (a browser with script off is the one case these tests cannot draw: the rule is read from the page's file)
+    const study = await (await page.request.get('/work/cloud-delivery/')).text()
+    const rules = study.slice(study.indexOf('<noscript><style>'), study.indexOf('</style></noscript>'))
+    expect(rules).toContain('.arch-draw .arch-stage,.arch-draw .arch-after{opacity:1!important}')
+    expect(study).toContain('class="arch-stage"')
+  })
+
+  test('if the animation engine cannot be fetched, the parts that wait for it are simply shown', async ({ page }) => {
+    await page.route('**/assets/motionFeatures-*.js', (route) => route.abort())
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Software Engineer.')
+    // the rest of the page carries on: the figure still comes together
+    await expect(page.locator('#top [data-paper-figure]')).toHaveAttribute('data-paper-figure', 'ready', { timeout: 20_000 })
+    // one more try by itself, then everything that would have faded in is there
+    await expect(page.locator('html.script-failed')).toHaveCount(1, { timeout: 10_000 })
+    const about = page.locator('#about .about-lead')
+    await about.scrollIntoViewIfNeeded()
+    await expect.poll(() => about.evaluate((el) => getComputedStyle(el.closest('[style*="opacity"]') ?? el).opacity)).toBe('1')
+  })
+
+  test('a ready-made inner page keeps what it shows while its own code is still on the way', async ({ page }) => {
+    // (whatever else arrives first, the animation engine or smooth scrolling, must not blank the page meanwhile)
+    await page.route('**/assets/Resume-*.js', async (route) => {
+      await new Promise((r) => setTimeout(r, 1500))
+      await route.continue()
+    })
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        const first = document.querySelector('main h1') as (Element & { first?: boolean }) | null
+        if (first) first.first = true
+        const w = window as Window & { blanked?: boolean }
+        new MutationObserver(() => {
+          if (document.querySelector('main[aria-busy]')) w.blanked = true
+        }).observe(document.getElementById('root')!, { childList: true, subtree: true })
+      })
+    })
+    const code = page.waitForResponse((r) => /assets\/Resume-[^/]+\.js/.test(r.url()))
+    await page.goto('/resume/')
+    // the page's code arrives late; give it a moment to take the page over
+    await code
+    await page.waitForTimeout(2500)
+    const kept = await page.evaluate(() => ({
+      sameHeading: (document.querySelector('main h1') as (Element & { first?: boolean }) | null)?.first === true,
+      blanked: (window as Window & { blanked?: boolean }).blanked === true,
+    }))
+    expect(kept).toEqual({ sameHeading: true, blanked: false })
+  })
+
   test('where there is no ready-made page, script off or failing still leaves his name and how to reach him', async ({ page }) => {
     // the 404 page is the bare app: with script off it shows its noscript block
     const html = await (await page.request.get('/404.html')).text()
@@ -147,7 +214,7 @@ test.describe('page load', () => {
     await page.emulateMedia({ media: 'print' })
     await expect(page.getByRole('banner')).toBeHidden()
     await expect(page.getByRole('contentinfo')).toBeHidden()
-    await expect(page.getByRole('link', { name: /Download PDF/ })).toBeHidden()
+    await expect(page.getByRole('link', { name: /resume \(PDF\)/ }).first()).toBeHidden()
     const look = await page.evaluate(() => {
       const card = document.querySelector('.resume-card')!
       return { page: getComputedStyle(document.body).backgroundColor, ink: getComputedStyle(card).color, card: getComputedStyle(card).backgroundColor, shown: getComputedStyle(card.closest('[style*="opacity"]') ?? card).opacity }

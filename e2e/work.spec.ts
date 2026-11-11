@@ -10,6 +10,16 @@ test.describe('work', () => {
     await expect(work.getByText(isPhone(page) ? 'Tap a project to open it.' : 'Hover a panel to open it.')).toBeVisible()
   })
 
+  test('the credit bureau case study gives its scale and the Discover onboarding, in the past tense', async ({ page }) => {
+    await page.goto('/work/credit-bureau-reporting/')
+    const main = page.getByRole('main')
+    await expect(main.getByText('I built the Java/Spring Boot microservices')).toBeVisible()
+    await expect(main.getByText('about 30 million accounts a month')).toBeVisible()
+    await expect(main.getByText('~30M')).toBeVisible()
+    await expect(main.getByText(/^Generated compliant Metro2 files for about 30 million/)).toBeAttached()
+    await expect(main.getByText(/^Onboarded Discover account portfolios/)).toBeAttached()
+  })
+
   test('desktop: the first panel is open, clicking a closed panel opens it, and the case study link works', async ({ page }) => {
     test.skip(isPhone(page))
     await openHome(page)
@@ -59,7 +69,7 @@ test.describe('case study', () => {
     await expect(page.getByRole('link', { name: 'All work' })).toHaveClass(/btn-key/)
   })
 
-  test('previous / next step through the projects, "All work" returns to the Work section, and a bad slug goes home', async ({ page }) => {
+  test('previous / next step through the projects, "All work" returns to the Work section, and a bad slug says so', async ({ page }) => {
     await page.goto('/work/credit-bureau-reporting/')
     await page.getByRole('link', { name: /Next case study/ }).click()
     await expect(page).toHaveURL(/\/work\/event-driven-pipelines\/$/)
@@ -70,9 +80,12 @@ test.describe('case study', () => {
     await page.getByRole('link', { name: 'All work' }).click()
     await expect(page).toHaveURL(/:4173\/$/)
     await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('work')?.getBoundingClientRect().top ?? 9999)), { timeout: 8_000 }).toBeLessThan(8)
+    // a project that does not exist: the "page not found" note, with the work one step away
     await page.goto('/work/does-not-exist/')
-    await expect(page.locator('#top')).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nothing at this address.')
+    await page.getByRole('main').getByRole('link', { name: 'Work' }).click()
     await expect(page).toHaveURL(/:4173\/$/)
+    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('work')?.getBoundingClientRect().top ?? 9999)), { timeout: 8_000 }).toBeLessThan(8)
   })
 
   test('"Read case study" changes page as one step and leaves nothing behind', async ({ page }) => {

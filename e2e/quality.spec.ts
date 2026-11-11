@@ -48,7 +48,7 @@ test.describe('accessibility and motion', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await openHome(page)
     expect(await page.evaluate(() => document.documentElement.classList.contains('lenis'))).toBe(false)
-    await expect(page.locator('#achievements article')).toHaveCount(9)
+    await expect(page.locator('#achievements article')).toHaveCount(10)
     const swipe = page.locator('#achievements').getByText('Swipe')
     await expect(swipe).toBeAttached()
   })

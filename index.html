@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Krishna Koushik Maddukuri</title>
-    <meta name="description" content="Krishna Koushik Maddukuri is a Full Stack Software Engineer with 6+ years building distributed systems and cloud-native microservices in financial services: Java, Spring Boot, Apache Kafka and AWS." />
+    <meta name="description" content="Krishna Koushik Maddukuri is a Full Stack Software Engineer. Since 2020 he has built software, most recently distributed systems and cloud-native microservices for financial services: Java, Spring Boot, Apache Kafka and AWS." />
     <meta name="author" content="Krishna Koushik Maddukuri" />
     <!-- the card a shared link shows. The build fills these in for each page (scripts/prerender.mjs): its own
          address, title and description, and the picture's full address under SITE_URL -->
@@ -33,7 +33,11 @@
     <link rel="preload" href="/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/ibm-plex-mono-latin-500.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/antonio-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/avatar/krishna-origami.webp" as="image" type="image/webp" fetchpriority="low" />
+    <!-- his picture is fetched as a file (the figure decodes it off the page's own thread): the full one, or
+         the lighter copy on phones (the same rule as PHONE in components/PaperFigure.tsx); not at all for
+         visitors who ask for less motion, who get the plain image instead -->
+    <link rel="preload" href="/avatar/krishna-origami.webp" as="fetch" crossorigin media="(min-width: 768px) and (prefers-reduced-motion: no-preference)" fetchpriority="low" />
+    <link rel="preload" href="/avatar/krishna-origami-phone.webp" as="fetch" crossorigin media="(max-width: 767px) and (prefers-reduced-motion: no-preference)" fetchpriority="low" />
     <link rel="preload" href="/avatar/krishna-origami.json" as="fetch" crossorigin />
     <script type="application/ld+json">
       {

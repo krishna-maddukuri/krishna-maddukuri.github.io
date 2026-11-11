@@ -1,4 +1,4 @@
-import { useReducedMotion } from '../hooks/useMedia'
+import { useMedia, useReducedMotion } from '../hooks/useMedia'
 import { asset } from '../lib/asset'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -60,6 +60,37 @@ const RED = [240 / 255, 65 / 255, 46 / 255] as const
  */
 const SHADOW = { dx: 0.05, dy: 0.014, blur: 0.011 }
 const SHADOW_SRC = 'avatar/krishna-shadow.webp'
+
+/**
+ * On a phone he is drawn far smaller than his picture, so a phone fetches the lighter copy of it (the same
+ * picture, scaled down). index.html fetches the same file ahead of time by the same rule: keep the two alike.
+ */
+const PHONE = '(max-width: 767px)'
+const pictureFor = (phone: boolean) => asset((phone && site.hero.imagePhone) || site.hero.image)
+
+/**
+ * The picture, ready for the graphics card. Where the browser can, the file is decoded away from the page's
+ * own thread first (createImageBitmap), so handing it over does not hold the page still for the time the
+ * decoding takes; anywhere else it is an ordinary image, decoded as it is handed over.
+ */
+async function loadPicture(url: string): Promise<ImageBitmap | HTMLImageElement> {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const file = await fetch(url)
+      if (file.ok) return await createImageBitmap(await file.blob(), { premultiplyAlpha: 'premultiply' })
+    } catch {
+      // not this way, then: the ordinary image below
+    }
+  }
+  const img = new Image()
+  img.decoding = 'async'
+  await new Promise<void>((ok, bad) => {
+    img.onload = () => ok()
+    img.onerror = () => bad(new Error('texture'))
+    img.src = url
+  })
+  return img
+}
 
 type MeshData = { w: number; h: number; p: number[]; z: number[]; t: number[] }
 type State = 'loading' | 'building' | 'ready' | 'scattered' | 'fallback'
@@ -225,7 +256,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
   const toggleRef = useRef<() => void>(() => {})
   const labelRef = useRef<HTMLDivElement>(null)
   const hovered = useRef(false)
-  const image = asset(site.hero.image)
+  const phone = useMedia(PHONE)
 
   useEffect(() => {
     if (reduce) return
@@ -257,13 +288,8 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
     }
 
     // --- load the mesh and the picture --------------------------------------------------
-    const img = new Image()
-    img.decoding = 'async'
-    const texReady = new Promise<HTMLImageElement>((ok, bad) => {
-      img.onload = () => ok(img)
-      img.onerror = () => bad(new Error('texture'))
-    })
-    img.src = image
+    // (the picture is chosen once, by the screen as it is now: turning a phone round does not fetch the other)
+    const texReady = loadPicture(pictureFor(window.matchMedia(PHONE).matches))
     const meshReady = fetch(asset('avatar/krishna-origami.json')).then((r) => {
       if (!r.ok) throw new Error('mesh')
       return r.json() as Promise<MeshData>
@@ -275,7 +301,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       .catch(fail)
 
     // --- everything below runs once the data is in ----------------------------------------
-    function start(pic: HTMLImageElement, mesh: MeshData) {
+    function start(pic: ImageBitmap | HTMLImageElement, mesh: MeshData) {
       if (!gl || !canvas || !box || !section) return
       const prog = program(gl, VERT, FRAG)
       if (!prog) return fail()
@@ -303,11 +329,13 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       attr('a_size', geo.size, 1)
       const cellBuf = attr('a_cell', new Float32Array(geo.count * 2), 2, gl.DYNAMIC_DRAW)
 
-      // the picture, premultiplied, with mipmaps for the small sizes
+      // the picture, premultiplied, with mipmaps for the small sizes (a decoded bitmap arrives premultiplied
+      // and is taken as it is; the setting below is for the ordinary image)
       gl.activeTexture(gl.TEXTURE0)
       gl.bindTexture(gl.TEXTURE_2D, gl.createTexture())
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, pic)
+      if ('close' in pic) pic.close()
       gl.generateMipmap(gl.TEXTURE_2D)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -783,7 +811,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
       cancelAnimationFrame(raf)
       cleanup()
     }
-  }, [reduce, image, layer])
+  }, [reduce, layer])
 
   const still = reduce || state === 'fallback'
   return (
@@ -795,7 +823,7 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
     >
       {still ? (
         <img
-          src={image}
+          src={pictureFor(phone)}
           alt={site.name}
           decoding="async"
           fetchPriority="high"

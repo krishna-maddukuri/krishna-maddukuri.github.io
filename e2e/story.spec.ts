@@ -9,8 +9,24 @@ test.describe('learning, experience and achievements', () => {
     await expect(learning.getByRole('heading', { level: 2 })).toContainText('Always')
     await expect(learning.getByRole('listitem')).toHaveCount(5)
     await expect(learning.getByText('DBA, Technology Management')).toBeVisible()
-    await expect(learning.getByText('AWS Certified Developer')).toBeVisible()
+    // the doctorate's dates are the resume's
+    await expect(learning.getByText('Jul 2026 – Aug 2029 (expected)')).toBeVisible()
+    await expect(learning.getByText('AWS Certified Developer – Associate')).toBeVisible()
     await expect(learning.getByText('AWS Certified Cloud Practitioner')).toBeVisible()
+  })
+
+  test('About and Learning write in their handwritten words too, after the words they follow', async ({ page }) => {
+    await openHome(page)
+    for (const id of ['about', 'learning']) {
+      await jumpTo(page, id)
+      const heading = page.locator(`#${id}`).getByRole('heading', { level: 2 }).first()
+      const accent = heading.locator('.accent-write')
+      // written in, with the pen's underline, from the one moment the heading is seen: by then the bold words are on their way in
+      await expect(accent).toHaveClass(/is-written/)
+      await expect(accent.locator('.accent-line')).toBeAttached()
+      await expect.poll(() => heading.locator('span').first().evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+      await expect.poll(() => accent.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+    }
   })
 
   test('the timeline has seven milestones in order, with the current ones marked', async ({ page }) => {
@@ -38,15 +54,18 @@ test.describe('learning, experience and achievements', () => {
       .toBeLessThan(1)
   })
 
-  test('achievements: nine cards whose numbers count up to the résumé figures', async ({ page }) => {
+  test('achievements: ten cards whose numbers count up to the résumé figures', async ({ page }) => {
     await openHome(page)
     await jumpTo(page, 'achievements')
     const section = page.locator('#achievements')
     await expect(section.getByRole('heading', { level: 2 })).toContainText('Proud')
-    await expect(section.locator('article')).toHaveCount(9)
+    await expect(section.locator('article')).toHaveCount(10)
+    // the scale of the work comes first: about 30 million accounts a month
     const first = section.locator('article').first()
-    await expect(first).toContainText('Faster batch processing')
-    await expect(first.locator('.tabular').last()).toHaveText('43', { timeout: 8_000 })
+    await expect(first).toContainText('Accounts reported a month')
+    await expect(first).toContainText('About 30 million')
+    await expect(first.locator('.tabular').last()).toHaveText('30', { timeout: 8_000 })
+    await expect(section.locator('article').nth(1)).toContainText('Faster batch processing')
     await expect(section.getByText('and counting.')).toBeAttached()
   })
 

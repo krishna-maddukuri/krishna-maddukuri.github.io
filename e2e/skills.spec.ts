@@ -88,6 +88,42 @@ test.describe('skills', () => {
     await expect.poll(() => docker.evaluate((el) => getComputedStyle(el).outlineColor)).toBe('rgb(36, 150, 237)')
   })
 
+  test('the table is one stop for the Tab key, and the arrow keys move through it', async ({ page }) => {
+    await openHome(page)
+    await jumpTo(page, 'skills')
+    const skills = page.locator('#skills')
+    const tiles = skills.locator('.skills-tile')
+    const hint = skills.locator('.skills-keys')
+    // only the tile last shown takes the Tab key
+    expect(await tiles.evaluateAll((els) => els.filter((el) => (el as HTMLElement).tabIndex === 0).length)).toBe(1)
+    await skills.getByRole('group', { name: 'Light up a family' }).getByRole('button').last().focus()
+    await page.keyboard.press('Tab')
+    await expect(skills.getByRole('button', { name: 'Java (Languages)', exact: true })).toBeFocused()
+    // the hint is there only while a tile holds the keyboard's focus
+    await expect.poll(() => hint.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+    await page.keyboard.press('ArrowRight')
+    await expect(skills.getByRole('button', { name: 'Python (Languages)', exact: true })).toBeFocused()
+    // down a row lands on the tile underneath, however many tiles this screen fits in a row
+    const perRow = await tiles.evaluateAll((els) => els.filter((el) => (el as HTMLElement).offsetTop === (els[0] as HTMLElement).offsetTop).length)
+    await page.keyboard.press('ArrowDown')
+    await expect(tiles.nth(1 + perRow)).toBeFocused()
+    const under = ((await tiles.nth(1 + perRow).getAttribute('aria-label')) ?? '').replace(/ \(.*\)$/, '')
+    await expect(skills.locator('[aria-live="polite"]')).toContainText(under)
+    await page.keyboard.press('ArrowUp')
+    await page.keyboard.press('ArrowLeft')
+    await expect(tiles.first()).toBeFocused()
+    // at the edge it stays where it is
+    await page.keyboard.press('ArrowLeft')
+    await expect(tiles.first()).toBeFocused()
+    await page.keyboard.press('End')
+    await expect(tiles.last()).toBeFocused()
+    expect(await tiles.evaluateAll((els) => els.filter((el) => (el as HTMLElement).tabIndex === 0).length)).toBe(1)
+    // and one more Tab leaves the table
+    await page.keyboard.press('Tab')
+    expect(await page.evaluate(() => document.activeElement?.classList.contains('skills-tile'))).toBe(false)
+    await expect.poll(() => hint.evaluate((el) => getComputedStyle(el).opacity)).toBe('0')
+  })
+
   test('phones: the table comes in as one piece, its tiles already in their colours', async ({ page }) => {
     test.skip(!isPhone(page), 'a touch-screen check')
     await openHome(page)

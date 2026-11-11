@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { site } from '../data/site'
 import { asset } from '../lib/asset'
 
-export const resumeFileName = () => site.resumePdf.split('/').pop() || 'resume.pdf'
+const resumeFileName = () => site.resumePdf.split('/').pop() || 'resume.pdf'
 
 /** A link that downloads the résumé PDF. Hidden when no PDF is set in site.ts. */
 export function ResumeLink({

@@ -362,6 +362,17 @@ test.describe('paper figure', () => {
     await expect.poll(() => shadow(page), { timeout: 5_000 }).toBeLessThan(3)
   })
 
+  test('a phone fetches the lighter copy of his picture and a wide screen the full one, each only once', async ({ page }) => {
+    const fetched: string[] = []
+    page.on('request', (r) => {
+      if (/avatar\/krishna-origami[^/]*\.webp/.test(r.url())) fetched.push(r.url().split('/').pop()!)
+    })
+    await openHome(page)
+    await expect(page.locator('#top [data-paper-figure]')).toHaveAttribute('data-paper-figure', 'ready', { timeout: 20_000 })
+    // (fetched ahead of time by the page's head and then used by the figure: one request, not two)
+    expect(fetched).toEqual([(page.viewportSize()?.width ?? 1440) < 768 ? 'krishna-origami-phone.webp' : 'krishna-origami.webp'])
+  })
+
   test('shows the still picture when motion is reduced', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')

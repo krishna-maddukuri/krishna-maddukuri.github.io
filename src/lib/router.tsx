@@ -3,7 +3,7 @@
  * back/forward support and per-entry state (used to say "scroll to Work" when coming back from a case
  * study). Each address is also a pre-built file (scripts/prerender.mjs), so opening one directly works on
  * any static host with no server rewrites; an address with no page falls to the host's 404.html, which is
- * this same app, and lands on the home page.
+ * this same app, and shows the "page not found" note (pages/NotFound.tsx).
  */
 import { flushSync } from 'react-dom'
 import {
@@ -22,7 +22,7 @@ import {
 
 export type Location = { pathname: string; state: unknown }
 /** `transition`: change page as one animated step (the browser's view transition), where the browser can. */
-export type NavigateOptions = { replace?: boolean; state?: unknown; transition?: boolean }
+type NavigateOptions = { replace?: boolean; state?: unknown; transition?: boolean }
 export type NavigateFn = (to: string, opts?: NavigateOptions) => void
 
 const RouterContext = createContext<{ location: Location; navigate: NavigateFn } | null>(null)
@@ -44,7 +44,7 @@ function readState(): unknown {
 }
 
 /** The address of a route ("/resume" -> "/resume/", "/" -> "/"): a folder, as the pre-built files are laid out. */
-export function href(to: string) {
+function href(to: string) {
   const path = to.startsWith('/') ? to : `/${to}`
   return path === '/' ? BASE : `${BASE}${path.slice(1).replace(/\/+$/, '')}/`
 }
@@ -123,12 +123,6 @@ export function Routes({ children }: { children: ReactElement<{ path: string; el
     const params = match(child.props.path, pathname)
     if (params) return <ParamsContext.Provider value={params}>{child.props.element}</ParamsContext.Provider>
   }
-  return null
-}
-
-export function Navigate({ to, replace = false, state }: { to: string; replace?: boolean; state?: unknown }) {
-  const navigate = useNavigate()
-  useEffect(() => navigate(to, { replace, state }), [navigate, to, replace, state])
   return null
 }
 

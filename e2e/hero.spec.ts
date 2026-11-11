@@ -74,6 +74,6 @@ test.describe('hero', () => {
     // typed in order: when the last letter is there, so is every other
     await expect.poll(() => letters.last().evaluate((el) => getComputedStyle(el).opacity), { timeout: 12_000 }).toBe('1')
     expect(await lede.evaluate((el) => [...el.querySelectorAll('.lede-ch')].every((c) => getComputedStyle(c).opacity === '1'))).toBe(true)
-    await expect(lede.locator('.sr-only')).toContainText("For more than six years, I've built distributed systems")
+    await expect(lede.locator('.sr-only')).toContainText("Since 2020, I've been building software, most recently distributed systems for financial services")
   })
 })

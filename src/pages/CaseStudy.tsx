@@ -1,10 +1,11 @@
 import { useInView } from 'motion/react'
 import { lazy, Suspense, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, Navigate, useParams } from '../lib/router'
+import { Link, useParams } from '../lib/router'
 import { projects } from '../data/site'
 import { ProjectVisual } from '../visuals/LazyProjectVisual'
 import { OrgMark, ToolChip } from '../components/Logo'
 import { ArrowLeft, ArrowRight, Check, Container, enter, Reveal } from '../components/ui'
+import { NotFound } from './NotFound'
 
 // the pipeline to play with, on its one case study: its code loads with that page only
 const PipelineDemo = lazy(() => import('../visuals/PipelineDemo').then((m) => ({ default: m.PipelineDemo })))
@@ -25,7 +26,7 @@ export function CaseStudy() {
   // opened by the animated change of page (Work's "Read case study"): that case study's own entrances stay off
   const [arrived] = useState(() => (typeof document !== 'undefined' && document.documentElement.classList.contains('vt-page') ? slug : null))
   const idx = projects.findIndex((p) => p.slug === slug)
-  if (idx < 0) return <Navigate to="/" replace />
+  if (idx < 0) return <NotFound />
 
   const p = projects[idx]
   const next = projects[(idx + 1) % projects.length]

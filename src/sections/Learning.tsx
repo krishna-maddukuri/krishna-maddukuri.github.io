@@ -1,7 +1,7 @@
 import * as m from 'motion/react-m'
 import { learning } from '../data/site'
 import { BadgeMark, OrgMark } from '../components/Logo'
-import { Accent, Container, EASE, Eyebrow, Reveal } from '../components/ui'
+import { Container, EASE, Eyebrow, HeadingWords } from '../components/ui'
 
 /** The "Always learning." list: his degrees and certifications. */
 export function Learning() {
@@ -11,13 +11,7 @@ export function Learning() {
         <div className="grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
           <div className="min-w-0 lg:sticky lg:top-32 lg:self-start">
             <Eyebrow index="04" label="Learning" />
-            <Reveal>
-              <h2 className="mt-5 font-display text-[clamp(2.8rem,6vw,5.4rem)] font-bold leading-[0.92]">
-                Always
-                <br />
-                <Accent>learning.</Accent>
-              </h2>
-            </Reveal>
+            <HeadingWords lead="Always" accent="learning." stack className="mt-5 font-display text-[clamp(2.8rem,6vw,5.4rem)] font-bold leading-[0.92]" />
             <p className="mt-6 max-w-[34ch] text-md text-ink-soft">{learning.sub}</p>
           </div>
 

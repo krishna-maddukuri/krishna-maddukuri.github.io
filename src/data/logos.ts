@@ -83,7 +83,7 @@ export const brandLogos = {
 export type Org = { key: string; name: string; short: string; color: string; match: string[]; logo?: Logo; mark?: Logo }
 
 /** `logo` is the full logo; `mark` (optional) a squarer cut of it for the smallest plates. */
-export const orgs: Org[] = [
+const orgs: Org[] = [
   {
     key: 'bank-of-america', name: 'Bank of America', short: 'BofA', color: '#012169', match: ['Bank of America'],
     logo: { file: 'logos/orgs/bank-of-america.svg', color: '#012169', fit: 0.9 },
@@ -118,8 +118,8 @@ export function orgFor(label: string): Org | undefined {
 /** A certification's badge: the picture when the file is in /public/logos/badges, otherwise the AWS mark. */
 export type Badge = { key: string; name: string; short: string; match: string[]; file?: string }
 
-export const badges: Badge[] = [
-  { key: 'aws-developer-associate', name: 'AWS Certified Developer', short: 'DVA', match: ['Developer'], file: 'logos/badges/aws-certified-developer-associate.webp' },
+const badges: Badge[] = [
+  { key: 'aws-developer-associate', name: 'AWS Certified Developer – Associate', short: 'DVA', match: ['Developer'], file: 'logos/badges/aws-certified-developer-associate.webp' },
   { key: 'aws-cloud-practitioner', name: 'AWS Certified Cloud Practitioner', short: 'CLF', match: ['Cloud Practitioner'], file: 'logos/badges/aws-certified-cloud-practitioner.webp' },
 ]
 

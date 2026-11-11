@@ -1,6 +1,6 @@
 import type Lenis from 'lenis'
 import { warmSections } from './deferSections'
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, startTransition, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 
 const LenisContext = createContext<Lenis | null>(null)
 
@@ -33,7 +33,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         frame = requestAnimationFrame(raf)
       }
       frame = requestAnimationFrame(raf)
-      setLenis(lenis)
+      // not urgent: a ready-made inner page still waiting for its own code keeps what it shows (an urgent
+      // change here would make React swap it for a blank page until that code arrived)
+      startTransition(() => setLenis(lenis))
     })
     return () => {
       gone = true
