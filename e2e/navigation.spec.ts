@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { expectScrolledTo, isPhone, jumpTo, openHome } from './helpers'
+import { expectScrolledTo, isPhone, jumpTo, openHome, upTo } from './helpers'
 
 test.describe('navigation', () => {
   test('the section pills scroll to each section and mark the one in view', async ({ page }) => {
@@ -22,10 +22,10 @@ test.describe('navigation', () => {
     await openHome(page)
     await jumpTo(page, 'contact')
     await page.getByRole('button', { name: /back to top/i }).last().click()
-    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 8_000 }).toBeLessThan(2)
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: upTo(8_000) }).toBeLessThan(2)
     await jumpTo(page, 'skills')
     await page.getByRole('button', { name: /Krishna Maddukuri, back to top/ }).click()
-    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 8_000 }).toBeLessThan(2)
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: upTo(8_000) }).toBeLessThan(2)
   })
 
   test('pressing the name at the top sends the red blade across the hero and leaves the page as it was', async ({ page }) => {
@@ -37,20 +37,38 @@ test.describe('navigation', () => {
       colour: await letter.evaluate((el) => getComputedStyle(el).color),
       tape: await tape.evaluate((el) => Math.round(el.getBoundingClientRect().left)),
     }
+    // the crossing is brief, so it is watched from inside the page, on every frame: how far left the tape
+    // has been, and whether a blade was put on the page (a busy machine could miss either between two looks)
+    type Press = { left: number; blade: boolean }
+    await page.evaluate(() => {
+      const seen = ((window as unknown as { __press: Press }).__press = { left: 1e6, blade: false })
+      const look = () => {
+        const tape = document.querySelector('.role-tape-window')?.getBoundingClientRect()
+        if (tape && tape.width > 0) seen.left = Math.min(seen.left, tape.left)
+        if (document.querySelector('[data-home-blade]')) seen.blade = true
+      }
+      const tick = () => {
+        look()
+        requestAnimationFrame(tick)
+      }
+      requestAnimationFrame(tick)
+      new MutationObserver(look).observe(document.body, { childList: true, subtree: true })
+    })
+    const seen = () => page.evaluate(() => ({ ...(window as unknown as { __press: Press }).__press }))
     await page.getByRole('button', { name: /Krishna Maddukuri, back to top/ }).click()
     if (wide) {
       // the tape itself is the blade: it starts from the left edge
-      await expect.poll(() => tape.evaluate((el) => Math.round(el.getBoundingClientRect().left))).toBeLessThan(before.tape - 200)
+      await expect.poll(async () => Math.round((await seen()).left)).toBeLessThan(before.tape - 200)
     } else {
       // no tape on the first screen: a blade of its own crosses and is taken away
-      await expect(page.locator('[data-home-blade]')).toHaveCount(1)
+      await expect.poll(async () => (await seen()).blade).toBe(true)
     }
-    await expect(page.locator('[data-home-blade]')).toHaveCount(0, { timeout: 6_000 })
-    await expect.poll(() => tape.evaluate((el) => Math.round(el.getBoundingClientRect().left)), { timeout: 6_000 }).toBe(before.tape)
-    await expect.poll(() => letter.evaluate((el) => getComputedStyle(el).color), { timeout: 6_000 }).toBe(before.colour)
+    await expect(page.locator('[data-home-blade]')).toHaveCount(0, { timeout: upTo(6_000) })
+    await expect.poll(() => tape.evaluate((el) => Math.round(el.getBoundingClientRect().left)), { timeout: upTo(6_000) }).toBe(before.tape)
+    await expect.poll(() => letter.evaluate((el) => getComputedStyle(el).color), { timeout: upTo(6_000) }).toBe(before.colour)
     // every one-off it started (the letters, the red block, the numbers) has finished
     await expect
-      .poll(() => page.evaluate(() => document.querySelector('#top')!.getAnimations({ subtree: true }).filter((a) => a.playState === 'running' && !(a instanceof CSSAnimation) && !(a instanceof CSSTransition)).length), { timeout: 8_000 })
+      .poll(() => page.evaluate(() => document.querySelector('#top')!.getAnimations({ subtree: true }).filter((a) => a.playState === 'running' && !(a instanceof CSSAnimation) && !(a instanceof CSSTransition)).length), { timeout: upTo(8_000) })
       .toBe(0)
   })
 

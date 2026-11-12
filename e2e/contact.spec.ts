@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { isPhone, jumpTo, openHome } from './helpers'
+import { isPhone, jumpTo, openHome, upTo } from './helpers'
 
 test.describe('contact and footer', () => {
   test('copies the email address and confirms it', async ({ page, context, browserName }) => {
@@ -14,7 +14,7 @@ test.describe('contact and footer', () => {
     await expect(contact.locator('.copy-stamp')).toBeVisible()
     await expect(page.getByRole('status')).toContainText('Email copied')
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('m.krishnakoushik@icloud.com')
-    await expect(contact.getByRole('button', { name: 'Copy email' })).toBeVisible({ timeout: 5_000 })
+    await expect(contact.getByRole('button', { name: 'Copy email' })).toBeVisible({ timeout: upTo(5_000) })
   })
 
   test('links to LinkedIn, the PDF, the web résumé and shows the location', async ({ page }) => {
@@ -88,7 +88,7 @@ test('phones: the footer\'s small links are finger-sized', async ({ page }) => {
       if (!r.url().startsWith('http://localhost:4173/') && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) outside.push(r.url())
     })
     await openHome(page)
-    await expect(page.locator('footer .load-line')).toHaveText(/(First paint \d+\.\d+s · )?Loaded in \d+\.\d+s · (\d+ KB sent|From your browser’s cache)/, { timeout: 10_000 })
+    await expect(page.locator('footer .load-line')).toHaveText(/(First paint \d+\.\d+s · )?Loaded in \d+\.\d+s · (\d+ KB sent|From your browser’s cache)/, { timeout: upTo(10_000) })
     // on a narrow screen the line breaks between its measures, never inside one ("596 / KB sent")
     expect(await page.locator('footer .load-line span span').evaluateAll((els) => els.filter((el) => new Set([...el.getClientRects()].map((r) => Math.round(r.top))).size > 1).length)).toBe(0)
     // there is no visit counter, and nothing else is fetched from outside

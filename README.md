@@ -110,11 +110,14 @@ npm run test:e2e                  # about ten minutes
 npm run test:e2e:ui               # the same tests in Playwright's UI
 ```
 
+On GitHub the same run takes about eighteen minutes: its test machines are slower and draw the page in
+software, so there every time limit in the tests is three times as long (`SLOW` in `e2e/helpers.ts`).
+
 ## Publishing
 
 The code lives in the GitHub repository `krishna-maddukuri/Krishna-Koushik-Maddukuri-Portfolio`. Every commit
-to the `main` branch runs the end-to-end tests there (`.github/workflows/test.yml`); in the **Actions** tab a
-green tick means they passed and a red cross means one failed.
+to the `main` branch runs the end-to-end tests there (`.github/workflows/test.yml`, about eighteen minutes);
+in the **Actions** tab a green tick means they passed and a red cross means one failed.
 
 This version is not published yet, and nothing goes live by itself. (The site at
 https://krishna-maddukuri.github.io is the earlier version, from the repository

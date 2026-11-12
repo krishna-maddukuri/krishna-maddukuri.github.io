@@ -1,11 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
-import { openHome, revealAll } from './helpers'
+import { openHome, revealAll, upTo } from './helpers'
 
 test.describe('accessibility and motion', () => {
   for (const scheme of ['light', 'dark'] as const) {
     test(`the home page has no serious accessibility violations in ${scheme} mode`, async ({ page }) => {
-      test.setTimeout(120_000) // revealing every block, then the full axe pass
+      test.setTimeout(upTo(120_000)) // revealing every block, then the full axe pass
       // with "reduce motion" the page is complete at once (no fades to wait for, and the paper figure
       // is its still picture), which is also the version assistive-tech users most often get
       await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -22,7 +22,7 @@ test.describe('accessibility and motion', () => {
   }
 
   test('the résumé page has no serious accessibility violations', async ({ page }) => {
-    test.setTimeout(120_000)
+    test.setTimeout(upTo(120_000))
     await page.goto('/resume/')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await revealAll(page)

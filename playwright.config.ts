@@ -1,8 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
+import { SLOW } from './e2e/helpers'
 
 /**
  * End-to-end tests run against the production build (`vite preview`), on a desktop
  * viewport and an iPhone-sized one. `npm run test:e2e` builds first.
+ * On GitHub's test machines (CI is set) every time limit is three times as long: see SLOW in e2e/helpers.ts.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -11,8 +13,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 1,
   workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
-  timeout: 45_000,
-  expect: { timeout: 10_000 },
+  timeout: 45_000 * SLOW,
+  expect: { timeout: 10_000 * SLOW },
   use: {
     baseURL: 'http://localhost:4173/',
     trace: 'on-first-retry',

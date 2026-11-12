@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openHome } from './helpers'
+import { openHome, upTo } from './helpers'
 
 test.describe('page load', () => {
   test('renders every section with no console errors and no failed requests', async ({ page }) => {
@@ -58,7 +58,7 @@ test.describe('page load', () => {
     // the tape's jump to Contact fills everything in before it measures where Contact is
     await page.getByRole('button', { name: /Go to contact/ }).click()
     expect(await state()).toEqual({ deferring: false, contact: 'visible', work: 'visible' })
-    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('contact')!.getBoundingClientRect().top)), { timeout: 6_000 }).toBeLessThan(20)
+    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('contact')!.getBoundingClientRect().top)), { timeout: upTo(6_000) }).toBeLessThan(20)
   })
 
   test('a page whose code fails to download shows a way on instead of a blank screen', async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe('page load', () => {
     await page.goto('/resume/')
     // one try again by itself, then the safety net
     const net = page.getByRole('alert')
-    await expect(net.getByRole('heading', { level: 1 })).toHaveText('This page didn’t load.', { timeout: 15_000 })
+    await expect(net.getByRole('heading', { level: 1 })).toHaveText('This page didn’t load.', { timeout: upTo(15_000) })
     await expect(net.getByText('m.krishnakoushik@icloud.com')).toBeVisible()
     await expect(net.getByRole('button', { name: 'Load it again' })).toBeVisible()
     await expect(net.getByRole('link', { name: 'Home' })).toBeVisible()
@@ -104,7 +104,7 @@ test.describe('page load', () => {
     await page.goto('/')
     // the hero is there and has played its entrance, with no script at all
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Software Engineer.')
-    await expect.poll(() => page.locator('.hero-cta').evaluate((el) => getComputedStyle(el).opacity), { timeout: 6_000 }).toBe('1')
+    await expect.poll(() => page.locator('.hero-cta').evaluate((el) => getComputedStyle(el).opacity), { timeout: upTo(6_000) }).toBe('1')
     // the parts that wait for the script to bring them in are shown
     await expect(page.locator('html.script-failed')).toHaveCount(1)
     const about = page.locator('#about .about-lead')

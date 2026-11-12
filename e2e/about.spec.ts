@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { isPhone, jumpTo, openHome } from './helpers'
+import { isPhone, jumpTo, openHome, upTo } from './helpers'
 
 test.describe('about', () => {
   test('shows the greeting, the summary, quick facts and the links', async ({ page }) => {
@@ -85,7 +85,7 @@ test.describe('about', () => {
     const moved = (await card.boundingBox())!
     expect(moved.x - box.x).toBeGreaterThan(80)
     await page.mouse.up()
-    await expect.poll(async () => Math.abs((await card.boundingBox())!.x - box.x), { timeout: 8_000 }).toBeLessThan(6)
+    await expect.poll(async () => Math.abs((await card.boundingBox())!.x - box.x), { timeout: upTo(8_000) }).toBeLessThan(6)
     await expect(card).toHaveAttribute('aria-pressed', 'false') // a drag is not a flip
   })
 })

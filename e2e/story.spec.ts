@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { isPhone, jumpTo, openHome } from './helpers'
+import { isPhone, jumpTo, openHome, upTo } from './helpers'
 
 test.describe('learning, experience and achievements', () => {
   test('learning lists the doctorate, both AWS certifications and both degrees', async ({ page }) => {
@@ -50,7 +50,7 @@ test.describe('learning, experience and achievements', () => {
     expect(await year.evaluate((el) => [...el.querySelectorAll('.yr-cell')].map((c) => c.querySelector('.yr-strip')!.lastElementChild!.textContent).join(''))).toBe('2020')
     const cell = year.locator('.yr-cell').first()
     await expect
-      .poll(() => cell.evaluate((c) => Math.abs(c.querySelector('.yr-strip')!.lastElementChild!.getBoundingClientRect().top - c.getBoundingClientRect().top)), { timeout: 5_000 })
+      .poll(() => cell.evaluate((c) => Math.abs(c.querySelector('.yr-strip')!.lastElementChild!.getBoundingClientRect().top - c.getBoundingClientRect().top)), { timeout: upTo(5_000) })
       .toBeLessThan(1)
   })
 
@@ -64,7 +64,7 @@ test.describe('learning, experience and achievements', () => {
     const first = section.locator('article').first()
     await expect(first).toContainText('Accounts reported a month')
     await expect(first).toContainText('About 30 million')
-    await expect(first.locator('.tabular').last()).toHaveText('30', { timeout: 8_000 })
+    await expect(first.locator('.tabular').last()).toHaveText('30', { timeout: upTo(8_000) })
     await expect(section.locator('article').nth(1)).toContainText('Faster batch processing')
     await expect(section.getByText('and counting.')).toBeAttached()
   })
@@ -143,6 +143,6 @@ test.describe('learning, experience and achievements', () => {
       seen.push(await row.evaluate((el) => el.style.getPropertyValue('--lean')))
     }
     expect(seen.some((v) => Math.abs(parseFloat(v)) > 0.2)).toBe(true)
-    await expect.poll(() => row.evaluate((el) => el.style.getPropertyValue('--lean')), { timeout: 5_000 }).toBe('')
+    await expect.poll(() => row.evaluate((el) => el.style.getPropertyValue('--lean')), { timeout: upTo(5_000) }).toBe('')
   })
 })

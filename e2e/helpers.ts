@@ -1,5 +1,13 @@
 import { expect, type Page } from '@playwright/test'
 
+/**
+ * Time limits in these tests are written for an ordinary computer. GitHub's test machines draw the page in
+ * software and share their processors, so the same test takes two to three times as long there: where CI
+ * is set, every limit is three times as long.
+ */
+export const SLOW = process.env.CI ? 3 : 1
+export const upTo = (ms: number) => ms * SLOW
+
 /** Open the home page and wait until the fonts and the first animations have settled. */
 export async function openHome(page: Page, path = '/') {
   await page.goto(path)
@@ -7,9 +15,9 @@ export async function openHome(page: Page, path = '/') {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   // the hero's entrance is over once the red tape has faded in
   const tape = page.getByRole('button', { name: /Go to contact/ })
-  await expect.poll(() => tape.evaluate((el) => getComputedStyle(el).opacity), { timeout: 8_000 }).toBe('1')
+  await expect.poll(() => tape.evaluate((el) => getComputedStyle(el).opacity), { timeout: upTo(8_000) }).toBe('1')
   // and every section is laid out (the ones below the screen are filled in during idle moments after load)
-  await expect(page.locator('html.defer-sections')).toHaveCount(0, { timeout: 10_000 })
+  await expect(page.locator('html.defer-sections')).toHaveCount(0, { timeout: upTo(10_000) })
 }
 
 /** Scroll through the whole page so every "reveal on view" block has revealed, then go back to the top. */
@@ -36,7 +44,7 @@ export async function revealAll(page: Page) {
           faint[0]?.scrollIntoView({ block: 'center' })
           return faint.length
         }),
-      { timeout: 40_000, intervals: [250] },
+      { timeout: upTo(40_000), intervals: [250] },
     )
     .toBe(0)
   await page.evaluate(() => window.scrollTo(0, 0))
@@ -58,7 +66,7 @@ export async function settled(page: Page) {
               .getAnimations()
               .filter((a) => a.playState === 'running' && a.timeline === document.timeline && a.effect?.getTiming().iterations !== Infinity).length,
         ),
-      { timeout: 10_000 },
+      { timeout: upTo(10_000) },
     )
     .toBe(0)
 }
@@ -70,8 +78,8 @@ export function topOf(page: Page, id: string) {
 
 /** Wait until a section has scrolled to (about) the top of the viewport. Smooth scrolling takes ~1.4s. */
 export async function expectScrolledTo(page: Page, id: string, tolerance = 4) {
-  await expect.poll(() => topOf(page, id), { timeout: 8_000 }).toBeLessThanOrEqual(tolerance)
-  await expect.poll(() => topOf(page, id), { timeout: 8_000 }).toBeGreaterThanOrEqual(-tolerance - 1)
+  await expect.poll(() => topOf(page, id), { timeout: upTo(8_000) }).toBeLessThanOrEqual(tolerance)
+  await expect.poll(() => topOf(page, id), { timeout: upTo(8_000) }).toBeGreaterThanOrEqual(-tolerance - 1)
 }
 
 /** Scroll a section into view directly (no animation), for tests that are about the section itself. */

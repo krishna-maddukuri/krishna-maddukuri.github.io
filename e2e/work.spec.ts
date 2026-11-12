@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { isPhone, jumpTo, openHome } from './helpers'
+import { isPhone, jumpTo, openHome, upTo } from './helpers'
 
 test.describe('work', () => {
   test('lists seven projects', async ({ page }) => {
@@ -79,13 +79,13 @@ test.describe('case study', () => {
     await expect(page).toHaveURL(/\/work\/event-driven-pipelines\/$/)
     await page.getByRole('link', { name: 'All work' }).click()
     await expect(page).toHaveURL(/:4173\/$/)
-    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('work')?.getBoundingClientRect().top ?? 9999)), { timeout: 8_000 }).toBeLessThan(8)
+    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('work')?.getBoundingClientRect().top ?? 9999)), { timeout: upTo(8_000) }).toBeLessThan(8)
     // a project that does not exist: the "page not found" note, with the work one step away
     await page.goto('/work/does-not-exist/')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nothing at this address.')
     await page.getByRole('main').getByRole('link', { name: 'Work' }).click()
     await expect(page).toHaveURL(/:4173\/$/)
-    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('work')?.getBoundingClientRect().top ?? 9999)), { timeout: 8_000 }).toBeLessThan(8)
+    await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('work')?.getBoundingClientRect().top ?? 9999)), { timeout: upTo(8_000) }).toBeLessThan(8)
   })
 
   test('"Read case study" changes page as one step and leaves nothing behind', async ({ page }) => {
@@ -107,17 +107,17 @@ test.describe('case study', () => {
     await page.goto('/work/event-driven-pipelines/')
     const demo = page.locator('.pd:not(.pd--loading)')
     // (the demo arrives after its placeholder, and can be swapped once more as the page settles)
-    await expect(async () => demo.scrollIntoViewIfNeeded({ timeout: 2_000 })).toPass({ timeout: 15_000 })
+    await expect(async () => demo.scrollIntoViewIfNeeded({ timeout: upTo(2_000) })).toPass({ timeout: upTo(15_000) })
     const stat = async (name: string) => Number(await demo.locator('.pd-stats div', { hasText: name }).locator('dd').innerText())
     expect(await stat('Sent')).toBe(await stat('Stored'))
     await demo.getByRole('button', { name: 'Send 12' }).click()
     await expect.poll(() => stat('Waiting')).toBeGreaterThan(0)
     // stop the second consumer while it is in the middle of an event
-    await expect(demo.locator('.pd-consumer').nth(1)).toContainText(/Storing|Confirming/, { timeout: 5_000 })
+    await expect(demo.locator('.pd-consumer').nth(1)).toContainText(/Storing|Confirming/, { timeout: upTo(5_000) })
     await demo.getByRole('button', { name: 'Stop consumer 2' }).click()
     await expect(demo.getByRole('status')).toContainText('gets that event again')
     // the other consumer takes over; everything ends up stored once, and the copy was skipped
-    await expect.poll(() => stat('Waiting'), { timeout: 30_000 }).toBe(0)
+    await expect.poll(() => stat('Waiting'), { timeout: upTo(30_000) }).toBe(0)
     expect(await stat('Stored')).toBe(await stat('Sent'))
     expect(await stat('Copies skipped')).toBeGreaterThanOrEqual(1)
     // the page is ready-made with the demo in it
@@ -136,7 +136,7 @@ test.describe('case study', () => {
       await expect(arch.locator('.arch-stage')).toHaveCount(stages)
       // it draws itself once on screen, and ends with every stage there
       await expect(arch.locator('.arch-draw')).toHaveClass(/is-drawn/)
-      await expect.poll(() => arch.locator('.arch-stage').last().evaluate((el) => getComputedStyle(el).opacity + getComputedStyle(el).clipPath), { timeout: 8_000 }).toBe('1none')
+      await expect.poll(() => arch.locator('.arch-stage').last().evaluate((el) => getComputedStyle(el).opacity + getComputedStyle(el).clipPath), { timeout: upTo(8_000) }).toBe('1none')
       await expect(arch.locator('.arch-stage').first()).toContainText(first)
       if (beside) await expect(arch.locator('.arch-aside')).toContainText(beside)
       else await expect(arch.locator('.arch-aside')).toHaveCount(0)

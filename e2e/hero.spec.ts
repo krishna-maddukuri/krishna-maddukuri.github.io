@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { expectScrolledTo, openHome } from './helpers'
+import { expectScrolledTo, openHome, upTo } from './helpers'
 
 test.describe('hero', () => {
   test('says hello, shows the role on its red block, the numbers and the figure', async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe('hero', () => {
     const letters = lede.locator('.lede-ch')
     expect(await letters.count()).toBeGreaterThan(150)
     // typed in order: when the last letter is there, so is every other
-    await expect.poll(() => letters.last().evaluate((el) => getComputedStyle(el).opacity), { timeout: 12_000 }).toBe('1')
+    await expect.poll(() => letters.last().evaluate((el) => getComputedStyle(el).opacity), { timeout: upTo(12_000) }).toBe('1')
     expect(await lede.evaluate((el) => [...el.querySelectorAll('.lede-ch')].every((c) => getComputedStyle(c).opacity === '1'))).toBe(true)
     await expect(lede.locator('.sr-only')).toContainText("Since 2020, I've been building software, most recently distributed systems for financial services")
   })
