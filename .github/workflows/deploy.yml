@@ -1,15 +1,16 @@
-# Publishes the site to GitHub Pages every time something is committed to main,
-# once the end-to-end tests have passed on that commit (a failing test stops it:
-# the site that is live stays as it was).
+# Publishes the site to GitHub Pages. It runs only when it is started by hand (Actions tab >
+# "Deploy site to GitHub Pages" > Run workflow), and it publishes only once the end-to-end
+# tests have passed on that commit (a failing test stops it: whatever is live stays as it was).
 # It installs the exact package versions in package-lock.json, builds the site
-# (npm run build -> dist/) and puts dist/ live on GitHub Pages.
+# (npm run build -> dist/) for the address GitHub Pages gives this repository, and puts dist/ live.
 # Repo setting this needs: Settings > Pages > Source = GitHub Actions.
+# To publish on every commit to main instead, add these two lines under "on:" below
+# and take the same two lines out of test.yml (publishing already runs the tests):
+#   push:
+#     branches: ['main']
 name: Deploy site to GitHub Pages
 
 on:
-  push:
-    branches: ['main']
-  # Lets you re-run it by hand from the Actions tab
   workflow_dispatch:
 
 permissions:
@@ -17,7 +18,7 @@ permissions:
   pages: write
   id-token: write
 
-# If two commits land close together, only the newest one gets published
+# If it is started twice close together, only the newest run gets published
 concurrency:
   group: 'pages'
   cancel-in-progress: true
@@ -44,10 +45,17 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      # asks GitHub Pages where this repository's site is served
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
       - name: Build
         run: npm run build
-      - name: Setup Pages
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+        env:
+          # the site's address and its sub-path: "/" for a <username>.github.io repository or a
+          # domain of its own, "/<repository>/" for any other repository
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          SITE_BASE: ${{ steps.pages.outputs.base_path }}/
       - name: Upload site
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:

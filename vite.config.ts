@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {}
 
 export default defineConfig({
-  base: env.SITE_BASE ?? '/',
+  base: env.SITE_BASE || '/',
   plugins: [react(), tailwindcss()],
   build: { chunkSizeWarningLimit: 800 },
 })

@@ -7,7 +7,7 @@ Thumbs.db
 .env*
 !.env.example
 
-# Original full-size photos stay off GitHub (this repo is public).
+# Original full-size photos stay off GitHub.
 source-media/
 
 # Playwright output

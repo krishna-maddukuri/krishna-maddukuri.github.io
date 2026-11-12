@@ -12,8 +12,8 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { build } from 'vite'
 
-const SITE_URL = (process.env.SITE_URL ?? 'https://krishna-maddukuri.github.io').replace(/\/+$/, '')
-const BASE = process.env.SITE_BASE ?? '/'
+const SITE_URL = (process.env.SITE_URL || 'https://krishna-maddukuri.github.io').replace(/\/+$/, '')
+const BASE = process.env.SITE_BASE || '/'
 const DIST = 'dist'
 const SSR = 'node_modules/.prerender'
 
