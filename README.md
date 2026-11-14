@@ -1,5 +1,7 @@
 # Krishna Koushik Maddukuri - Portfolio
 
+**Live site: https://krishna-maddukuri.github.io**
+
 The personal portfolio of Krishna Koushik Maddukuri, a software engineer who builds distributed systems and
 cloud-native microservices for financial services. It is one scrolling page with eight sections, a
 case-study page for each project, a web version of his résumé and a note for addresses that don't exist.
@@ -110,33 +112,25 @@ npm run test:e2e                  # about ten minutes
 npm run test:e2e:ui               # the same tests in Playwright's UI
 ```
 
-On GitHub the same run takes about eighteen minutes: its test machines are slower and draw the page in
+On GitHub the same run takes ten to twenty minutes: its test machines are slower and draw the page in
 software, so there every time limit in the tests is three times as long (`SLOW` in `e2e/helpers.ts`).
 
 ## Publishing
 
-The code lives in the GitHub repository `krishna-maddukuri/Krishna-Koushik-Maddukuri-Portfolio`. Every commit
-to the `main` branch runs the end-to-end tests there (`.github/workflows/test.yml`, about eighteen minutes);
-in the **Actions** tab a green tick means they passed and a red cross means one failed.
+The site is served from the GitHub repository `krishna-maddukuri/krishna-maddukuri.github.io` (GitHub Pages
+publishes a repository named `<username>.github.io` at `https://<username>.github.io`).
+`.github/workflows/deploy.yml` runs on every commit to its `main` branch: first the end-to-end tests
+(`.github/workflows/test.yml`), and only if they pass does it build the site and publish it. The repo setting
+this needs is **Settings → Pages → Source: GitHub Actions**.
 
-This version is not published yet, and nothing goes live by itself. (The site at
-https://krishna-maddukuri.github.io is the earlier version, from the repository
-`krishna-maddukuri/krishna-maddukuri.github.io`.) Publishing is started by hand:
-
-1. Once: **Settings → Pages → Source: GitHub Actions**. GitHub Pages needs the repository to be public, or a
-   paid GitHub plan.
-2. **Actions → Deploy site to GitHub Pages → Run workflow** (`.github/workflows/deploy.yml`). It runs the
-   tests again and, only if they pass, builds the site and publishes it. A red cross means a test or the
-   build failed, and nothing was published.
-
-GitHub Pages serves a repository named `<username>.github.io` at `https://<username>.github.io` and any other
-repository at `https://<username>.github.io/<repository>/`. The deploy workflow asks Pages for that address
-and builds the site for it, so the same workflow works at either, and with a domain of its own.
+You can follow it in the **Actions** tab (a run takes ten to twenty minutes): a green tick means the new
+version is live; a red cross means a test or the build failed, and the live site stays on the last version
+that passed. **Run workflow** on the same page publishes again by hand.
 
 The build reads two settings, both optional: `SITE_URL` (where the site lives, for the sitemap, the
 canonical addresses and the link-preview picture; default `https://krishna-maddukuri.github.io`) and
 `SITE_BASE` (a sub-path, if the site is served from one, such as `/<repository>/`). The deploy workflow sets
-both.
+both from the address GitHub Pages gives the repository.
 
 ## Making changes
 
@@ -205,5 +199,5 @@ src/
 scripts/prerender.mjs writes every page's ready-made HTML, the 404 page, the sitemap and robots.txt after a build
 public/               résumé PDF, tab icons, the preview picture, the figure and its mesh (avatar/), the logos and the fonts
 e2e/                  end-to-end tests (Playwright)
-.github/workflows/    test.yml runs the tests on every push to main; deploy.yml, started by hand, runs them, then builds and publishes
+.github/workflows/    test.yml runs the tests; deploy.yml runs them, then builds and publishes, on every push to main
 ```

@@ -46,18 +46,22 @@ test.describe('page load', () => {
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const state = () =>
-      page.evaluate(() => ({
-        deferring: document.documentElement.classList.contains('defer-sections'),
-        contact: getComputedStyle(document.getElementById('contact')!).contentVisibility,
-        work: getComputedStyle(document.getElementById('work')!).contentVisibility,
-      }))
+      page.evaluate(() => {
+        const contact = document.getElementById('contact')!
+        return {
+          deferring: document.documentElement.classList.contains('defer-sections'),
+          filled: contact.classList.contains('is-warm'),
+          contact: getComputedStyle(contact).contentVisibility,
+          work: getComputedStyle(document.getElementById('work')!).contentVisibility,
+        }
+      })
     const first = await state()
-    // Work is never skipped (it measures itself); Contact is, until it is filled in
+    // Work is never skipped (it measures itself); Contact is, until its turn comes to be filled in
     expect(first.work).toBe('visible')
-    if (first.deferring) expect(first.contact).toBe('auto')
+    if (first.deferring && !first.filled) expect(first.contact).toBe('auto')
     // the tape's jump to Contact fills everything in before it measures where Contact is
     await page.getByRole('button', { name: /Go to contact/ }).click()
-    expect(await state()).toEqual({ deferring: false, contact: 'visible', work: 'visible' })
+    expect(await state()).toMatchObject({ deferring: false, contact: 'visible', work: 'visible' })
     await expect.poll(() => page.evaluate(() => Math.abs(document.getElementById('contact')!.getBoundingClientRect().top)), { timeout: upTo(6_000) }).toBeLessThan(20)
   })
 
@@ -129,6 +133,19 @@ test.describe('page load', () => {
     await page.getByRole('main').getByRole('link', { name: 'Home' }).click()
     await expect(page).toHaveTitle('Krishna Koushik Maddukuri')
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Software Engineer.')
+  })
+
+  test('an address from the site this one replaced (/#/resume, /#/work/…) lands on the page it meant', async ({ page }) => {
+    await page.goto('/#/resume')
+    await expect(page).toHaveURL(/\/resume\/$/)
+    await expect(page).toHaveTitle('Resume | Krishna Koushik Maddukuri')
+    await page.goto('/#/work/event-driven-pipelines/')
+    await expect(page).toHaveURL(/\/work\/event-driven-pipelines\/$/)
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Event-Driven Pipelines')
+    // a jump inside the home page (#work) is not such an address: it stays where it is
+    await page.goto('/#work')
+    await expect(page).toHaveTitle('Krishna Koushik Maddukuri')
+    expect(new URL(page.url()).pathname).toBe('/')
   })
 
   test('with script switched off, a case study still shows its architecture', async ({ page }) => {

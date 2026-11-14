@@ -109,12 +109,27 @@ test.describe('case study', () => {
     // (the demo arrives after its placeholder, and can be swapped once more as the page settles)
     await expect(async () => demo.scrollIntoViewIfNeeded({ timeout: upTo(2_000) })).toPass({ timeout: upTo(15_000) })
     const stat = async (name: string) => Number(await demo.locator('.pd-stats div', { hasText: name }).locator('dd').innerText())
-    expect(await stat('Sent')).toBe(await stat('Stored'))
-    await demo.getByRole('button', { name: 'Send 12' }).click()
-    await expect.poll(() => stat('Waiting')).toBeGreaterThan(0)
-    // stop the second consumer while it is in the middle of an event
-    await expect(demo.locator('.pd-consumer').nth(1)).toContainText(/Storing|Confirming/, { timeout: upTo(5_000) })
-    await demo.getByRole('button', { name: 'Stop consumer 2' }).click()
+    const sent = await stat('Sent')
+    expect(sent).toBe(await stat('Stored'))
+    // (a press that lands before the page's script has taken over the ready-made demo does nothing: press
+    // until the twelve are sent, and only once)
+    await expect(async () => {
+      if ((await stat('Sent')) === sent) await demo.getByRole('button', { name: 'Send 12' }).click()
+      expect(await stat('Sent')).toBe(sent + 12)
+    }).toPass({ timeout: upTo(15_000) })
+    // stop the second consumer while it is in the middle of an event: looked at and pressed in one go, inside
+    // the page, so it cannot finish the event between the look and the press
+    await expect
+      .poll(
+        () =>
+          demo.evaluate((el) => {
+            const busy = /Storing|Confirming/.test(el.querySelectorAll('.pd-consumer')[1]?.textContent ?? '')
+            if (busy) [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Stop consumer 2')?.click()
+            return busy
+          }),
+        { timeout: upTo(10_000), intervals: [50] },
+      )
+      .toBe(true)
     await expect(demo.getByRole('status')).toContainText('gets that event again')
     // the other consumer takes over; everything ends up stored once, and the copy was skipped
     await expect.poll(() => stat('Waiting'), { timeout: upTo(30_000) }).toBe(0)

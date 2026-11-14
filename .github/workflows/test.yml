@@ -1,15 +1,13 @@
-# Runs the end-to-end tests: on every commit to main, on every pull request, by hand from the
-# Actions tab, and as the first step of publishing (deploy.yml calls this file and only publishes
+# Runs the end-to-end tests: on every pull request, by hand from the Actions tab, and as the
+# first step of publishing (deploy.yml calls this file on every commit to main and only publishes
 # when it passes), so a change that breaks something on the site shows up as a red cross and
 # never goes live.
 name: End-to-end tests
 
 on:
-  push:
-    branches: ['main']
   pull_request:
   workflow_dispatch:
-  # lets deploy.yml run these tests before it publishes
+  # lets deploy.yml run these tests before it publishes a commit to main
   workflow_call:
 
 permissions:
@@ -18,7 +16,7 @@ permissions:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    # a run takes about 18 minutes here (these machines draw the page in software)
+    # a run takes ten to twenty minutes here (these machines draw the page in software)
     timeout-minutes: 45
     steps:
       - name: Checkout

@@ -1,16 +1,15 @@
-# Publishes the site to GitHub Pages. It runs only when it is started by hand (Actions tab >
-# "Deploy site to GitHub Pages" > Run workflow), and it publishes only once the end-to-end
-# tests have passed on that commit (a failing test stops it: whatever is live stays as it was).
+# Publishes the site to GitHub Pages every time something is committed to main, but only once
+# the end-to-end tests have passed on that commit (a failing test stops it: the live site stays
+# on the last version that passed). It can also be started by hand from the Actions tab.
 # It installs the exact package versions in package-lock.json, builds the site
 # (npm run build -> dist/) for the address GitHub Pages gives this repository, and puts dist/ live.
 # Repo setting this needs: Settings > Pages > Source = GitHub Actions.
-# To publish on every commit to main instead, add these two lines under "on:" below
-# and take the same two lines out of test.yml (publishing already runs the tests):
-#   push:
-#     branches: ['main']
 name: Deploy site to GitHub Pages
 
 on:
+  push:
+    branches: ['main']
+  # Lets you run it again by hand from the Actions tab
   workflow_dispatch:
 
 permissions:
@@ -18,7 +17,7 @@ permissions:
   pages: write
   id-token: write
 
-# If it is started twice close together, only the newest run gets published
+# If two commits land close together, only the newest one gets published
 concurrency:
   group: 'pages'
   cancel-in-progress: true
@@ -52,8 +51,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # the site's address and its sub-path: "/" for a <username>.github.io repository or a
-          # domain of its own, "/<repository>/" for any other repository
+          # the site's address and its sub-path ("/" for a <username>.github.io repository)
           SITE_URL: ${{ steps.pages.outputs.origin }}
           SITE_BASE: ${{ steps.pages.outputs.base_path }}/
       - name: Upload site
