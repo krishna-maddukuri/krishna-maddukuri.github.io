@@ -41,7 +41,8 @@ const SIDES: Record<string, [number, number]> = {
   Z: [0.031, 0.019],
 }
 
-export type GiantLine = { text: string; ratio: number }
+/** One line of a giant word: its letters, its size as a share of the biggest line's, and a class of its own if it needs one. */
+export type GiantLine = { text: string; ratio: number; className?: string }
 
 /**
  * Giant capitals set like portfolio-2's word: Antonio at its heaviest, each line as wide as the
@@ -91,7 +92,7 @@ export function GiantWord({ lines, play }: { lines: GiantLine[]; play: boolean }
   return (
     <div className={`wm-word ${play ? 'wm-play' : ''}`}>
       {lines.map((line, l) => (
-        <div key={line.text} className="wm-line" style={{ '--l': l, '--wm-ratio': line.ratio } as CSSProperties}>
+        <div key={line.text} className={line.className ? `wm-line ${line.className}` : 'wm-line'} style={{ '--l': l, '--wm-ratio': line.ratio } as CSSProperties}>
           {[...line.text].map((ch, i, all) => (
             <span
               key={i}

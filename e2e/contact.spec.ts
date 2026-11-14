@@ -31,7 +31,7 @@ test.describe('contact and footer', () => {
     expect(await contact.getByText('m.krishnakoushik@icloud.com').evaluate((el) => getComputedStyle(el).fontFamily)).toContain('IBM Plex Mono')
   })
 
-  test('the footer has the year, the links and the big surname', async ({ page }) => {
+  test('the footer has the year, the links and his name in giant letters', async ({ page }) => {
     await openHome(page)
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
     const footer = page.locator('footer')
@@ -39,7 +39,21 @@ test.describe('contact and footer', () => {
     await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/)
     await expect(footer.getByRole('link', { name: 'Resume' })).toHaveAttribute('href', '/resume/')
     // the giant surname, one letter per span (the letters join up as the word)
-    await expect(footer.locator('.wm-word')).toHaveText('MADDUKURI')
+    const lines = footer.locator('.wm-line')
+    await expect(lines.last()).toHaveText('MADDUKURI')
+    await expect(lines.last()).toBeVisible()
+    // phones and tablets: his first names stand over it, edge to edge like it (wide screens have them at the
+    // top of the page, behind the figure, and the surname alone here)
+    await expect(lines.first()).toHaveText('KRISHNA KOUSHIK')
+    if (isPhone(page)) {
+      await expect(lines.first()).toBeVisible()
+      const given = (await lines.first().boundingBox())!
+      const surname = (await lines.last().boundingBox())!
+      expect(Math.abs(given.width - surname.width)).toBeLessThanOrEqual(1)
+      expect(given.y + given.height).toBeLessThanOrEqual(surname.y)
+    } else {
+      await expect(lines.first()).toBeHidden()
+    }
   })
 })
 

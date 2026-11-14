@@ -216,13 +216,20 @@ test.describe('paper figure', () => {
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: upTo(1_500) })
   })
 
-  test('phones: the button under his feet scatters him and "Keep together" brings him back', async ({ page }) => {
+  test('phones: the words under his feet scatter him and "Keep together" brings him back', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) >= 1024, 'phones and tablets only')
     await openHome(page)
     const figure = page.locator('#top [data-paper-figure]')
     await expect(figure).toHaveAttribute('data-paper-figure', 'ready', { timeout: upTo(10_000) })
     const pill = page.getByRole('button', { name: 'Scatter him' })
     await expect(pill).toBeVisible()
+    // a line of text to the eye (no face, no edge, no key's foot), a finger-sized button to a touch
+    const look = await pill.evaluate((el) => {
+      const s = getComputedStyle(el)
+      return { edge: s.borderTopWidth, face: s.backgroundColor, foot: s.boxShadow, height: el.getBoundingClientRect().height }
+    })
+    expect(look).toMatchObject({ edge: '0px', face: 'rgba(0, 0, 0, 0)', foot: 'none' })
+    expect(look.height).toBeGreaterThanOrEqual(44)
     await pill.tap()
     await expect(figure).toHaveAttribute('data-paper-figure', 'scattered')
     const back = page.getByRole('button', { name: 'Keep together' })

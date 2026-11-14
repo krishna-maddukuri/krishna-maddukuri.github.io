@@ -494,8 +494,9 @@ html.lenis, html.lenis body { height: auto; }
   }
 
 
-  /* the giant words, set like portfolio-2's: his first names behind the hero figure, his surname in
-     the footer (components/GiantWord.tsx works out the sizes). The .wm-frame is what the word's width
+  /* the giant words, set like portfolio-2's: on wide screens his first names behind the hero figure and
+     his surname in the footer; on phones and tablets both in the footer, the first names over the surname
+     (components/GiantWord.tsx works out the sizes). The .wm-frame is what the word's width
      and the gutters are measured against: the hero, the footer */
   .wm-frame {
     container-type: inline-size;
@@ -544,6 +545,10 @@ html.lenis, html.lenis body { height: auto; }
   .wm-play .wm-ch {
     animation: wm-outline 2s var(--ease-out) both;
     animation-delay: calc(0.1s + var(--l) * 0.3s + var(--i) * 0.02s);
+  }
+  /* the footer on wide screens shows its second line only (the surname): it is the first to draw in there */
+  @media (min-width: 1024px) {
+    footer .wm-line { --l: 0 !important; }
   }
   @keyframes wm-outline {
     0% { opacity: 0; color: transparent; }
@@ -1286,9 +1291,26 @@ html.vt-page::view-transition-group(project-visual) {
   .about-facts { grid-template-columns: repeat(6, auto); }
 }
 
-/* the label that rides beside the pointer over the paper figure (mouse), and the button under his
-   feet on phones and tablets ("Scatter him" / "Keep together"), which answers a tap with a press; both
-   in the keys' look (.btn-key), the button only below the wide layout */
+/* the label that rides beside the pointer over the paper figure (mouse), in the keys' look (.btn-key); and,
+   below the wide layout, the words under his feet ("Scatter him" / "Keep together"): a line of text in the
+   captions' type (.eyebrow), not a key, so he stands as tall as the first screen allows. It is still a
+   button: 44px tall around the words, and it answers a tap with a press (tapping him does the same) */
+.figure-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--ink-soft);
+  font: 500 var(--text-xs) / 1 var(--ff-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.7s var(--ease-out), scale 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+.figure-pill:active { scale: 0.96; color: var(--ink); }
 @media (min-width: 1024px) {
   .figure-pill { display: none; }
 }
@@ -1298,8 +1320,6 @@ html.vt-page::view-transition-group(project-visual) {
   transition: opacity 0.25s var(--ease-out), scale 0.25s var(--ease-out);
 }
 .cursor-label[data-on="1"] { opacity: 1; scale: 1; }
-.figure-pill { transition: opacity 0.7s var(--ease-out), scale 0.2s var(--ease-out); }
-.figure-pill:active { scale: 0.96; }
 
 /* his paper shadow on the paper page, for the still picture of him (motion reduced, or no WebGL; the moving
    figure draws it itself, PaperFigure.tsx): a little down and to the right, as if the cut-out stands just

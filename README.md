@@ -12,7 +12,8 @@ case-study page for each project, a web version of his résumé and a note for a
    "Software Engineer.", a short intro that is typed out letter by letter, three numbers that count up, and
    Explore work / Let's talk / Resume buttons. On wide screens his name stands behind him in giant outlined
    letters, and a short list beside him says where he is now, where he was and what he is studying. On
-   phones and tablets the figure has the first screen to himself and the words follow below it. A red tape
+   phones and tablets the figure has the first screen to himself, as tall as it allows, with the words
+   "Scatter him" under his feet; the rest follows below, and his first names stand in the footer. A red tape
    runs down the right edge of the page ("Open to Software Engineer roles"); a click on it goes to Contact.
 2. **About** — "Hi, I'm Krishna.", his path in a panel with his motto and the Resume and LinkedIn keys, an ID
    card on a lanyard that you can drag around and tap to flip, and six quick facts.
@@ -29,7 +30,8 @@ case-study page for each project, a web version of his résumé and a note for a
 7. **Proud moments** — his numbers on ten cards that slide sideways as you scroll (a row you swipe on
    phones), each with the company's logo.
 8. **Contact** — email (one press copies it), LinkedIn, the résumé as a PDF and as a page, and where he is
-   based. The footer says how the page loaded on this visit, measured by the visitor's own browser.
+   based. The footer says how the page loaded on this visit, measured by the visitor's own browser, and
+   closes on his surname in giant outlined letters (on phones and tablets his whole name, in two lines).
 
 Also included: the web résumé (`/resume/`), which prints as a clean black-on-white document; a "page not
 found" note for a wrong address; and two themes: true black (how the site opens) and a paper-white one. The
@@ -41,9 +43,9 @@ switch grows the new theme out of the button, and the choice is remembered on th
 `public/avatar/krishna-origami.json` its mesh: 511 shards cut along the paper's own creases.
 `src/components/PaperFigure.tsx` draws them with WebGL in one draw call; every shard's glide, drift and turn
 is worked out in the vertex shader, so a phone handles it easily. On load the shards glide in and lock
-together. Click him and they scatter: they drift, part around the pointer and ripple outwards from it, stay
-out while the mouse plays with them, and come home by themselves, on a click anywhere, or when you scroll
-away. Pressing his name in the header replays the hero's entrance: a red blade crosses the screen and
+together. Click him (on a phone, tap him or the words "Scatter him" under his feet) and they scatter: they
+drift, part around the pointer and ripple outwards from it, stay out while the mouse plays with them, and
+come home by themselves, on a click anywhere, or when you scroll away. Pressing his name in the header replays the hero's entrance: a red blade crosses the screen and
 becomes the tape, and his shards turn over in a wave from head to feet. Phones fetch a lighter copy of the
 picture (`krishna-origami-phone.webp`), and the picture is decoded off the page's own thread, so the page
 never stalls while he arrives. Browsers without WebGL and visitors who ask for less motion get the still

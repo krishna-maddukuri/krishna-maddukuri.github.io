@@ -29,7 +29,12 @@ test.describe('hero', () => {
     test.skip(!isPhone(page), 'the phone layout')
     await openHome(page)
     const { height } = page.viewportSize()!
-    // the "Scatter him" button is the last thing on the first screen
+    // he stands from just under the header's row to 44px above the foot of the screen, the room the words
+    // under his feet ("Scatter him") need: they are the last thing on the first screen
+    const figure = (await page.locator('#top .hero-drift-figure').boundingBox())!
+    const header = (await page.locator('.site-header .header-glass').first().boundingBox())!
+    expect(figure.y - (header.y + header.height)).toBeLessThanOrEqual(12)
+    expect(height - (figure.y + figure.height)).toBeLessThanOrEqual(48)
     const pill = (await page.locator('[data-figure-toggle]').boundingBox())!
     expect(pill.y + pill.height).toBeLessThanOrEqual(height)
     // Safari on iPhone shows the page on behind its floating toolbar and under it, about 93px past the foot

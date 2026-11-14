@@ -165,8 +165,15 @@ function LoadLine() {
   )
 }
 
-/** The footer's word: his surname, set like the giant name over the hero. */
-const fw = giantWord([site.name.split(' ').slice(-1)[0]])
+/**
+ * The footer's word, set like the giant name over the hero: his surname and, over it on phones and tablets,
+ * his first names (there the hero has no name behind the figure, so the page closes on the whole of it; wide
+ * screens have the first names at the top and the surname alone here). The surname is the shorter line, so it
+ * has the biggest letters either way and its size is the same with or without the line above it.
+ */
+const names = site.name.split(' ')
+const fw = giantWord([names.slice(0, -1).join(' '), names.slice(-1)[0]])
+const footerLines = fw.lines.map((line, i) => (i === 0 ? { ...line, className: 'lg:hidden' } : line))
 
 export function Footer() {
   const scrollTo = useScrollTo()
@@ -196,7 +203,8 @@ export function Footer() {
         </div>
         <LoadLine />
       </Container>
-      {/* the surname, as wide as the page's measure, in the style of the giant name over the hero */}
+      {/* his name, as wide as the page's measure, in the style of the giant name over the hero: the surname, and
+          over it on phones and tablets his first names */}
       <m.div
         ref={word}
         aria-hidden
@@ -206,7 +214,7 @@ export function Footer() {
         viewport={{ once: true }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        <GiantWord lines={fw.lines} play={seen} />
+        <GiantWord lines={footerLines} play={seen} />
       </m.div>
     </footer>
   )

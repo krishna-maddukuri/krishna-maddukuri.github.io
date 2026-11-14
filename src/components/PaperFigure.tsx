@@ -9,7 +9,7 @@ import { onHome } from '../lib/home'
  * His paper-craft figure, in pieces. The picture is cut into ~500 shards that follow the paper's own
  * facets (big ones on the body, small ones on the face). On load the shards lie spread evenly over the
  * hero, then glide in and lock together; afterwards he breathes, and the shards under the cursor lift
- * and part around it, photo side up. A click (or, on phones and tablets, the "Scatter him" button) sends
+ * and part around it, photo side up. A click (or, on phones and tablets, the words "Scatter him" under his feet) sends
  * them back out over the whole screen, each to its own spot, turning over and over on the way so the
  * red back of the paper flashes between the photo; they drift there a moment, then come back by themselves.
  * While they are out, a ring travels through them every couple of seconds (each shard it passes is nudged
@@ -860,15 +860,17 @@ export function PaperFigure({ layer, className = '' }: { layer: HTMLElement | nu
             <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-ink-soft' : 'bg-live'}`} />
             {state === 'scattered' ? 'Put him back' : 'Scatter him'}
           </div>
-          {/* … and, below the lg breakpoint, a button under his feet that stays (tapping him works too);
-              "Keep together" brings him back sooner than the hold would */}
+          {/* … and, below the lg breakpoint, the same words under his feet, which stay (tapping him works too);
+              "Keep together" brings him back sooner than the hold would. A line of text to the eye, so he has
+              the height a key would take; a button to a finger and a screen reader, 44px tall around the words
+              (.figure-pill in index.css) */}
           <button
             type="button"
             onClick={() => toggleRef.current()}
             aria-pressed={state === 'scattered'}
             disabled={state === 'loading' || state === 'building'}
             data-figure-toggle
-            className={`btn-key figure-pill absolute -bottom-[62px] left-1/2 z-30 -translate-x-1/2 ${state === 'loading' || state === 'building' ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+            className={`figure-pill absolute left-1/2 top-[calc(100%-4px)] z-30 -translate-x-1/2 ${state === 'loading' || state === 'building' ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
           >
             <span className={`size-1.5 rounded-full ${state === 'scattered' ? 'bg-ink-soft' : 'bg-live'}`} />
             {state === 'scattered' ? 'Keep together' : 'Scatter him'}

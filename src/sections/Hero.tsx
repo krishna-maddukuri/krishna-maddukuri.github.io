@@ -123,16 +123,18 @@ export function Hero() {
       <div ref={setShardLayer} data-shard-layer className="pointer-events-none absolute inset-x-0 top-0 z-0" />
 
       {/* figure: his cut-out photo. Phones and tablets: the first screen is him,
-          from under the header down to the "Scatter him" button above the fold; the words come after
-          (the button hangs below his feet into the words' top padding, so the figure sits above them;
+          from under the header down to the words "Scatter him" just above the fold; the page's words come
+          after (that line of text hangs below his feet into their top padding, so the figure sits above them;
           the badge, later in the DOM at the same level, stays tappable where it overlaps him).
+          He starts 8px under the header's row (20px on tablets) and his feet are 44px above the foot of the
+          screen (48px on tablets), the room the line under them needs: as tall as he can stand there.
           Phones: the words start 120px below the foot of the screen as the page measures it (100svh), and
           never less than 24px below it with the browser's bars tucked away (100lvh). The 120px is for
           Safari on iPhone, which shows the page on behind its floating toolbar and under it, about 93px
           past that foot: nothing of the words may show there before a scroll. */}
       <m.div
         style={touch || !script ? undefined : { y: script.figY }}
-        className="hero-drift-figure relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[var(--fig-x)] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
+        className="hero-drift-figure relative z-20 mx-auto mt-[68px] flex h-[clamp(320px,calc(100svh-112px),760px)] w-full justify-center sm:mt-[80px] sm:h-[clamp(360px,calc(100svh-128px),820px)] lg:absolute lg:bottom-0 lg:left-[var(--fig-x)] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
       >
         <div className="enter relative h-full" style={enter(0.35, 50, 1.2)}>
           <HeroMedia shardLayer={shardLayer} />
@@ -147,7 +149,7 @@ export function Hero() {
       <m.div
         ref={copyRef}
         style={drift}
-        className="hero-drift-words hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(208px,calc(100lvh-72px-clamp(320px,calc(100svh-184px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(96px,calc(100lvh-96px-clamp(360px,calc(100svh-212px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
+        className="hero-drift-words hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(164px,calc(100lvh-44px-clamp(320px,calc(100svh-112px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(52px,calc(100lvh-56px-clamp(360px,calc(100svh-128px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
       >
         {/* the hello, the red block and the intro, as wide as its widest line (the red block): the intro
             wraps under the block, edge to edge */}
