@@ -96,12 +96,15 @@ test.describe('page load', () => {
     expect(study).toMatch(/<meta property="og:url" content="https:\/\/[^"]+\/work\/credit-bureau-reporting\/" \/>/)
     expect(study).toMatch(/<meta property="og:image" content="https:\/\/[^"]+\/og\.png\?v=\d+" \/>/)
     expect(study).not.toContain('content="Distributed systems, event-driven pipelines')
-    // the picture is the square its tags say it is: a small preview shows all of it, a wide one its middle strip
+    // the picture is the size its tags say: tall enough that a small (square) preview shows the whole band,
+    // while a wide preview shows the middle strip
     const picture = await page.request.get('/og.png')
     expect(picture.ok()).toBe(true)
     const png = await picture.body()
-    expect([png.readUInt32BE(16), png.readUInt32BE(20)], 'the picture: width, height').toEqual([1200, 1200])
-    for (const side of ['width', 'height']) expect(study).toContain(`<meta property="og:image:${side}" content="1200" />`)
+    const [width, height] = [png.readUInt32BE(16), png.readUInt32BE(20)]
+    expect([width, height], 'the picture: width, height').toEqual([1200, 1000])
+    expect(study).toContain(`<meta property="og:image:width" content="${width}" />`)
+    expect(study).toContain(`<meta property="og:image:height" content="${height}" />`)
     const sitemap = await (await page.request.get('/sitemap.xml')).text()
     for (const address of ['/resume/', '/work/credit-bureau-reporting/', '/work/internship-projects/']) expect(sitemap).toContain(`${address}</loc>`)
     expect(await (await page.request.get('/robots.txt')).text()).toMatch(/Sitemap: https:\/\/.+\/sitemap\.xml/)
