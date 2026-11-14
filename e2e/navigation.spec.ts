@@ -90,10 +90,23 @@ test.describe('navigation', () => {
     expect(glass.filter).toBe(glass.barFilter)
     await expect(menu.getByText('m.krishnakoushik@icloud.com')).toBeVisible()
     await expect(menu.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/)
+    // the scrim behind it dims more than the screen as the page measures it: Safari on iPhone shows the page
+    // on behind its status bar and its floating toolbar, and that is dimmed too
+    const scrim = await page.locator('[data-menu-scrim]').evaluate((el) => {
+      const box = el.getBoundingClientRect()
+      return { above: -box.top, below: box.bottom - window.innerHeight }
+    })
+    expect(scrim.above).toBeGreaterThanOrEqual(100)
+    expect(scrim.below).toBeGreaterThanOrEqual(100)
 
     await menu.getByRole('button', { name: 'Work' }).click()
     await expect(menu).toBeHidden()
     await expectScrolledTo(page, 'work', 6)
+    await expect(page.getByRole('button', { name: /^Menu \(Work\)/ })).toBeVisible()
+    // "Always learning" has no link in the menu, but the button names it while it is being read
+    await jumpTo(page, 'learning')
+    await expect(page.getByRole('button', { name: /^Menu \(Learning\)/ })).toBeVisible()
+    await jumpTo(page, 'work')
     await expect(page.getByRole('button', { name: /^Menu \(Work\)/ })).toBeVisible()
 
     await page.getByRole('button', { name: /^Menu/ }).click()

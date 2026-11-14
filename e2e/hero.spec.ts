@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { expectScrolledTo, openHome, upTo } from './helpers'
+import { expectScrolledTo, isPhone, jumpTo, openHome, upTo } from './helpers'
 
 test.describe('hero', () => {
   test('says hello, shows the role on its red block, the numbers and the figure', async ({ page }) => {
@@ -20,6 +20,36 @@ test.describe('hero', () => {
     // the paper figure is an image to assistive tech, whether it is the folding canvas or the still picture
     const figure = hero.getByRole('img', { name: 'Krishna Koushik Maddukuri' })
     await expect(figure).toBeVisible()
+    // his giant name stands behind him on wide screens only
+    if (isPhone(page)) await expect(hero.locator('.wm-wrap')).toBeHidden()
+    else await expect(hero.locator('.wm-wrap')).toBeVisible()
+  })
+
+  test('phones: the figure has the first screen to himself, and nothing waits half-seen at its foot', async ({ page }) => {
+    test.skip(!isPhone(page), 'the phone layout')
+    await openHome(page)
+    const { height } = page.viewportSize()!
+    // the "Scatter him" button is the last thing on the first screen
+    const pill = (await page.locator('[data-figure-toggle]').boundingBox())!
+    expect(pill.y + pill.height).toBeLessThanOrEqual(height)
+    // Safari on iPhone shows the page on behind its floating toolbar and under it, about 93px past the foot
+    // of the screen as the page measures it: the words start further down than that
+    const hello = (await page.locator('#top .hero-hello').boundingBox())!
+    expect(hello.y).toBeGreaterThanOrEqual(height + 112)
+    // and the red tape, once it is on screen, does not stop at that foot either
+    await jumpTo(page, 'about')
+    const tape = (await page.locator('.role-tape-window').boundingBox())!
+    expect(tape.y + tape.height).toBeGreaterThanOrEqual(height + 100)
+  })
+
+  test('phones: the numbers start counting as they come into view, not a second later', async ({ page }) => {
+    test.skip(!isPhone(page), 'on wide screens they count as the page opens')
+    await openHome(page)
+    const first = page.locator('#top .hero-stats .count').first()
+    await page.locator('#top .hero-stats').scrollIntoViewIfNeeded()
+    // its delay is its place in the row only (the first number has none)
+    await expect.poll(() => first.evaluate((el) => getComputedStyle(el).animationDelay)).toBe('0s')
+    await expect(page.locator('#top .hero-stats')).toHaveClass(/is-seen/)
   })
 
   test('"Explore work" and "Let\'s talk" scroll to their sections', async ({ page }) => {

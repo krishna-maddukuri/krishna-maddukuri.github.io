@@ -106,11 +106,12 @@ export function Hero() {
     >
       {/* his name behind the figure, set like portfolio-2's giant word (components/GiantWord.tsx): on load
           each letter draws in as an outline, then fills, and the line spreads its letters to both edges of
-          the page's measure. Phones: it starts just under the header, so most of it shows above his head */}
+          the page's measure. Wide screens only: on phones and tablets, where the figure has the first screen
+          to himself, there is no name behind him (the monogram in the header stands for it) */}
       <m.div
         style={touch || !script ? undefined : { y: script.wmY, opacity: script.wmFade }}
         aria-hidden
-        className="hero-drift-name wm-wrap pointer-events-none absolute inset-x-0 top-[68px] -z-10 select-none sm:top-[78px] lg:top-[10%]"
+        className="hero-drift-name wm-wrap pointer-events-none absolute inset-x-0 top-[10%] -z-10 hidden select-none lg:block"
       >
         {/* the name draws itself in as the page opens (its letters stay unseen until their font is in: Antonio
             is font-display: block) */}
@@ -124,7 +125,11 @@ export function Hero() {
       {/* figure: his cut-out photo. Phones and tablets: the first screen is him,
           from under the header down to the "Scatter him" button above the fold; the words come after
           (the button hangs below his feet into the words' top padding, so the figure sits above them;
-          the badge, later in the DOM at the same level, stays tappable where it overlaps him). */}
+          the badge, later in the DOM at the same level, stays tappable where it overlaps him).
+          Phones: the words start 120px below the foot of the screen as the page measures it (100svh), and
+          never less than 24px below it with the browser's bars tucked away (100lvh). The 120px is for
+          Safari on iPhone, which shows the page on behind its floating toolbar and under it, about 93px
+          past that foot: nothing of the words may show there before a scroll. */}
       <m.div
         style={touch || !script ? undefined : { y: script.figY }}
         className="hero-drift-figure relative z-20 mx-auto mt-[96px] flex h-[clamp(320px,calc(100svh-184px),760px)] w-full justify-center sm:mt-[120px] sm:h-[clamp(360px,calc(100svh-212px),820px)] lg:absolute lg:bottom-0 lg:left-[var(--fig-x)] lg:z-0 lg:mt-0 lg:h-[min(86svh,880px)] lg:w-auto lg:-translate-x-1/2"
@@ -142,7 +147,7 @@ export function Hero() {
       <m.div
         ref={copyRef}
         style={drift}
-        className="hero-drift-words hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(88px,calc(100lvh-72px-clamp(320px,calc(100svh-184px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(96px,calc(100lvh-96px-clamp(360px,calc(100svh-212px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
+        className="hero-drift-words hero-copy relative z-10 pl-4 pr-[calc(16px+var(--lane,0px))] pt-[max(208px,calc(100lvh-72px-clamp(320px,calc(100svh-184px),760px)))] sm:pl-6 sm:pr-[calc(24px+var(--lane,0px))] sm:pt-[max(96px,calc(100lvh-96px-clamp(360px,calc(100svh-212px),820px)))] lg:absolute lg:top-[calc(10%+var(--wm-word)*0.938-var(--hello-size)*0.3)] lg:left-[max(40px,calc((100vw-1440px)/2+40px))] lg:z-20 lg:w-[calc(var(--fig-x)-var(--fig-half)-max(40px,calc((100vw-1440px)/2+40px))-36px)] lg:px-0 lg:pt-0"
       >
         {/* the hello, the red block and the intro, as wide as its widest line (the red block): the intro
             wraps under the block, edge to edge */}

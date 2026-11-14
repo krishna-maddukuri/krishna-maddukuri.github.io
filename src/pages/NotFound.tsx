@@ -6,7 +6,7 @@ import { Link } from '../lib/router'
  */
 export function NotFound() {
   return (
-    <main id="main" className="page-frame mx-auto flex min-h-svh max-w-[720px] flex-col justify-center gap-6 px-4 py-28 sm:px-6">
+    <main id="main" className="page-frame fold-gap mx-auto flex min-h-svh max-w-[720px] flex-col justify-center gap-6 px-4 py-28 sm:px-6">
       <div className="eyebrow">Page not found</div>
       <h1 className="font-display text-[clamp(2.2rem,6vw,3.8rem)] font-bold leading-[1]">
         Nothing at <em className="accent-tail">this address.</em>

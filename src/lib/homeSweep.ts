@@ -53,11 +53,12 @@ export function homeSweep(hero: HTMLElement) {
       duration: DELAY + CROSS + 450,
     })
   } else {
-    // a blade of its own, over the first screen, gone when it has crossed
+    // a blade of its own, over the first screen, gone when it has crossed (160px taller than the screen as
+    // the page measures it: Safari on iPhone shows the page on under its floating toolbar)
     const blade = document.createElement('div')
     blade.setAttribute('aria-hidden', 'true')
     blade.dataset.homeBlade = ''
-    blade.style.cssText = `position:absolute;top:0;left:0;z-index:30;width:${width}px;height:${Math.min(hero.offsetHeight, window.innerHeight)}px;background:${red};pointer-events:none`
+    blade.style.cssText = `position:absolute;top:0;left:0;z-index:30;width:${width}px;height:${Math.min(hero.offsetHeight, window.innerHeight + 160)}px;background:${red};pointer-events:none`
     from = -width
     to = vw
     hero.append(blade)

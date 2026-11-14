@@ -847,9 +847,11 @@ html.lenis, html.lenis body { height: auto; }
   /* the red tape down the right edge of the home page (components/RoleTape.tsx), in the red block's colours.
      The track spans <main>: from the top of the page to the footer's top line, where it ends. On phones and
      tablets it starts level with the top of the hero's red block instead (measured: --tape-start), below the
-     first screen, so the giant name and the figure have the first screen to themselves. The window inside it
+     first screen, so the figure has the first screen to himself. The window inside it
      sticks to the top of the screen (on phones and tablets just under the header's row, so the capsule keeps
-     its place) and reaches the foot of the screen. Its words climb without end (two identical halves, so
+     its place) and reaches the foot of the screen; on phones and tablets it runs 160px past that foot, because
+     Safari on iPhone shows the page on behind its floating toolbar and under it, and the tape must not stop
+     short of the glass (nothing else can see the extra). Its words climb without end (two identical halves, so
      moving up by half shows no seam), hold still under a pointer or keyboard focus, and don't move at all for
      people who ask for less motion. The type sits in the middle of the tape: the column is as wide as the tape
      (line-height), the letters 0.63 of it. Under the phone menu's scrim (z 40), over everything on the page */
@@ -870,14 +872,14 @@ html.lenis, html.lenis body { height: auto; }
     top: var(--tape-from);
     display: block;
     width: 100%;
-    height: calc(100dvh - var(--tape-from));
+    height: calc(100dvh - var(--tape-from) + 160px);
     overflow: hidden;
     background: var(--brand-red);
     color: var(--role-ink);
     cursor: pointer;
     pointer-events: auto;
   }
-  @media (min-width: 1024px) { .role-tape-window { --tape-from: 0px; } }
+  @media (min-width: 1024px) { .role-tape-window { --tape-from: 0px; height: 100dvh; } }
   /* the home page carries the tape: its width is the lane every section (and, on wide screens, the header)
      keeps clear on the right; the footer, where the tape ends, has the full width */
   :root:has(.role-tape) { --lane: 24px; }
@@ -1493,6 +1495,22 @@ html.vt-page::view-transition-group(project-visual) {
     align-items: center;
     min-height: 44px;
   }
+  /* the two controls in the header's capsule take a touch anywhere in its height (48px), not only on
+     their own 40px: the capsule's 4px of padding counts as theirs */
+  .tap-pad { position: relative; }
+  .tap-pad::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+}
+
+/* A page that is exactly one screen tall (the "not found" note): on phones and tablets the footer starts
+   120px below the screen's foot (and never less than 24px below it with the browser's bars tucked away), so
+   its first line does not show under a browser bar that lets the page show through, as Safari's does on
+   iPhone. The hero's words keep the same distance (sections/Hero.tsx). */
+@media (max-width: 1023.98px) {
+  .fold-gap { margin-bottom: max(120px, calc(100lvh - 100svh + 24px)); }
 }
 
 /*
@@ -1628,7 +1646,9 @@ html.script-failed .wm-ch { opacity: 1 !important; }
     .count { animation: count-up 1.1s cubic-bezier(0.33, 1, 0.68, 1) var(--count-delay, 0s) backwards; }
   }
   @media (max-width: 1023.98px) {
-    .is-seen .count { animation: count-up 1.1s cubic-bezier(0.33, 1, 0.68, 1) var(--count-delay, 0s) backwards; }
+    /* (each number's delay is counted from the page's opening, for wide screens: 1.2s and a step. Here the
+       numbers are reached by scrolling, so only the step is kept: no second or more of "0%" first) */
+    .is-seen .count { animation: count-up 1.1s cubic-bezier(0.33, 1, 0.68, 1) calc(var(--count-delay, 1.2s) - 1.2s) backwards; }
   }
 }
 /* the hero's stack sits at the foot of the list beside the figure, level with the buttons; script measures
@@ -1804,6 +1824,10 @@ html.defer-sections .fit-section:not(.is-warm):not(#work) {
   color: var(--ink);
 }
 .fam-chip:active { transform: scale(0.97); }
+/* finger-sized on touch screens */
+@media (pointer: coarse) {
+  .fam-chip { min-height: 44px; }
+}
 /* the tools under a project (Work, the case studies): portfolio-2's plain chip, the same shape and font */
 .tool-chip {
   display: inline-flex;

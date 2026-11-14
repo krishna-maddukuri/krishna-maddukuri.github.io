@@ -13,8 +13,11 @@ import { ResumeLink } from './ResumeLink'
 import { copyText, toast } from './Toast'
 import { ArrowDown, Copy, EASE, enter, Moon, Sun } from './ui'
 
-const sectionIds = ['top', ...navItems.map((n) => n.id)]
-const sectionLabel = Object.fromEntries(navItems.map((n) => [n.id, n.label])) as Record<string, string>
+// the sections you can be reading: the menu's own, and "Always learning", which has no link of its own (it
+// sits between Work and Experience) but is named on the phone's menu button like the others
+const READ_ONLY = { before: 'experience', id: 'learning', label: 'Learning' }
+const sectionIds = ['top', ...navItems.flatMap((n) => (n.id === READ_ONLY.before ? [READ_ONLY.id, n.id] : [n.id]))]
+const sectionLabel: Record<string, string> = { ...Object.fromEntries(navItems.map((n) => [n.id, n.label])), [READ_ONLY.id]: READ_ONLY.label }
 /** His first and middle names, as the bar spells them beside the tile. */
 const givenNames = site.name.split(' ').slice(0, -1).join(' ')
 const barType = 'font-mono text-[12px] font-semibold uppercase tracking-[0.16em]'
@@ -33,7 +36,9 @@ export function Header() {
   const scrollTo = useScrollTo()
   const lenis = useLenis()
   const isHome = location.pathname === '/'
-  const active = useActiveSection(isHome ? sectionIds : [], location.pathname)
+  const reading = useActiveSection(isHome ? sectionIds : [], location.pathname)
+  // the link that is marked in the bar and in the menu: while he reads "Always learning", still Work
+  const active = reading === READ_ONLY.id ? 'work' : reading
   const [open, setOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
   // how many times the name has been pressed: each press remounts the brand, so its stamp starts
@@ -41,7 +46,7 @@ export function Header() {
   const [pressed, setPressed] = useState(0)
 
   // Phones: the menu button names the section you're reading, like an app's title bar.
-  const here = active && active !== 'top' ? sectionLabel[active] : null
+  const here = reading && reading !== 'top' ? sectionLabel[reading] : null
 
   const go = (id: string) => {
     setOpen(false)
@@ -139,7 +144,7 @@ export function Header() {
             style={enter(0.2, -16, 0.8)}
             className="enter glass header-glass pointer-events-auto flex h-12 items-center rounded-xl p-1"
           >
-            <ThemeButton className="grid size-10 place-items-center rounded-[8px] text-ink transition-colors active:bg-[var(--glass-press)]" />
+            <ThemeButton className="tap-pad grid size-10 place-items-center rounded-[8px] text-ink transition-colors active:bg-[var(--glass-press)]" />
             <span className="mx-0.5 h-5 w-px bg-ink/15" aria-hidden />
             <button
               ref={menuButton}
@@ -148,7 +153,7 @@ export function Header() {
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? 'Close menu' : here ? `Menu (${here})` : 'Menu'}
-              className={`flex h-10 items-center gap-2.5 rounded-[8px] pl-3 pr-4 ${barType} text-ink transition-colors active:bg-[var(--glass-press)]`}
+              className={`tap-pad flex h-10 items-center gap-2.5 rounded-[8px] pl-3 pr-4 ${barType} text-ink transition-colors active:bg-[var(--glass-press)]`}
             >
               <span className="relative block h-2.5 w-4" aria-hidden>
                 <span className={`absolute left-0 h-px w-4 bg-ink transition-all duration-300 ${open ? 'top-1 rotate-45' : 'top-0'}`} />
@@ -229,9 +234,12 @@ export function Header() {
       {/* the menu: a glass sheet that grows out of the menu button */}
       <AnimatePresence>
         {open && (
+          // (200px past the top and the foot of the screen as the page measures it: Safari on iPhone shows
+          // the page on behind its status bar and its floating toolbar, and the scrim dims it there too)
           <m.div
             key="scrim"
-            className="fixed inset-0 z-40 lg:hidden"
+            data-menu-scrim
+            className="fixed inset-x-0 -bottom-[200px] -top-[200px] z-40 lg:hidden"
             style={{ background: 'var(--scrim)', touchAction: 'none' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

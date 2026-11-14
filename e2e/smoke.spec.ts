@@ -130,6 +130,12 @@ test.describe('page load', () => {
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nothing at this address.')
       await expect(page).toHaveTitle('Page not found | Krishna Koushik Maddukuri')
     }
+    // phones: the note is one screen tall and the footer starts well below it, so its first line does not
+    // show under a browser bar that lets the page show through (Safari on iPhone)
+    if ((page.viewportSize()?.width ?? 1440) < 1024) {
+      const footer = (await page.locator('footer').boundingBox())!
+      expect(footer.y).toBeGreaterThanOrEqual(page.viewportSize()!.height + 112)
+    }
     // the file a static host serves for such an address is named for it, kept out of search results,
     // and does not fetch the figure's picture
     const file = await (await page.request.get('/404.html')).text()

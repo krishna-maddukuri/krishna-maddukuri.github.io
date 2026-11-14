@@ -8,10 +8,11 @@ case-study page for each project, a web version of his résumé and a note for a
 
 ## Pages and sections
 
-1. **Hero** — his name in giant outlined letters across the top, a full-length paper figure of him, "Hello,
-   I'm a" in his own hand over a red block reading "Software Engineer.", a short intro that is typed out
-   letter by letter, three numbers that count up, and Explore work / Let's talk / Resume buttons. On wide
-   screens a short list beside him says where he is now, where he was and what he is studying. A red tape
+1. **Hero** — a full-length paper figure of him, "Hello, I'm a" in his own hand over a red block reading
+   "Software Engineer.", a short intro that is typed out letter by letter, three numbers that count up, and
+   Explore work / Let's talk / Resume buttons. On wide screens his name stands behind him in giant outlined
+   letters, and a short list beside him says where he is now, where he was and what he is studying. On
+   phones and tablets the figure has the first screen to himself and the words follow below it. A red tape
    runs down the right edge of the page ("Open to Software Engineer roles"); a click on it goes to Contact.
 2. **About** — "Hi, I'm Krishna.", his path in a panel with his motto and the Resume and LinkedIn keys, an ID
    card on a lanyard that you can drag around and tap to flip, and six quick facts.
@@ -66,6 +67,12 @@ has one, with a scripted fallback. The case-study and résumé pages and the pro
 files, fetched only when they are needed. Sections far below the screen are laid out in
 idle moments after the page opens. Phones and tablets keep their native scrolling; smooth scrolling is
 added only for a mouse or trackpad.
+
+**Phones.** Safari on iPhone shows the page on behind its floating toolbar and under it, past the foot of
+the screen as the page measures it. So the hero's words start well below that foot (nothing peeks out under
+the toolbar before a scroll), the red tape and the menu's dimming run past it, and the "page not found"
+note keeps its footer clear of it. The header's controls, the skills' family chips and the footer's links
+are finger-sized on touch screens.
 
 **Without script.** With JavaScript switched off, or if a script fails to download, each page still shows
 its content; if a single page's code fails, a note offers a way on instead of a blank screen.

@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: s
   render() {
     if (!this.state.failed) return this.props.children
     return (
-      <main id="main" className="page-frame mx-auto flex min-h-svh max-w-[720px] flex-col justify-center gap-6 px-4 py-28 sm:px-6" role="alert">
+      <main id="main" className="page-frame fold-gap mx-auto flex min-h-svh max-w-[720px] flex-col justify-center gap-6 px-4 py-28 sm:px-6" role="alert">
         <div className="eyebrow">Something went wrong</div>
         <h1 className="font-display text-[clamp(2.2rem,6vw,3.8rem)] font-bold leading-[1]">This page didn&rsquo;t load.</h1>
         <p className="max-w-[52ch] text-lg text-ink-soft">
