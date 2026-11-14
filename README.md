@@ -180,6 +180,11 @@ The tab icon is the "KM" monogram: `public/favicon.png` and `public/apple-touch-
 home screens). If you change the icon files, change `?v=km3` in `index.html` too, so browsers load the new
 icon instead of a cached one.
 
+The preview picture is a 1200 × 1200 square, because apps cut it two ways: a small preview (the compact card
+in WhatsApp) shows the whole square, and a wide one (LinkedIn, Facebook, X) shows only its middle strip,
+1200 × 630. Keep everything that matters inside that strip. If you change the picture, raise `?v=2` on both
+of its tags in `index.html`, so apps fetch the new one instead of a copy they kept.
+
 **On your computer.** Edit the files, check them with `npm run dev`, then commit and push to `main`.
 
 ## Project structure

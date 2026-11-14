@@ -51,8 +51,11 @@ const meta = (html, key, content) => {
   if (!tag.test(html)) throw new Error(`index.html has no ${key} tag`)
   return html.replace(tag, (_, a, b) => `${a}${escape(content)}${b}`)
 }
+// the picture's file name, with its ?v=, is the one index.html names; the build puts the site's address before it
+const PICTURE = /<meta property="og:image" content="[^"]*\/([^"/]+)"/.exec(shell)?.[1]
+if (!PICTURE) throw new Error('index.html has no og:image tag')
 const card = (html, route) => {
-  const picture = `${SITE_URL}${BASE}og.png`
+  const picture = `${SITE_URL}${BASE}${PICTURE}`
   let out = meta(meta(meta(html, 'og:image', picture), 'twitter:image', picture), 'og:url', `${SITE_URL}${address(route)}`)
   if (route === '/') return out
   out = meta(out, 'og:title', pageTitle(route))
